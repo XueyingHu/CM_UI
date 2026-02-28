@@ -13,6 +13,7 @@ import Step3Extract from "@/pages/Step3Extract";
 import Step4Synthesize from "@/pages/Step4Synthesize";
 import Step5Validate from "@/pages/Step5Validate";
 import Step6Summary from "@/pages/Step6Summary";
+import ReviewValidate from "@/pages/ReviewValidate";
 import DocumentAnalysis from "@/pages/DocumentAnalysis";
 import StructuredData from "@/pages/StructuredData";
 import { Bell, Mail, Menu } from "lucide-react";
@@ -44,6 +45,7 @@ function Router() {
             <Route path="/step-4" component={Step4Synthesize}/>
             <Route path="/step-5" component={Step5Validate}/>
             <Route path="/step-6" component={Step6Summary}/>
+            <Route path="/review-validate" component={ReviewValidate}/>
             <Route path="/document-analysis" component={DocumentAnalysis}/>
             <Route path="/structured-data" component={StructuredData}/>
             <Route component={NotFound} />

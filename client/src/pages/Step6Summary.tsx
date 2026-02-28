@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function Step6Summary() {
+  const [, setLocation] = useLocation();
+
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
       <header className="mb-6">
@@ -99,7 +102,10 @@ export default function Step6Summary() {
       </div>
 
       <div className="flex justify-center mt-12">
-        <Button className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-10 py-6 text-base rounded-sm shadow-md font-medium flex items-center gap-2">
+        <Button 
+          onClick={() => setLocation("/review-validate")}
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-10 py-6 text-base rounded-sm shadow-md font-medium flex items-center gap-2"
+        >
           <Download className="w-5 h-5" /> Download Report
         </Button>
       </div>
