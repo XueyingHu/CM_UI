@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { FileText, File, FileImage, ChevronRight } from "lucide-react";
+import { FileText, File, FileImage, ChevronRight, X } from "lucide-react";
 
 export default function Step2Upload() {
   const [, setLocation] = useLocation();
@@ -53,6 +53,10 @@ export default function Step2Upload() {
     fileInputRef.current?.click();
   };
 
+  const removeDocument = (indexToRemove: number) => {
+    setDocuments(documents.filter((_, index) => index !== indexToRemove));
+  };
+
   return (
     <div className="p-10 max-w-4xl">
       <header className="mb-6">
@@ -88,18 +92,26 @@ export default function Step2Upload() {
           {documents.map((doc, index) => (
             <div 
               key={index}
-              className="flex items-center gap-3 p-4 bg-white border border-[#c5cdd4] rounded-sm shadow-sm"
+              className="flex items-center justify-between p-4 bg-white border border-[#c5cdd4] rounded-sm shadow-sm"
             >
-              {doc.icon}
-              <div className="flex items-center text-[15px]">
-                <span className="text-[#333]">{doc.name}</span>
-                <span className="mx-2 text-[#c5cdd4]">|</span>
-                <span className="text-[#333]">{doc.type}</span>
-                <span className="mx-2 text-[#c5cdd4]">|</span>
-                <span className="text-[#333]">{doc.status}</span>
-                <span className="mx-2 text-[#c5cdd4]">|</span>
-                <span className="text-[#333]">{doc.size}</span>
+              <div className="flex items-center gap-3">
+                {doc.icon}
+                <div className="flex items-center text-[15px]">
+                  <span className="text-[#333]">{doc.name}</span>
+                  <span className="mx-2 text-[#c5cdd4]">|</span>
+                  <span className="text-[#333]">{doc.type}</span>
+                  <span className="mx-2 text-[#c5cdd4]">|</span>
+                  <span className="text-[#333]">{doc.status}</span>
+                  <span className="mx-2 text-[#c5cdd4]">|</span>
+                  <span className="text-[#333]">{doc.size}</span>
+                </div>
               </div>
+              <button 
+                onClick={() => removeDocument(index)}
+                className="text-[#c93b3b] hover:text-[#9c2e2e] text-[14px] font-medium flex items-center gap-1 transition-colors"
+              >
+                <X className="w-4 h-4" /> Remove
+              </button>
             </div>
           ))}
         </div>
