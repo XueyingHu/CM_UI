@@ -28,8 +28,8 @@ export default function Dashboard() {
             key={index} 
             className="flex items-center gap-3 p-4 bg-[#f4f6f8] border border-[#e0e4e8] rounded-sm shadow-sm"
           >
-            <div className="bg-[#78b376] rounded-full p-0.5">
-              <CheckCircle2 className="w-5 h-5 text-white" fill="#78b376" stroke="white" />
+            <div className="w-6 h-6 rounded-full bg-[#78b376] flex items-center justify-center text-white font-bold text-sm">
+              {index + 1}
             </div>
             <span className="text-slate-800 font-medium">{step}</span>
           </div>
