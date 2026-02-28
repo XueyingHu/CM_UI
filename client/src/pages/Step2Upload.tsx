@@ -119,7 +119,7 @@ export default function Step2Upload() {
       
       <div className="w-full h-px bg-slate-200 mb-8" />
 
-      <div className="flex items-center gap-4 max-w-[600px]">
+      <div className="flex justify-between items-center max-w-[600px]">
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-1")}
@@ -132,13 +132,6 @@ export default function Step2Upload() {
           className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
         >
           Confirm & Continue
-        </Button>
-        <Button 
-          variant="outline"
-          onClick={triggerUpload}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white border-0 px-6 py-5 text-base rounded-sm shadow-md font-medium"
-        >
-          + Add More Files <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
       </div>
     </div>
