@@ -1,5 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 const MAIN_STEPS = [
   "Select business domain",
@@ -11,6 +12,8 @@ const MAIN_STEPS = [
 ];
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
+
   return (
     <div className="p-10 max-w-4xl">
       <header className="mb-6">
@@ -34,7 +37,10 @@ export default function Dashboard() {
       </div>
 
       <div className="flex justify-end">
-        <Button className="bg-[#2c4b7e] hover:bg-[#1e3a6a] text-white px-8 py-6 text-lg rounded-sm shadow-md font-medium">
+        <Button 
+          onClick={() => setLocation("/step-1")}
+          className="bg-[#2c4b7e] hover:bg-[#1e3a6a] text-white px-8 py-6 text-lg rounded-sm shadow-md font-medium"
+        >
           Get Started
         </Button>
       </div>
