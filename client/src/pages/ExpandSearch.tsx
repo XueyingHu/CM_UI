@@ -80,9 +80,6 @@ export default function ExpandSearch() {
           <div className="bg-[#1e3a6a] text-white px-8 py-2 text-[14px] font-medium border-r border-white/20 cursor-pointer shadow-sm">
             Filter Search
           </div>
-          <div className="bg-[#f4f6f8] text-[#333] px-8 py-2 text-[14px] border border-l-0 border-b-0 border-[#c5cdd4] cursor-pointer hover:bg-[#e6ebf1]">
-            AI Search
-          </div>
         </div>
         
         <div className="flex border border-[#c5cdd4] bg-white rounded-tr-sm rounded-b-sm shadow-sm min-h-[300px]">
@@ -164,18 +161,25 @@ export default function ExpandSearch() {
             </div>
           </div>
           
-          <div className="flex-1 p-4 flex items-start gap-2 bg-[#f8fbff]">
-            <div className="relative flex-1">
-              <input 
-                type="text" 
-                data-testid="input-ai-search"
-                defaultValue="Payment related risk events with recurring issues"
-                className="w-full border border-[#c5cdd4] p-2 text-[14px] text-[#333] shadow-sm focus:outline-none focus:border-[#1e3a6a]"
-              />
+          <div className="flex-1 flex flex-col">
+            <div className="flex items-center gap-2 p-4 bg-[#f8fbff] border-b border-[#e0e4e8]">
+              <div className="bg-[#f4f6f8] text-[#333] px-8 py-2 text-[14px] border border-[#c5cdd4] cursor-pointer hover:bg-[#e6ebf1] font-medium">
+                AI Search
+              </div>
             </div>
-            <button className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-[14px] py-2 px-4 rounded-sm font-medium shadow-sm transition-colors whitespace-nowrap">
-              Run AI Search
-            </button>
+            <div className="flex-1 p-4 flex items-start gap-2 bg-[#f8fbff]">
+              <div className="relative flex-1">
+                <input 
+                  type="text" 
+                  data-testid="input-ai-search"
+                  defaultValue="Payment related risk events with recurring issues"
+                  className="w-full border border-[#c5cdd4] p-2 text-[14px] text-[#333] shadow-sm focus:outline-none focus:border-[#1e3a6a]"
+                />
+              </div>
+              <button className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-[14px] py-2 px-4 rounded-sm font-medium shadow-sm transition-colors whitespace-nowrap">
+                Run AI Search
+              </button>
+            </div>
           </div>
         </div>
       </div>
