@@ -5,7 +5,7 @@ import { useLocation } from "wouter";
 export default function Sidebar() {
   const [location] = useLocation();
 
-  const isReviewPhase = location === "/review-validate";
+  const isReviewPhase = location === "/review-validate" || location === "/expand-search";
 
   // Sidebar changes completely based on the mockup when transitioning to this new phase
   const MAIN_STEPS = [
@@ -18,8 +18,8 @@ export default function Sidebar() {
   ];
 
   const REVIEW_STEPS = [
-    { id: 1, label: "Review and Validate\nRelevant Items", isActive: location === "/review-validate", isCompleted: false, checkmark: true },
-    { id: 2, label: "Expand Search Criteria (optional)", isActive: false, isCompleted: false },
+    { id: 1, label: "Review and Validate\nRelevant Items", isActive: location === "/review-validate", isCompleted: location === "/expand-search", checkmark: true },
+    { id: 2, label: "Expand Search Criteria (optional)", isActive: location === "/expand-search", isCompleted: false, checkmark: true },
     { id: 3, label: "Generate Insights Summary", isActive: false, isCompleted: false },
   ];
 

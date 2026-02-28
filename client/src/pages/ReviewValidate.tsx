@@ -1,6 +1,10 @@
-import { Check } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 export default function ReviewValidate() {
+  const [, setLocation] = useLocation();
+
   const tableData = [
     { id: "EVENT 104382", title: "Settlement delay spikes linked to downstream queue saturation", rating: "Major", status: "Open", opened: "07/12/2024", owner: "C. Patel" },
     { id: "EVENT 109771", title: "Vendor patch backlog impacting trade capture validation", rating: "Open", status: "Open", opened: "05/15/2024", owner: "J. Morrison" },
@@ -8,7 +12,7 @@ export default function ReviewValidate() {
   ];
 
   return (
-    <div className="p-10 max-w-5xl relative min-h-full">
+    <div className="p-10 max-w-5xl relative min-h-full pb-32">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6">Review and Validate relevant Items</h1>
         <div className="w-full h-px bg-slate-200 mb-6" />
@@ -36,7 +40,7 @@ export default function ReviewValidate() {
       </div>
 
       {/* Data Table */}
-      <div className="w-full">
+      <div className="w-full mb-8">
         <table className="w-full text-left border-collapse border border-[#e0e4e8]">
           <thead>
             <tr className="bg-[#f8fbff] border-b border-[#c5cdd4]">
@@ -71,10 +75,10 @@ export default function ReviewValidate() {
                   {row.owner}
                 </td>
                 <td className="py-2 px-4 flex flex-col gap-1.5">
-                  <button className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20">
+                  <button className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20 shadow-sm">
                     <Check className="w-3.5 h-3.5" strokeWidth={3} /> Accept
                   </button>
-                  <button className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20">
+                  <button className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20 shadow-sm">
                     Delete
                   </button>
                 </td>
@@ -82,6 +86,15 @@ export default function ReviewValidate() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="flex justify-end">
+        <Button 
+          onClick={() => setLocation("/expand-search")}
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+        >
+          Next <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
       </div>
     </div>
   );
