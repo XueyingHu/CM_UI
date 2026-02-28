@@ -37,6 +37,19 @@ export default function ExpandSearch() {
 
   const tableData = getActiveData();
 
+  // Filter state
+  const [isDateOpen, setIsDateOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isRatingOpen, setIsRatingOpen] = useState(false);
+
+  const [dateRange, setDateRange] = useState("Last 90 Days");
+  const [status, setStatus] = useState("Open");
+  const [rating, setRating] = useState("Critical, Major");
+
+  const dateOptions = ["Last 30 Days", "Last 90 Days", "Last 6 Months", "Last Year", "All Time"];
+  const statusOptions = ["Open", "Closed", "Pending", "All Statuses"];
+  const ratingOptions = ["Critical, Major", "Critical Only", "Major, Medium", "All Ratings"];
+
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
       <header className="mb-6">
@@ -87,22 +100,83 @@ export default function ExpandSearch() {
         </div>
         
         {/* Search Content Panel */}
-        <div className="flex border border-[#c5cdd4] bg-white rounded-tr-sm rounded-b-sm shadow-sm">
+        <div className="flex border border-[#c5cdd4] bg-white rounded-tr-sm rounded-b-sm shadow-sm min-h-[300px]">
           {/* Left Column (Filters) */}
           <div className="w-[300px] border-r border-[#c5cdd4] flex flex-col">
-            <div className="p-3 border-b border-[#e0e4e8] flex items-center justify-between cursor-pointer hover:bg-slate-50">
-              <span className="text-[14px] text-[#333]">Date Range: Last 90 Days</span>
-              <ChevronDown className="w-4 h-4 text-[#1e3a6a]" />
+            
+            {/* Date Range Filter */}
+            <div className="relative border-b border-[#e0e4e8]">
+              <div 
+                className="p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50"
+                onClick={() => { setIsDateOpen(!isDateOpen); setIsStatusOpen(false); setIsRatingOpen(false); }}
+              >
+                <span className="text-[14px] text-[#333]">Date Range: <span className="font-medium text-[#1e3a6a]">{dateRange}</span></span>
+                <ChevronDown className={`w-4 h-4 text-[#1e3a6a] transition-transform ${isDateOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {isDateOpen && (
+                <div className="absolute top-full left-0 w-full bg-white border border-[#c5cdd4] shadow-md z-10 py-1">
+                  {dateOptions.map(opt => (
+                    <div 
+                      key={opt}
+                      className={`px-3 py-2 text-[14px] cursor-pointer hover:bg-[#f4f6f8] ${dateRange === opt ? 'bg-[#e6ebf1] text-[#1e3a6a] font-medium' : 'text-[#333]'}`}
+                      onClick={() => { setDateRange(opt); setIsDateOpen(false); }}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="p-3 border-b border-[#e0e4e8] flex items-center justify-between cursor-pointer hover:bg-slate-50">
-              <span className="text-[14px] text-[#333]">Status: Open</span>
-              <ChevronDown className="w-4 h-4 text-[#1e3a6a]" />
+
+            {/* Status Filter */}
+            <div className="relative border-b border-[#e0e4e8]">
+              <div 
+                className="p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50"
+                onClick={() => { setIsStatusOpen(!isStatusOpen); setIsDateOpen(false); setIsRatingOpen(false); }}
+              >
+                <span className="text-[14px] text-[#333]">Status: <span className="font-medium text-[#1e3a6a]">{status}</span></span>
+                <ChevronDown className={`w-4 h-4 text-[#1e3a6a] transition-transform ${isStatusOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {isStatusOpen && (
+                <div className="absolute top-full left-0 w-full bg-white border border-[#c5cdd4] shadow-md z-10 py-1">
+                  {statusOptions.map(opt => (
+                    <div 
+                      key={opt}
+                      className={`px-3 py-2 text-[14px] cursor-pointer hover:bg-[#f4f6f8] ${status === opt ? 'bg-[#e6ebf1] text-[#1e3a6a] font-medium' : 'text-[#333]'}`}
+                      onClick={() => { setStatus(opt); setIsStatusOpen(false); }}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="p-3 border-b border-[#e0e4e8] flex items-center justify-between cursor-pointer hover:bg-slate-50">
-              <span className="text-[14px] text-[#333]">Rating: Critical, Major</span>
-              <ChevronDown className="w-4 h-4 text-[#1e3a6a]" />
+
+            {/* Rating Filter */}
+            <div className="relative border-b border-[#e0e4e8]">
+              <div 
+                className="p-3 flex items-center justify-between cursor-pointer hover:bg-slate-50"
+                onClick={() => { setIsRatingOpen(!isRatingOpen); setIsDateOpen(false); setIsStatusOpen(false); }}
+              >
+                <span className="text-[14px] text-[#333]">Rating: <span className="font-medium text-[#1e3a6a]">{rating}</span></span>
+                <ChevronDown className={`w-4 h-4 text-[#1e3a6a] transition-transform ${isRatingOpen ? 'rotate-180' : ''}`} />
+              </div>
+              {isRatingOpen && (
+                <div className="absolute top-full left-0 w-full bg-white border border-[#c5cdd4] shadow-md z-10 py-1">
+                  {ratingOptions.map(opt => (
+                    <div 
+                      key={opt}
+                      className={`px-3 py-2 text-[14px] cursor-pointer hover:bg-[#f4f6f8] ${rating === opt ? 'bg-[#e6ebf1] text-[#1e3a6a] font-medium' : 'text-[#333]'}`}
+                      onClick={() => { setRating(opt); setIsRatingOpen(false); }}
+                    >
+                      {opt}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="p-3 bg-[#f8fbff] flex justify-center">
+
+            <div className="mt-auto p-3 bg-[#f8fbff] flex justify-center border-t border-[#e0e4e8]">
               <button className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-[14px] py-1.5 px-6 rounded-sm w-full font-medium shadow-sm transition-colors">
                 Apply Filters
               </button>
