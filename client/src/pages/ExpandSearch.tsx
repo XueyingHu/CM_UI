@@ -21,11 +21,17 @@ export default function ExpandSearch() {
   const statusOptions = ["Open", "Closed", "Pending", "All Statuses"];
   const ratingOptions = ["Critical, Major", "Critical Only", "Major, Medium", "All Ratings"];
 
+  const [reviewItems, setReviewItems] = useState<any[]>([]);
+
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
-      const data = await getReviewItems(activeTab, "expand");
-      setItems(data);
+      const [reviewData, expandData] = await Promise.all([
+        getReviewItems(activeTab, "review"),
+        getReviewItems(activeTab, "expand"),
+      ]);
+      setReviewItems(reviewData);
+      setItems(expandData);
       setLoading(false);
     };
     fetchItems();
@@ -36,7 +42,8 @@ export default function ExpandSearch() {
     setItems(prev => prev.map(item => item.id === id ? updated : item));
   };
 
-  const acceptedCount = items.filter(i => i.action === 'accepted').length;
+  const allItems = [...reviewItems, ...items];
+  const acceptedCount = allItems.filter(i => i.action === 'accepted').length;
 
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
@@ -186,21 +193,22 @@ export default function ExpandSearch() {
 
       <div className="mb-4">
         <p className="text-[14px] text-[#333]">
-          Returned <span className="font-bold">{items.length} items</span> | <span className="text-[#1e3a6a]">Accepted so far: <span className="font-bold">{acceptedCount}</span></span>
+          Returned <span className="font-bold">{allItems.length} items</span> | <span className="text-[#1e3a6a]">Accepted so far: <span className="font-bold">{acceptedCount}</span></span>
         </p>
       </div>
 
       <div className="w-full">
         {loading ? (
           <p className="text-[15px] text-[#333]">Loading items...</p>
-        ) : items.length === 0 ? (
+        ) : allItems.length === 0 ? (
           <p className="text-[15px] text-[#999]">No items found for this category.</p>
         ) : (
           <table className="w-full text-left border-collapse border border-[#e0e4e8]">
             <thead>
               <tr className="bg-[#f8fbff] border-b border-[#c5cdd4]">
-                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[15%]">Event ID</th>
-                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[35%]">Title</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[3%]"></th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[13%]">Event ID</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[34%]">Title</th>
                 <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Rating</th>
                 <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Status</th>
                 <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[12%]">Opened</th>
@@ -209,58 +217,119 @@ export default function ExpandSearch() {
               </tr>
             </thead>
             <tbody>
+              {reviewItems.length > 0 && (
+                <tr className="bg-[#f0f4f8] border-b border-[#c5cdd4]">
+                  <td colSpan={8} className="py-2 px-4 text-[13px] font-bold text-[#1e3a6a] uppercase tracking-wide">
+                    From Review & Validate
+                  </td>
+                </tr>
+              )}
+              {reviewItems.map((row) => {
+                const isDeleted = row.action === 'deleted';
+                const isAccepted = row.action === 'accepted';
+                return (
+                  <tr key={row.id} className={`border-b border-[#e0e4e8] ${isDeleted ? 'bg-slate-50 opacity-40' : 'bg-white'}`}>
+                    <td className="py-4 px-4 text-[14px] text-[#999]">
+                      <div className="w-2 h-2 rounded-full bg-[#1e3a6a] mx-auto" title="From Review" />
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">
+                      {row.eventId}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333] leading-snug">
+                      {row.title}
+                    </td>
+                    <td className={`py-4 px-4 text-[14px] ${row.rating === 'Critical' ? 'text-[#c93b3b]' : 'text-[#333]'}`}>
+                      {row.rating}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333]">
+                      {row.status}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333]">
+                      {row.opened}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333]">
+                      {row.owner}
+                    </td>
+                    <td className="py-2 px-4 min-w-[100px]">
+                      {isAccepted ? (
+                        <span className="text-[#2c7a3f] font-medium text-[13px] flex items-center gap-1 justify-center w-20 py-1">
+                          <Check className="w-4 h-4" strokeWidth={3} /> Accepted
+                        </span>
+                      ) : isDeleted ? (
+                        <span className="text-[#c93b3b] font-medium text-[13px] flex items-center justify-center w-20 py-1">
+                          Deleted
+                        </span>
+                      ) : (
+                        <span className="text-[#999] font-medium text-[13px] flex items-center justify-center w-20 py-1">
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+              {items.length > 0 && (
+                <tr className="bg-[#f0f4f8] border-b border-[#c5cdd4]">
+                  <td colSpan={8} className="py-2 px-4 text-[13px] font-bold text-[#1e3a6a] uppercase tracking-wide">
+                    Expanded Search Results
+                  </td>
+                </tr>
+              )}
               {items.map((row) => {
                 const isDeleted = row.action === 'deleted';
                 const isAccepted = row.action === 'accepted';
-                
                 return (
-                <tr key={row.id} className={`border-b border-[#e0e4e8] last:border-0 ${isDeleted ? 'bg-slate-50 opacity-40' : 'bg-white'}`}>
-                  <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">
-                    {row.eventId}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333] leading-snug whitespace-pre-line">
-                    {row.title}
-                  </td>
-                  <td className={`py-4 px-4 text-[14px] ${row.rating === 'Critical' ? 'text-[#c93b3b]' : 'text-[#333]'}`}>
-                    {row.rating}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333]">
-                    {row.status}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333]">
-                    {row.opened}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333]">
-                    {row.owner}
-                  </td>
-                  <td className="py-2 px-4 flex flex-col gap-1.5 min-w-[100px]">
-                    {!isAccepted && !isDeleted ? (
-                      <>
-                        <button 
-                          onClick={() => handleAction(row.id, 'accepted')}
-                          className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20 shadow-sm"
-                        >
-                          <Check className="w-3.5 h-3.5" strokeWidth={3} /> Accept
-                        </button>
-                        <button 
-                          onClick={() => handleAction(row.id, 'deleted')}
-                          className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20 shadow-sm"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    ) : isAccepted ? (
-                      <span className="text-[#2c7a3f] font-medium text-[13px] flex items-center gap-1 justify-center w-20 py-1">
-                        <Check className="w-4 h-4" strokeWidth={3} /> Accepted
-                      </span>
-                    ) : (
-                      <span className="text-[#c93b3b] font-medium text-[13px] flex items-center justify-center w-20 py-1">
-                        Deleted
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              )})}
+                  <tr key={row.id} className={`border-b border-[#e0e4e8] last:border-0 ${isDeleted ? 'bg-slate-50 opacity-40' : 'bg-white'}`}>
+                    <td className="py-4 px-4 text-[14px]">
+                      <div className="w-2 h-2 rounded-full bg-[#78b376] mx-auto" title="From Expanded Search" />
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">
+                      {row.eventId}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333] leading-snug whitespace-pre-line">
+                      {row.title}
+                    </td>
+                    <td className={`py-4 px-4 text-[14px] ${row.rating === 'Critical' ? 'text-[#c93b3b]' : 'text-[#333]'}`}>
+                      {row.rating}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333]">
+                      {row.status}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333]">
+                      {row.opened}
+                    </td>
+                    <td className="py-4 px-4 text-[14px] text-[#333]">
+                      {row.owner}
+                    </td>
+                    <td className="py-2 px-4 flex flex-col gap-1.5 min-w-[100px]">
+                      {!isAccepted && !isDeleted ? (
+                        <>
+                          <button 
+                            onClick={() => handleAction(row.id, 'accepted')}
+                            className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20 shadow-sm"
+                          >
+                            <Check className="w-3.5 h-3.5" strokeWidth={3} /> Accept
+                          </button>
+                          <button 
+                            onClick={() => handleAction(row.id, 'deleted')}
+                            className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20 shadow-sm"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      ) : isAccepted ? (
+                        <span className="text-[#2c7a3f] font-medium text-[13px] flex items-center gap-1 justify-center w-20 py-1">
+                          <Check className="w-4 h-4" strokeWidth={3} /> Accepted
+                        </span>
+                      ) : (
+                        <span className="text-[#c93b3b] font-medium text-[13px] flex items-center justify-center w-20 py-1">
+                          Deleted
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
