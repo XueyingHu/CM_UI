@@ -1,50 +1,50 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { FileText, File, FileImage, ChevronRight, X } from "lucide-react";
+import { addDocument, getDocuments, removeDocument as removeDocApi } from "@/lib/api";
+
+function getDocIcon(type: string) {
+  if (type === "PDF") return <FileText className="w-5 h-5 text-[#2c4b7e]" />;
+  if (type === "Word") return <File className="w-5 h-5 text-[#2c4b7e]" />;
+  if (type === "PowerPoint") return <FileImage className="w-5 h-5 text-[#d35400]" />;
+  return <FileText className="w-5 h-5 text-[#2c4b7e]" />;
+}
 
 export default function Step2Upload() {
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [documents, setDocuments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [documents, setDocuments] = useState([
-    { name: "Meeting Pack.pdf", type: "PDF", status: "Readable", size: "2.1 MB", icon: <FileText className="w-5 h-5 text-[#2c4b7e]" /> },
-    { name: "Quarterly Notes.docx", type: "Word", status: "Readable", size: "1.1 MB", icon: <File className="w-5 h-5 text-[#2c4b7e]" /> },
-    { name: "Budget Presentation.pptx", type: "PowerPoint", status: "Readable", size: "1.4 MB", icon: <FileImage className="w-5 h-5 text-[#d35400]" /> },
-  ]);
+  useEffect(() => {
+    getDocuments().then(docs => {
+      setDocuments(docs);
+      setLoading(false);
+    });
+  }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const newDocs = Array.from(e.target.files).map(file => {
+      const files = Array.from(e.target.files);
+      
+      for (const file of files) {
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
-        
         let type = "Document";
-        let icon = <FileText className="w-5 h-5 text-[#2c4b7e]" />;
-        
-        if (file.name.toLowerCase().endsWith('.pdf')) {
-          type = "PDF";
-        } else if (file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')) {
-          type = "Word";
-          icon = <File className="w-5 h-5 text-[#2c4b7e]" />;
-        } else if (file.name.toLowerCase().endsWith('.ppt') || file.name.toLowerCase().endsWith('.pptx')) {
-          type = "PowerPoint";
-          icon = <FileImage className="w-5 h-5 text-[#d35400]" />;
-        } else if (file.type.startsWith('image/')) {
-          type = "Image";
-          icon = <FileImage className="w-5 h-5 text-[#2c4b7e]" />;
-        }
+        if (file.name.toLowerCase().endsWith('.pdf')) type = "PDF";
+        else if (file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')) type = "Word";
+        else if (file.name.toLowerCase().endsWith('.ppt') || file.name.toLowerCase().endsWith('.pptx')) type = "PowerPoint";
+        else if (file.type.startsWith('image/')) type = "Image";
 
-        return {
+        const doc = await addDocument({
           name: file.name,
           type,
           status: "Readable",
           size: `${sizeInMB === "0.0" ? "< 0.1" : sizeInMB} MB`,
-          icon
-        };
-      });
+        });
+        setDocuments(prev => [...prev, doc]);
+      }
 
-      setDocuments([...documents, ...newDocs]);
-      // Reset input so the same file can be uploaded again if needed
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -53,8 +53,9 @@ export default function Step2Upload() {
     fileInputRef.current?.click();
   };
 
-  const removeDocument = (indexToRemove: number) => {
-    setDocuments(documents.filter((_, index) => index !== indexToRemove));
+  const handleRemove = async (docId: string) => {
+    await removeDocApi(docId);
+    setDocuments(documents.filter(d => d.id !== docId));
   };
 
   return (
@@ -74,6 +75,7 @@ export default function Step2Upload() {
           className="hidden" 
         />
         <Button 
+          data-testid="button-upload"
           onClick={triggerUpload}
           className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
         >
@@ -88,33 +90,41 @@ export default function Step2Upload() {
         
         <div className="w-full h-px bg-slate-200 mb-4" />
 
-        <div className="flex flex-col gap-3">
-          {documents.map((doc, index) => (
-            <div 
-              key={index}
-              className="flex items-center justify-between p-4 bg-white border border-[#c5cdd4] rounded-sm shadow-sm"
-            >
-              <div className="flex items-center gap-3">
-                {doc.icon}
-                <div className="flex items-center text-[15px]">
-                  <span className="text-[#333]">{doc.name}</span>
-                  <span className="mx-2 text-[#c5cdd4]">|</span>
-                  <span className="text-[#333]">{doc.type}</span>
-                  <span className="mx-2 text-[#c5cdd4]">|</span>
-                  <span className="text-[#333]">{doc.status}</span>
-                  <span className="mx-2 text-[#c5cdd4]">|</span>
-                  <span className="text-[#333]">{doc.size}</span>
-                </div>
-              </div>
-              <button 
-                onClick={() => removeDocument(index)}
-                className="text-[#c93b3b] hover:text-[#9c2e2e] text-[14px] font-medium flex items-center gap-1 transition-colors"
+        {loading ? (
+          <p className="text-[15px] text-[#333]">Loading documents...</p>
+        ) : documents.length === 0 ? (
+          <p className="text-[15px] text-[#999]">No documents uploaded yet.</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {documents.map((doc) => (
+              <div 
+                key={doc.id}
+                data-testid={`doc-row-${doc.id}`}
+                className="flex items-center justify-between p-4 bg-white border border-[#c5cdd4] rounded-sm shadow-sm"
               >
-                <X className="w-4 h-4" /> Remove
-              </button>
-            </div>
-          ))}
-        </div>
+                <div className="flex items-center gap-3">
+                  {getDocIcon(doc.type)}
+                  <div className="flex items-center text-[15px]">
+                    <span className="text-[#333]">{doc.name}</span>
+                    <span className="mx-2 text-[#c5cdd4]">|</span>
+                    <span className="text-[#333]">{doc.type}</span>
+                    <span className="mx-2 text-[#c5cdd4]">|</span>
+                    <span className="text-[#333]">{doc.status}</span>
+                    <span className="mx-2 text-[#c5cdd4]">|</span>
+                    <span className="text-[#333]">{doc.size}</span>
+                  </div>
+                </div>
+                <button 
+                  data-testid={`button-remove-${doc.id}`}
+                  onClick={() => handleRemove(doc.id)}
+                  className="text-[#c93b3b] hover:text-[#9c2e2e] text-[14px] font-medium flex items-center gap-1 transition-colors"
+                >
+                  <X className="w-4 h-4" /> Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       
       <div className="w-full h-px bg-slate-200 mb-8" />
@@ -128,6 +138,7 @@ export default function Step2Upload() {
           Back
         </Button>
         <Button 
+          data-testid="button-confirm"
           onClick={() => setLocation("/step-3")}
           className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
         >

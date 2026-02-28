@@ -1,43 +1,40 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { getReviewItems, updateReviewItemAction, seedReviewItems, getSessionId } from "@/lib/api";
 
 export default function ReviewValidate() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("events");
-  const [rowStatus, setRowStatus] = useState<Record<string, 'accepted' | 'deleted'>>({});
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [seeded, setSeeded] = useState(false);
 
-  const eventsData = [
-    { id: "EVENT 104382", title: "Settlement delay spikes linked to downstream queue saturation", rating: "Major", status: "Open", opened: "07/12/2024", owner: "C. Patel" },
-    { id: "EVENT 109771", title: "Vendor patch backlog impacting trade capture validation", rating: "Open", status: "Open", opened: "05/15/2024", owner: "J. Morrison" },
-    { id: "EVENT 113205", title: "Reconciliation breaks after reference data change deployment", rating: "Closed", status: "Closed", opened: "03/24/2024", owner: "T. Hamilton" }
-  ];
+  useEffect(() => {
+    const init = async () => {
+      const sessionId = getSessionId();
+      if (!sessionId) { setLoading(false); return; }
 
-  const issuesData = [
-    { id: "ISSUE 402911", title: "Missing authorization in manual override process", rating: "High", status: "Open", opened: "08/01/2024", owner: "A. Smith" },
-    { id: "ISSUE 405822", title: "Incomplete training records for new AML tool", rating: "Medium", status: "Open", opened: "06/22/2024", owner: "M. Lee" }
-  ];
+      if (!seeded) {
+        const existing = await getReviewItems("events", "review");
+        if (existing.length === 0) {
+          await seedReviewItems();
+        }
+        setSeeded(true);
+      }
 
-  const changesData = [
-    { id: "CHG 89012", title: "Core banking platform v2.4 upgrade", rating: "Critical", status: "Scheduled", opened: "09/15/2024", owner: "IT Ops" },
-    { id: "CHG 89105", title: "Firewall ruleset update for APAC region", rating: "Low", status: "Completed", opened: "09/01/2024", owner: "Sec Team" }
-  ];
+      const data = await getReviewItems(activeTab, "review");
+      setItems(data);
+      setLoading(false);
+    };
+    init();
+  }, [activeTab, seeded]);
 
-  const handleAction = (id: string, action: 'accepted' | 'deleted') => {
-    setRowStatus(prev => ({ ...prev, [id]: action }));
+  const handleAction = async (id: string, action: 'accepted' | 'deleted') => {
+    const updated = await updateReviewItemAction(id, action);
+    setItems(prev => prev.map(item => item.id === id ? updated : item));
   };
-
-  const getActiveData = () => {
-    switch(activeTab) {
-      case "issues": return issuesData;
-      case "changes": return changesData;
-      case "events":
-      default: return eventsData;
-    }
-  };
-
-  const tableData = getActiveData();
 
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
@@ -46,7 +43,6 @@ export default function ReviewValidate() {
         <div className="w-full h-px bg-slate-200 mb-6" />
       </header>
 
-      {/* Tabs */}
       <div className="flex mb-6">
         <div 
           onClick={() => setActiveTab("events")}
@@ -76,76 +72,82 @@ export default function ReviewValidate() {
         </p>
       </div>
 
-      {/* Data Table */}
       <div className="w-full mb-8">
-        <table className="w-full text-left border-collapse border border-[#e0e4e8]">
-          <thead>
-            <tr className="bg-[#f8fbff] border-b border-[#c5cdd4]">
-              <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[15%]">Event ID</th>
-              <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[35%]">Title</th>
-              <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Rating</th>
-              <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Status</th>
-              <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[12%]">Opened</th>
-              <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Owner</th>
-              <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[8%]"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {tableData.map((row, index) => {
-              const status = rowStatus[row.id];
-              const isDeleted = status === 'deleted';
-              const isAccepted = status === 'accepted';
-              
-              return (
-              <tr key={index} className={`border-b border-[#e0e4e8] last:border-0 ${isDeleted ? 'bg-slate-50 opacity-40' : 'bg-white'}`}>
-                <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">
-                  {row.id}
-                </td>
-                <td className="py-4 px-4 text-[14px] text-[#333] leading-snug">
-                  {row.title}
-                </td>
-                <td className="py-4 px-4 text-[14px] text-[#333]">
-                  {row.rating}
-                </td>
-                <td className="py-4 px-4 text-[14px] text-[#333]">
-                  {row.status}
-                </td>
-                <td className="py-4 px-4 text-[14px] text-[#333]">
-                  {row.opened}
-                </td>
-                <td className="py-4 px-4 text-[14px] text-[#333]">
-                  {row.owner}
-                </td>
-                <td className="py-2 px-4 flex flex-col gap-1.5 min-w-[100px]">
-                  {!isAccepted && !isDeleted ? (
-                    <>
-                      <button 
-                        onClick={() => handleAction(row.id, 'accepted')}
-                        className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20 shadow-sm"
-                      >
-                        <Check className="w-3.5 h-3.5" strokeWidth={3} /> Accept
-                      </button>
-                      <button 
-                        onClick={() => handleAction(row.id, 'deleted')}
-                        className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20 shadow-sm"
-                      >
-                        Delete
-                      </button>
-                    </>
-                  ) : isAccepted ? (
-                    <span className="text-[#2c7a3f] font-medium text-[13px] flex items-center gap-1 justify-center w-20 py-1">
-                      <Check className="w-4 h-4" strokeWidth={3} /> Accepted
-                    </span>
-                  ) : (
-                    <span className="text-[#c93b3b] font-medium text-[13px] flex items-center justify-center w-20 py-1">
-                      Deleted
-                    </span>
-                  )}
-                </td>
+        {loading ? (
+          <p className="text-[15px] text-[#333]">Loading items...</p>
+        ) : items.length === 0 ? (
+          <p className="text-[15px] text-[#999]">No items found for this category.</p>
+        ) : (
+          <table className="w-full text-left border-collapse border border-[#e0e4e8]">
+            <thead>
+              <tr className="bg-[#f8fbff] border-b border-[#c5cdd4]">
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[15%]">Event ID</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[35%]">Title</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Rating</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Status</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[12%]">Opened</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[10%]">Owner</th>
+                <th className="py-3 px-4 text-[14px] font-medium text-[#333] w-[8%]"></th>
               </tr>
-            )})}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {items.map((row) => {
+                const isDeleted = row.action === 'deleted';
+                const isAccepted = row.action === 'accepted';
+                
+                return (
+                <tr key={row.id} className={`border-b border-[#e0e4e8] last:border-0 ${isDeleted ? 'bg-slate-50 opacity-40' : 'bg-white'}`}>
+                  <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">
+                    {row.eventId}
+                  </td>
+                  <td className="py-4 px-4 text-[14px] text-[#333] leading-snug">
+                    {row.title}
+                  </td>
+                  <td className="py-4 px-4 text-[14px] text-[#333]">
+                    {row.rating}
+                  </td>
+                  <td className="py-4 px-4 text-[14px] text-[#333]">
+                    {row.status}
+                  </td>
+                  <td className="py-4 px-4 text-[14px] text-[#333]">
+                    {row.opened}
+                  </td>
+                  <td className="py-4 px-4 text-[14px] text-[#333]">
+                    {row.owner}
+                  </td>
+                  <td className="py-2 px-4 flex flex-col gap-1.5 min-w-[100px]">
+                    {!isAccepted && !isDeleted ? (
+                      <>
+                        <button 
+                          data-testid={`button-accept-${row.id}`}
+                          onClick={() => handleAction(row.id, 'accepted')}
+                          className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20 shadow-sm"
+                        >
+                          <Check className="w-3.5 h-3.5" strokeWidth={3} /> Accept
+                        </button>
+                        <button 
+                          data-testid={`button-delete-${row.id}`}
+                          onClick={() => handleAction(row.id, 'deleted')}
+                          className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20 shadow-sm"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    ) : isAccepted ? (
+                      <span className="text-[#2c7a3f] font-medium text-[13px] flex items-center gap-1 justify-center w-20 py-1">
+                        <Check className="w-4 h-4" strokeWidth={3} /> Accepted
+                      </span>
+                    ) : (
+                      <span className="text-[#c93b3b] font-medium text-[13px] flex items-center justify-center w-20 py-1">
+                        Deleted
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              )})}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <div className="flex justify-between mt-8">

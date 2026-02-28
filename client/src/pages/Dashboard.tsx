@@ -1,6 +1,6 @@
-import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { getOrCreateSession } from "@/lib/api";
 
 const MAIN_STEPS = [
   "Select business domain",
@@ -14,6 +14,11 @@ const MAIN_STEPS = [
 export default function Dashboard() {
   const [, setLocation] = useLocation();
 
+  const handleStart = async () => {
+    await getOrCreateSession();
+    setLocation("/step-1");
+  };
+
   return (
     <div className="p-10 max-w-4xl">
       <header className="mb-6">
@@ -26,6 +31,7 @@ export default function Dashboard() {
         {MAIN_STEPS.map((step, index) => (
           <div 
             key={index} 
+            data-testid={`step-item-${index + 1}`}
             className="flex items-center gap-3 p-4 bg-[#f4f6f8] border border-[#e0e4e8] rounded-sm shadow-sm"
           >
             <div className="w-6 h-6 rounded-full bg-[#78b376] flex items-center justify-center text-white font-bold text-sm">
@@ -38,7 +44,8 @@ export default function Dashboard() {
 
       <div className="flex justify-end">
         <Button 
-          onClick={() => setLocation("/step-1")}
+          data-testid="button-get-started"
+          onClick={handleStart}
           className="bg-[#2c4b7e] hover:bg-[#1e3a6a] text-white px-8 py-6 text-lg rounded-sm shadow-md font-medium"
         >
           Get Started

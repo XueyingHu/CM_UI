@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CheckCircle2, Circle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
+import { updateSession } from "@/lib/api";
 
 const DOMAINS = [
   "Market Tech - Pre-Trade",
@@ -21,6 +22,7 @@ export default function Step1Domain() {
   const handleDomainSelect = (domain: string) => {
     setSelectedDomain(domain);
     sessionStorage.setItem("selectedDomain", domain);
+    updateSession({ domain, currentStep: 1 });
   };
 
   return (
