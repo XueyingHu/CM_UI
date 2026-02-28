@@ -1,14 +1,20 @@
+import { useState } from "react";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function ExpandSearch() {
   const [, setLocation] = useLocation();
+  const [rowStatus, setRowStatus] = useState<Record<string, 'accepted' | 'deleted'>>({});
 
   const tableData = [
     { id: "EVENT 117502", title: "System failure causing delayed\npayment processing", rating: "Major", status: "Open", opened: "08/10/2024", owner: "S. Brown" },
     { id: "EVENT 118643", title: "Recurring ACH fraud incidents\ndetected", rating: "Critical", status: "Open", opened: "07/25/2024", owner: "D. Turner" },
     { id: "EVENT 119205", title: "Third-party outage impacting\npayment reconciliations", rating: "Major", status: "Open", opened: "08/02/2024", owner: "D. Harris" }
   ];
+
+  const handleAction = (id: string, action: 'accepted' | 'deleted') => {
+    setRowStatus(prev => ({ ...prev, [id]: action }));
+  };
 
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
@@ -110,8 +116,13 @@ export default function ExpandSearch() {
             </tr>
           </thead>
           <tbody>
-            {tableData.map((row, index) => (
-              <tr key={index} className="border-b border-[#e0e4e8] last:border-0 bg-white">
+            {tableData.map((row, index) => {
+              const status = rowStatus[row.id];
+              const isDeleted = status === 'deleted';
+              const isAccepted = status === 'accepted';
+              
+              return (
+              <tr key={index} className={`border-b border-[#e0e4e8] last:border-0 ${isDeleted ? 'bg-slate-50 opacity-40' : 'bg-white'}`}>
                 <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">
                   {row.id}
                 </td>
@@ -130,16 +141,34 @@ export default function ExpandSearch() {
                 <td className="py-4 px-4 text-[14px] text-[#333]">
                   {row.owner}
                 </td>
-                <td className="py-2 px-4 flex flex-col gap-1.5">
-                  <button className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20 shadow-sm">
-                    <Check className="w-3.5 h-3.5" strokeWidth={3} /> Accept
-                  </button>
-                  <button className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20 shadow-sm">
-                    Delete
-                  </button>
+                <td className="py-2 px-4 flex flex-col gap-1.5 min-w-[100px]">
+                  {!isAccepted && !isDeleted ? (
+                    <>
+                      <button 
+                        onClick={() => handleAction(row.id, 'accepted')}
+                        className="bg-[#2c7a3f] hover:bg-[#205c2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center gap-1 w-20 shadow-sm"
+                      >
+                        <Check className="w-3.5 h-3.5" strokeWidth={3} /> Accept
+                      </button>
+                      <button 
+                        onClick={() => handleAction(row.id, 'deleted')}
+                        className="bg-[#c93b3b] hover:bg-[#9c2e2e] text-white text-[13px] font-medium py-1 px-3 rounded-sm flex items-center justify-center w-20 shadow-sm"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  ) : isAccepted ? (
+                    <span className="text-[#2c7a3f] font-medium text-[13px] flex items-center gap-1 justify-center w-20 py-1">
+                      <Check className="w-4 h-4" strokeWidth={3} /> Accepted
+                    </span>
+                  ) : (
+                    <span className="text-[#c93b3b] font-medium text-[13px] flex items-center justify-center w-20 py-1">
+                      Deleted
+                    </span>
+                  )}
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
