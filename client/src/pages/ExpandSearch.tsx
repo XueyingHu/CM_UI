@@ -140,6 +140,15 @@ export default function ExpandSearch() {
           </tbody>
         </table>
       </div>
+
+      <div className="flex justify-end mt-8">
+        <button 
+          onClick={() => setLocation("/insights-summary")}
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium flex items-center"
+        >
+          Next <ChevronRight className="w-4 h-4 ml-1" />
+        </button>
+      </div>
     </div>
   );
 }
