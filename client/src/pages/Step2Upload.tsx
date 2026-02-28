@@ -109,6 +109,13 @@ export default function Step2Upload() {
 
       <div className="flex items-center gap-4 max-w-[600px]">
         <Button 
+          variant="outline"
+          onClick={() => setLocation("/step-1")}
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+        >
+          Back
+        </Button>
+        <Button 
           onClick={() => setLocation("/step-3")}
           className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
         >

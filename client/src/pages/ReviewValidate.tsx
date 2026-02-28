@@ -88,7 +88,14 @@ export default function ReviewValidate() {
         </table>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-between mt-8">
+        <Button 
+          variant="outline"
+          onClick={() => setLocation("/step-6")}
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+        >
+          Back
+        </Button>
         <Button 
           onClick={() => setLocation("/expand-search")}
           className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"

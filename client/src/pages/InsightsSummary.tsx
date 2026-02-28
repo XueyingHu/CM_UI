@@ -1,6 +1,9 @@
 import { ChevronRight } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function InsightsSummary() {
+  const [, setLocation] = useLocation();
+
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
       <header className="mb-6">
@@ -109,6 +112,15 @@ export default function InsightsSummary() {
             </li>
           </ul>
         </div>
+      </div>
+
+      <div className="flex justify-start mt-8">
+        <button 
+          onClick={() => setLocation("/expand-search")}
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium flex items-center"
+        >
+          Back
+        </button>
       </div>
     </div>
   );

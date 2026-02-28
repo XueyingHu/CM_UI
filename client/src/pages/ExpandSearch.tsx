@@ -1,6 +1,9 @@
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronRight } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function ExpandSearch() {
+  const [, setLocation] = useLocation();
+
   const tableData = [
     { id: "EVENT 117502", title: "System failure causing delayed\npayment processing", rating: "Major", status: "Open", opened: "08/10/2024", owner: "S. Brown" },
     { id: "EVENT 118643", title: "Recurring ACH fraud incidents\ndetected", rating: "Critical", status: "Open", opened: "07/25/2024", owner: "D. Turner" },
@@ -141,7 +144,13 @@ export default function ExpandSearch() {
         </table>
       </div>
 
-      <div className="flex justify-end mt-8">
+      <div className="flex justify-between mt-8">
+        <button 
+          onClick={() => setLocation("/review-validate")}
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium flex items-center"
+        >
+          Back
+        </button>
         <button 
           onClick={() => setLocation("/insights-summary")}
           className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium flex items-center"
