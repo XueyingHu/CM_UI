@@ -28,10 +28,7 @@ export default function Step1Domain() {
           {/* Selected Value Header */}
           <div className="flex items-center justify-between p-3 border-b border-[#c5cdd4] bg-[#f4f6f8] cursor-pointer hover:bg-[#e6ebf1]">
             <div className="flex items-center gap-3">
-              <div className="bg-[#78b376] rounded-full p-0.5">
-                <CheckCircle2 className="w-5 h-5 text-white" fill="#78b376" stroke="white" />
-              </div>
-              <span className="text-[#1e3a6a] font-medium text-[15px]">Market Tech - Pre-Trade</span>
+              <span className="text-[#333] font-normal text-[15px]">Select a domain...</span>
             </div>
             <ChevronDown className="w-5 h-5 text-[#1e3a6a]" />
           </div>
@@ -45,14 +42,8 @@ export default function Step1Domain() {
                   key={index}
                   className={`flex items-center gap-3 px-3 py-2.5 border-b border-[#e0e4e8] last:border-b-0 hover:bg-[#e6ebf1] cursor-pointer ${isEven ? 'bg-[#f4f6f8]' : 'bg-white'}`}
                 >
-                  {index === 0 ? (
-                    <div className="bg-[#78b376] rounded-full p-0.5">
-                      <CheckCircle2 className="w-5 h-5 text-white" fill="#78b376" stroke="white" />
-                    </div>
-                  ) : (
-                    <Circle className="w-5 h-5 text-[#c5cdd4]" />
-                  )}
-                  <span className={`text-[15px] ${index === 0 ? 'text-[#1e3a6a] font-medium' : 'text-[#333] font-normal'}`}>{domain}</span>
+                  <Circle className="w-5 h-5 text-[#c5cdd4]" />
+                  <span className="text-[15px] text-[#333] font-normal">{domain}</span>
                 </div>
               );
             })}
