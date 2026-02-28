@@ -6,10 +6,10 @@ export default function Sidebar() {
   const [location] = useLocation();
 
   const STEPS = [
-    { id: 1, label: "Select business domain", isActive: location === "/step-1", isCompleted: location === "/step-2" || location === "/step-3" || location === "/step-4" },
-    { id: 2, label: "Upload Documents", isActive: location === "/step-2", isCompleted: location === "/step-3" || location === "/step-4" },
-    { id: 3, label: "Extract Key Information", isActive: location === "/step-3", isCompleted: location === "/step-4" },
-    { id: 4, label: "Synthesize Insights", isActive: location === "/step-4", isCompleted: false },
+    { id: 1, label: "Select business domain", isActive: location === "/step-1", isCompleted: location === "/step-2" || location === "/step-3" || location === "/step-4" || location === "/step-5" },
+    { id: 2, label: "Upload Documents", isActive: location === "/step-2", isCompleted: location === "/step-3" || location === "/step-4" || location === "/step-5" },
+    { id: 3, label: "Extract Key Information", isActive: location === "/step-3", isCompleted: location === "/step-4" || location === "/step-5" },
+    { id: 4, label: "Synthesize Insights", isActive: location === "/step-4", isCompleted: location === "/step-5" },
     { id: 5, label: "Validate Against Source Data", isActive: location === "/step-5", isCompleted: false },
     { id: 6, label: "Generate Executive Summary", isActive: location === "/step-6", isCompleted: false },
   ];
