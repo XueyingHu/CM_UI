@@ -1,8 +1,83 @@
+import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 
+const TAB_DATA: Record<string, {
+  kpis: { title: string; value: number; trend: string; color: string; bg: string; borderColor: string }[];
+  keyThemes: { text: string; ref: string }[];
+  emergingRisks: { text: string; ref: string }[];
+  riskImpact: { label: string; text: string; ref: string }[];
+}> = {
+  events: {
+    kpis: [
+      { title: "New Risk Events", value: 9, trend: "New This Month", color: "#1e3a6a", bg: "#f8fbff", borderColor: "#c5cdd4" },
+      { title: "Risk Events Still Open or Valid", value: 14, trend: "1 New This Month", color: "#333", bg: "#ffffff", borderColor: "#c5cdd4" },
+      { title: "Overdue Risk Events", value: 5, trend: "1 New Overdue", color: "#b33a3a", bg: "#fffaf5", borderColor: "#e8d5cc" },
+    ],
+    keyThemes: [
+      { text: "Vendor patch management issues are leading to validation problems and reconciliation breakdowns.", ref: "EVENT 109771" },
+      { text: "Settlement processing delays are inflating downstream queue saturation and operational risk.", ref: "EVENT 104382" },
+      { text: "Third-party impacts continue to disrupt payment reconciliation processes.", ref: "EVENT 119205" },
+    ],
+    emergingRisks: [
+      { text: "Increase in incidents post-deployment change failure across applications", ref: "EVENT 112205, 119025" },
+      { text: "Recurring fraud threats detected in ACH transactions point to gaps in financial controls", ref: "EVENT 118643" },
+    ],
+    riskImpact: [
+      { label: "Operational Impacts:", text: "Recently surfacing risks indicate potential for substantial system downtime", ref: "EVENT 104382, EVENT 117502" },
+      { label: "Financial Impacts:", text: "ACH and settlement risks imply recurring financial losses if not mitigated", ref: "EVENT 118643, EVENT 117502" },
+      { label: "Regulatory Impacts:", text: "Further scrutiny is expected to repeat third-party vendor disruptions", ref: "EVENT 119205" },
+    ],
+  },
+  issues: {
+    kpis: [
+      { title: "New Issues Identified", value: 6, trend: "New This Month", color: "#1e3a6a", bg: "#f8fbff", borderColor: "#c5cdd4" },
+      { title: "Issues Still Open or Pending", value: 11, trend: "2 New This Month", color: "#333", bg: "#ffffff", borderColor: "#c5cdd4" },
+      { title: "Overdue Issues", value: 3, trend: "1 Newly Overdue", color: "#b33a3a", bg: "#fffaf5", borderColor: "#e8d5cc" },
+    ],
+    keyThemes: [
+      { text: "Missing authorization controls in manual override processes are creating compliance gaps and audit exposure.", ref: "ISSUE 402911" },
+      { text: "Incomplete training records for newly deployed AML monitoring tools are limiting effectiveness of fraud detection.", ref: "ISSUE 405822" },
+      { text: "Data privacy compliance gaps in customer onboarding flows risk regulatory penalties under GDPR and local data protection laws.", ref: "ISSUE 410293" },
+    ],
+    emergingRisks: [
+      { text: "Growing backlog of unresolved issues in manual reconciliation processes increasing error rates", ref: "ISSUE 402911, 412558" },
+      { text: "Inadequate sign-off procedures on quarterly financial reconciliations creating audit trail gaps", ref: "ISSUE 412558" },
+    ],
+    riskImpact: [
+      { label: "Compliance Impacts:", text: "Authorization and training deficiencies could result in regulatory findings during upcoming audits", ref: "ISSUE 402911, ISSUE 405822" },
+      { label: "Financial Impacts:", text: "Missing reconciliation sign-offs may lead to undetected discrepancies and financial misstatements", ref: "ISSUE 412558" },
+      { label: "Operational Impacts:", text: "Data privacy gaps in onboarding could halt new customer acquisition if enforcement actions are taken", ref: "ISSUE 410293" },
+    ],
+  },
+  changes: {
+    kpis: [
+      { title: "Upcoming Changes", value: 4, trend: "Scheduled This Quarter", color: "#1e3a6a", bg: "#f8fbff", borderColor: "#c5cdd4" },
+      { title: "Changes In Progress", value: 7, trend: "2 Nearing Completion", color: "#333", bg: "#ffffff", borderColor: "#c5cdd4" },
+      { title: "High-Risk Changes", value: 2, trend: "Requires Attention", color: "#b33a3a", bg: "#fffaf5", borderColor: "#e8d5cc" },
+    ],
+    keyThemes: [
+      { text: "Core banking platform upgrade (v2.4) introduces significant infrastructure dependencies and requires coordinated downtime planning.", ref: "CHG 89012" },
+      { text: "Cloud infrastructure migration is in planning phase with broad impact across multiple business domains and application stacks.", ref: "CHG 90221" },
+      { text: "Firewall ruleset updates for APAC region have been completed, reducing exposure to cross-region network vulnerabilities.", ref: "CHG 89105" },
+    ],
+    emergingRisks: [
+      { text: "Delayed core banking upgrade increasing technical debt and compatibility risks with downstream systems", ref: "CHG 89012" },
+      { text: "Cloud migration planning gaps may lead to service disruptions if rollback procedures are not validated", ref: "CHG 90221" },
+    ],
+    riskImpact: [
+      { label: "Operational Impacts:", text: "Core banking upgrade downtime could affect real-time transaction processing and settlement cycles", ref: "CHG 89012" },
+      { label: "Strategic Impacts:", text: "Cloud migration delays may push back digital transformation milestones and increase total cost of ownership", ref: "CHG 90221" },
+      { label: "Security Impacts:", text: "Completed APAC firewall changes reduce network attack surface but ongoing monitoring is required", ref: "CHG 89105" },
+    ],
+  },
+};
+
 export default function InsightsSummary() {
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState("events");
+
+  const data = TAB_DATA[activeTab];
 
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
@@ -11,49 +86,43 @@ export default function InsightsSummary() {
         <div className="w-full h-px bg-slate-200 mb-6" />
       </header>
 
-      {/* Tabs */}
       <div className="flex mb-6">
-        <div className="bg-[#1e3a6a] text-white px-6 py-2.5 text-[15px] font-medium border-r border-white/20 cursor-pointer shadow-sm">
+        <div 
+          data-testid="tab-events"
+          onClick={() => setActiveTab("events")}
+          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "events" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
+        >
           ORAC Risk Events
         </div>
-        <div className="bg-[#f4f6f8] text-[#333] px-6 py-2.5 text-[15px] border border-l-0 border-[#c5cdd4] cursor-pointer hover:bg-[#e6ebf1]">
+        <div 
+          data-testid="tab-issues"
+          onClick={() => setActiveTab("issues")}
+          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "issues" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
+        >
           ORAC Issues
         </div>
-        <div className="bg-[#f4f6f8] text-[#333] px-6 py-2.5 text-[15px] border border-l-0 border-[#c5cdd4] cursor-pointer hover:bg-[#e6ebf1]">
+        <div 
+          data-testid="tab-changes"
+          onClick={() => setActiveTab("changes")}
+          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "changes" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
+        >
           Navigator Changes
         </div>
       </div>
 
-      {/* KPI Cards */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <div className="border border-[#c5cdd4] rounded-sm bg-[#f8fbff] p-5 shadow-sm">
-          <h3 className="text-[#1e3a6a] text-[15px] font-medium mb-3">New Risk Events</h3>
-          <div className="text-[36px] font-bold text-[#1e3a6a] mb-2 leading-none">9</div>
-          <div className="text-[#1e3a6a] text-[13px] flex items-center gap-1 font-medium">
-            <span className="text-[14px]">↗</span> New This Month
+        {data.kpis.map((kpi, i) => (
+          <div key={i} className="rounded-sm p-5 shadow-sm" style={{ border: `1px solid ${kpi.borderColor}`, backgroundColor: kpi.bg }}>
+            <h3 className="text-[15px] font-medium mb-3" style={{ color: kpi.color }}>{kpi.title}</h3>
+            <div className="text-[36px] font-bold mb-2 leading-none" style={{ color: kpi.color }}>{kpi.value}</div>
+            <div className="text-[13px] flex items-center gap-1 font-medium" style={{ color: i === 1 ? "#6b9c41" : kpi.color }}>
+              <span className="text-[14px]">↗</span> {kpi.trend}
+            </div>
           </div>
-        </div>
-        
-        <div className="border border-[#c5cdd4] rounded-sm bg-white p-5 shadow-sm">
-          <h3 className="text-[#333] text-[15px] font-medium mb-3">Risk Events Still Open or Valid</h3>
-          <div className="text-[36px] font-bold text-[#333] mb-2 leading-none">14</div>
-          <div className="text-[#6b9c41] text-[13px] flex items-center gap-1 font-medium">
-            <span className="text-[14px]">↗</span> 1 New This Month
-          </div>
-        </div>
-
-        <div className="border border-[#e8d5cc] rounded-sm bg-[#fffaf5] p-5 shadow-sm">
-          <h3 className="text-[#b33a3a] text-[15px] font-medium mb-3">Overdue Risk Events</h3>
-          <div className="text-[36px] font-bold text-[#b33a3a] mb-2 leading-none">5</div>
-          <div className="text-[#b33a3a] text-[13px] flex items-center gap-1 font-medium">
-            <span className="text-[14px]">↗</span> 1 New Overdue
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Text Sections */}
       <div className="space-y-8">
-        {/* Key Themes */}
         <div>
           <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
             <h2 className="text-[17px] font-bold text-[#1e3a6a]">Key Themes</h2>
@@ -62,19 +131,14 @@ export default function InsightsSummary() {
             </button>
           </div>
           <div className="space-y-4">
-            <p className="text-[14px] text-[#333]">
-              Vendor patch management issues are leading to validation problems and reconciliation breakdowns. <span className="font-bold text-[#1e3a6a]">EVENT 109771</span>
-            </p>
-            <p className="text-[14px] text-[#333]">
-              Settlement processing delays are inflating downstream queue saturation and operational risk. <span className="font-bold text-[#1e3a6a]">EVENT 104382</span>
-            </p>
-            <p className="text-[14px] text-[#333]">
-              Third-party impacts continue to disrupt payment reconciliation processes. <span className="font-bold text-[#1e3a6a]">EVENT 119205</span>
-            </p>
+            {data.keyThemes.map((item, i) => (
+              <p key={i} className="text-[14px] text-[#333]">
+                {item.text} <span className="font-bold text-[#1e3a6a]">{item.ref}</span>
+              </p>
+            ))}
           </div>
         </div>
 
-        {/* Emerging Risks */}
         <div>
           <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
             <h2 className="text-[17px] font-bold text-[#1e3a6a]">Emerging Risks</h2>
@@ -83,16 +147,14 @@ export default function InsightsSummary() {
             </button>
           </div>
           <ul className="space-y-4">
-            <li className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
-              Increase in incidents post-deploymentchange failure across applications <span className="font-bold text-[#1e3a6a]">(EVENT 112205, 119025)</span>
-            </li>
-            <li className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
-              Recurring fraud threats detected in ACH transactions point to gaps in financial controls <span className="font-bold text-[#1e3a6a]">(EVENT 118643)</span>
-            </li>
+            {data.emergingRisks.map((item, i) => (
+              <li key={i} className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
+                {item.text} <span className="font-bold text-[#1e3a6a]">({item.ref})</span>
+              </li>
+            ))}
           </ul>
         </div>
 
-        {/* Risk Impact Analysis */}
         <div>
           <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
             <h2 className="text-[17px] font-bold text-[#1e3a6a]">Risk Impact Analysis</h2>
@@ -101,15 +163,11 @@ export default function InsightsSummary() {
             </button>
           </div>
           <ul className="space-y-4">
-            <li className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
-              <span className="font-bold">Operational Impacts:</span> Recently surfacing risks indicate potential for substantial system downtime <span className="font-bold text-[#1e3a6a]">(EVENT 104382, EVENT 117502)</span>
-            </li>
-            <li className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
-              <span className="font-bold">Financial Impacts:</span> ACH and settlement risks imply recurring financial losses if not mitigated <span className="font-bold text-[#1e3a6a]">(EVENT 118643, EVENT 117502)</span>
-            </li>
-            <li className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
-              <span className="font-bold">Regulatory Impacts:</span> Further scrutiny is expected to repeat third-party vendor disruptions <span className="font-bold text-[#1e3a6a]">(EVENT 119205)</span>
-            </li>
+            {data.riskImpact.map((item, i) => (
+              <li key={i} className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
+                <span className="font-bold">{item.label}</span> {item.text} <span className="font-bold text-[#1e3a6a]">({item.ref})</span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
