@@ -4,17 +4,38 @@ import { useLocation } from "wouter";
 
 export default function ExpandSearch() {
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState("events");
   const [rowStatus, setRowStatus] = useState<Record<string, 'accepted' | 'deleted'>>({});
 
-  const tableData = [
+  const eventsData = [
     { id: "EVENT 117502", title: "System failure causing delayed\npayment processing", rating: "Major", status: "Open", opened: "08/10/2024", owner: "S. Brown" },
     { id: "EVENT 118643", title: "Recurring ACH fraud incidents\ndetected", rating: "Critical", status: "Open", opened: "07/25/2024", owner: "D. Turner" },
     { id: "EVENT 119205", title: "Third-party outage impacting\npayment reconciliations", rating: "Major", status: "Open", opened: "08/02/2024", owner: "D. Harris" }
   ];
 
+  const issuesData = [
+    { id: "ISSUE 410293", title: "Data privacy compliance gap in\nnew customer onboarding", rating: "High", status: "Open", opened: "08/15/2024", owner: "L. Chen" },
+    { id: "ISSUE 412558", title: "Missing sign-off on Q2 financial\nreconciliation", rating: "Medium", status: "Open", opened: "07/10/2024", owner: "B. White" }
+  ];
+
+  const changesData = [
+    { id: "CHG 90221", title: "Migration to new cloud\ninfrastructure provider", rating: "High", status: "Planning", opened: "09/20/2024", owner: "Cloud Team" }
+  ];
+
   const handleAction = (id: string, action: 'accepted' | 'deleted') => {
     setRowStatus(prev => ({ ...prev, [id]: action }));
   };
+
+  const getActiveData = () => {
+    switch(activeTab) {
+      case "issues": return issuesData;
+      case "changes": return changesData;
+      case "events":
+      default: return eventsData;
+    }
+  };
+
+  const tableData = getActiveData();
 
   return (
     <div className="p-10 max-w-5xl relative min-h-full pb-32">
@@ -27,13 +48,22 @@ export default function ExpandSearch() {
 
       {/* Tabs */}
       <div className="flex mb-6">
-        <div className="bg-[#1e3a6a] text-white px-6 py-2.5 text-[15px] font-medium border-r border-white/20 cursor-pointer shadow-sm">
+        <div 
+          onClick={() => setActiveTab("events")}
+          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "events" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
+        >
           ORAC Risk Events
         </div>
-        <div className="bg-[#f4f6f8] text-[#333] px-6 py-2.5 text-[15px] border border-l-0 border-[#c5cdd4] cursor-pointer hover:bg-[#e6ebf1]">
+        <div 
+          onClick={() => setActiveTab("issues")}
+          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "issues" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
+        >
           ORAC Issues
         </div>
-        <div className="bg-[#f4f6f8] text-[#333] px-6 py-2.5 text-[15px] border border-l-0 border-[#c5cdd4] cursor-pointer hover:bg-[#e6ebf1]">
+        <div 
+          onClick={() => setActiveTab("changes")}
+          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "changes" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
+        >
           Navigator Changes
         </div>
       </div>
