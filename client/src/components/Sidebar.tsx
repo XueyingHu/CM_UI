@@ -1,60 +1,45 @@
-import { Link, useLocation } from "wouter";
-import { LayoutDashboard, FileText, Database, ShieldAlert, Settings, BrainCircuit } from "lucide-react";
+import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Domain Overview", icon: LayoutDashboard },
-  { href: "/document-analysis", label: "Document Analysis", icon: FileText },
-  { href: "/structured-data", label: "Structured Synthesis", icon: Database },
+const STEPS = [
+  { id: 1, label: "Select business domain", isCompleted: true, isActive: true },
+  { id: 2, label: "Upload Documents", isCompleted: false, isActive: false },
+  { id: 3, label: "Extract Key Information", isCompleted: false, isActive: false },
+  { id: 4, label: "Synthesize Insights", isCompleted: false, isActive: false },
+  { id: 5, label: "Validate Against Source Data", isCompleted: false, isActive: false },
+  { id: 6, label: "Generate Executive Summary", isCompleted: false, isActive: false },
 ];
 
 export default function Sidebar() {
-  const [location] = useLocation();
-
   return (
-    <div className="w-64 border-r border-border bg-card flex flex-col h-full shrink-0 shadow-sm z-10">
-      <div className="p-6 flex items-center gap-3">
-        <div className="bg-primary/10 text-primary p-2 rounded-lg">
-          <BrainCircuit className="w-6 h-6" />
-        </div>
-        <div>
-          <h1 className="font-display font-bold text-lg leading-tight text-foreground">Assure CM AI</h1>
-          <p className="text-xs text-muted-foreground font-medium">Bedrock Engine</p>
-        </div>
+    <div className="w-[280px] bg-[#f4f4f4] border-r border-[#e0e0e0] flex flex-col h-full shrink-0 shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)]">
+      <div className="px-6 py-5">
+        <h2 className="text-[#1e3a6a] text-xl font-semibold font-sans mb-4">Your Progress</h2>
       </div>
 
-      <nav className="flex-1 px-4 space-y-1 mt-4">
-        <div className="mb-4 px-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          AI Modules
-        </div>
-        {NAV_ITEMS.map((item) => {
-          const isActive = location === item.href;
-          const Icon = item.icon;
-          
-          return (
-            <Link key={item.href} href={item.href}>
-              <a
+      <nav className="flex-1 bg-white mx-4 rounded-sm border border-[#e0e0e0] overflow-hidden mb-6">
+        <ul className="flex flex-col">
+          {STEPS.map((step, index) => (
+            <li key={step.id}>
+              <div 
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200",
-                  isActive 
-                    ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                  "flex items-center px-4 py-3 text-sm font-medium border-b border-[#e0e0e0] last:border-0",
+                  step.isActive ? "bg-[#fff8cc] text-[#333]" : "bg-white text-[#333]"
                 )}
               >
-                <Icon className={cn("w-4 h-4", isActive ? "text-primary-foreground" : "text-muted-foreground")} />
-                {item.label}
-              </a>
-            </Link>
-          );
-        })}
+                <div className="w-6 flex-shrink-0 flex justify-center mr-2">
+                  {step.isCompleted ? (
+                    <Check className="w-5 h-5 text-black" strokeWidth={2.5} />
+                  ) : (
+                    <span className="font-bold">{step.id}.</span>
+                  )}
+                </div>
+                <span>{step.label}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
       </nav>
-
-      <div className="p-4 border-t border-border">
-        <button className="flex items-center gap-3 px-3 py-2 w-full rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
-          <Settings className="w-4 h-4" />
-          Settings
-        </button>
-      </div>
     </div>
   );
 }
