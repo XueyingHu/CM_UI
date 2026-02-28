@@ -1,15 +1,57 @@
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { FileText, File, FileImage, ChevronRight } from "lucide-react";
 
 export default function Step2Upload() {
   const [, setLocation] = useLocation();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const documents = [
+  const [documents, setDocuments] = useState([
     { name: "Meeting Pack.pdf", type: "PDF", status: "Readable", size: "2.1 MB", icon: <FileText className="w-5 h-5 text-[#2c4b7e]" /> },
     { name: "Quarterly Notes.docx", type: "Word", status: "Readable", size: "1.1 MB", icon: <File className="w-5 h-5 text-[#2c4b7e]" /> },
     { name: "Budget Presentation.pptx", type: "PowerPoint", status: "Readable", size: "1.4 MB", icon: <FileImage className="w-5 h-5 text-[#d35400]" /> },
-  ];
+  ]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newDocs = Array.from(e.target.files).map(file => {
+        const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
+        
+        let type = "Document";
+        let icon = <FileText className="w-5 h-5 text-[#2c4b7e]" />;
+        
+        if (file.name.toLowerCase().endsWith('.pdf')) {
+          type = "PDF";
+        } else if (file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx')) {
+          type = "Word";
+          icon = <File className="w-5 h-5 text-[#2c4b7e]" />;
+        } else if (file.name.toLowerCase().endsWith('.ppt') || file.name.toLowerCase().endsWith('.pptx')) {
+          type = "PowerPoint";
+          icon = <FileImage className="w-5 h-5 text-[#d35400]" />;
+        } else if (file.type.startsWith('image/')) {
+          type = "Image";
+          icon = <FileImage className="w-5 h-5 text-[#2c4b7e]" />;
+        }
+
+        return {
+          name: file.name,
+          type,
+          status: "Readable",
+          size: `${sizeInMB === "0.0" ? "< 0.1" : sizeInMB} MB`,
+          icon
+        };
+      });
+
+      setDocuments([...documents, ...newDocs]);
+      // Reset input so the same file can be uploaded again if needed
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="p-10 max-w-4xl">
@@ -20,7 +62,17 @@ export default function Step2Upload() {
 
       <div className="mb-10">
         <p className="text-[17px] text-[#333] mb-4">Do you have documents to upload?</p>
-        <Button className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium">
+        <input 
+          type="file" 
+          multiple 
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          className="hidden" 
+        />
+        <Button 
+          onClick={triggerUpload}
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+        >
           Upload Files
         </Button>
       </div>
@@ -64,6 +116,7 @@ export default function Step2Upload() {
         </Button>
         <Button 
           variant="outline"
+          onClick={triggerUpload}
           className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white border-0 px-6 py-5 text-base rounded-sm shadow-md font-medium"
         >
           + Add More Files <ChevronRight className="w-4 h-4 ml-1" />
