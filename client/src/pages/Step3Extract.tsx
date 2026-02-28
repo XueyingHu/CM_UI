@@ -13,22 +13,29 @@ export default function Step3Extract() {
     return () => clearTimeout(timer);
   }, []);
 
-  const extractionResults = [
-    { label: "Risk Events", source: "(Quarterly Notes.docx)", found: true },
-    { label: "ORAC Issues", source: "(Quarterly Notes.docx)", found: true },
-    { label: "Key Risk Indicators", source: "(Meeting Pack.pdf)", found: true },
-    { label: "Key Staff / Org Change", source: "Not Found", found: false },
-    { label: "Business Process Change", source: "(Meeting Pack.pdf)", found: true },
-    { label: "Critical Change Program", source: "(Quarterly Notes.docx)", found: true },
-    { label: "Macro External Event", source: "Not Found", found: false },
-    { label: "Regulatory Exam/Inquiry", source: "(Meeting Pack.pdf)", found: true },
-    { label: "Other Notable Items", source: "(Meeting Pack.pdf)", found: true },
-  ];
-
-  const opsResults = [
-    { label: "Risk Events", source: "(Budget Presentation.pptx)", found: true },
-    { label: "ORAC Issues", source: "Not Found", found: false },
-    { label: "Key Risk Indicators", source: "(Budget Presentation.pptx)", found: true },
+  const meetingResults = [
+    {
+      title: "Risk Management Forum - Q1 Meeting",
+      results: [
+        { label: "Risk Events", source: "(Quarterly Notes.docx)", found: true },
+        { label: "ORAC Issues", source: "(Quarterly Notes.docx)", found: true },
+        { label: "Key Risk Indicators", source: "(Meeting Pack.pdf)", found: true },
+        { label: "Key Staff / Org Change", source: "Not Found", found: false },
+        { label: "Business Process Change", source: "(Meeting Pack.pdf)", found: true },
+        { label: "Critical Change Program", source: "(Quarterly Notes.docx)", found: true },
+        { label: "Macro External Event", source: "Not Found", found: false },
+        { label: "Regulatory Exam/Inquiry", source: "(Meeting Pack.pdf)", found: true },
+        { label: "Other Notable Items", source: "(Meeting Pack.pdf)", found: true },
+      ]
+    },
+    {
+      title: "Ops Improvement Meeting - March 2022",
+      results: [
+        { label: "Risk Events", source: "(Budget Presentation.pptx)", found: true },
+        { label: "ORAC Issues", source: "Not Found", found: false },
+        { label: "Key Risk Indicators", source: "(Budget Presentation.pptx)", found: true },
+      ]
+    }
   ];
 
   return (
@@ -47,69 +54,36 @@ export default function Step3Extract() {
       </div>
 
       <div className="mb-8">
-        <h2 className="text-[17px] font-bold text-[#1e3a6a] mb-4">
-          Risk Management Forum - Q1 Meeting
-        </h2>
-        
-        <div className="flex flex-col border border-[#c5cdd4] rounded-sm bg-white shadow-sm overflow-hidden mb-8">
-          {extractionResults.map((item, index) => (
-            <div 
-              key={index}
-              className={`flex items-center gap-2 p-3 border-b border-[#e0e4e8] last:border-b-0 ${item.found ? 'bg-white' : 'bg-white'}`}
-            >
-              <div className="w-5 flex justify-center">
-                {item.found ? (
-                  <Check className="w-5 h-5 text-[#2c7a3f]" strokeWidth={3} />
-                ) : (
-                  <X className="w-5 h-5 text-[#c93b3b]" strokeWidth={3} />
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 text-[15px]">
-                <span className="text-[#333] font-medium">{item.label}</span>
-                {item.found ? (
-                  <Check className="w-4 h-4 text-[#2c7a3f]" strokeWidth={3} />
-                ) : (
-                  <X className="w-4 h-4 text-[#c93b3b]" strokeWidth={3} />
-                )}
-                <span className={item.found ? "text-[#1e3a6a] italic font-medium" : "text-[#c93b3b] font-medium"}>
-                  {item.source}
-                </span>
-              </div>
+        {meetingResults.map((meeting, mIndex) => (
+          <div key={mIndex} className="mb-8 last:mb-0">
+            <h2 className="text-[17px] font-bold text-[#1e3a6a] mb-4">
+              {meeting.title}
+            </h2>
+            
+            <div className="flex flex-col border border-[#c5cdd4] rounded-sm bg-white shadow-sm overflow-hidden">
+              {meeting.results.map((item, index) => (
+                <div 
+                  key={index}
+                  className="flex items-center gap-2 p-3 border-b border-[#e0e4e8] last:border-b-0 bg-white"
+                >
+                  <div className="w-5 flex justify-center">
+                    {item.found ? (
+                      <Check className="w-5 h-5 text-[#2c7a3f]" strokeWidth={3} />
+                    ) : (
+                      <X className="w-5 h-5 text-[#c93b3b]" strokeWidth={3} />
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[15px]">
+                    <span className="text-[#333] font-medium">{item.label}</span>
+                    <span className={item.found ? "text-[#1e3a6a] italic font-medium ml-1" : "text-[#c93b3b] font-medium ml-1"}>
+                      {item.source}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <h2 className="text-[17px] font-bold text-[#1e3a6a] mb-4">
-          Ops Improvement Meeting - March 2022
-        </h2>
-
-        <div className="flex flex-col border border-[#c5cdd4] rounded-sm bg-white shadow-sm overflow-hidden mb-8">
-          {opsResults.map((item, index) => (
-            <div 
-              key={index}
-              className={`flex items-center gap-2 p-3 border-b border-[#e0e4e8] last:border-b-0 bg-white`}
-            >
-              <div className="w-5 flex justify-center">
-                {item.found ? (
-                  <Check className="w-5 h-5 text-[#2c7a3f]" strokeWidth={3} />
-                ) : (
-                  <X className="w-5 h-5 text-[#c93b3b]" strokeWidth={3} />
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 text-[15px]">
-                <span className="text-[#333] font-medium">{item.label}</span>
-                {item.found ? (
-                  <Check className="w-4 h-4 text-[#2c7a3f]" strokeWidth={3} />
-                ) : (
-                  <X className="w-4 h-4 text-[#c93b3b]" strokeWidth={3} />
-                )}
-                <span className={item.found ? "text-[#1e3a6a] italic font-medium" : "text-[#c93b3b] font-medium"}>
-                  {item.source}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
       
       {/* Absolute positioned buttons like in the screenshot */}
