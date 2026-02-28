@@ -14,7 +14,14 @@ const DOMAINS = [
 
 export default function Step1Domain() {
   const [, setLocation] = useLocation();
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(
+    () => sessionStorage.getItem("selectedDomain") || null
+  );
+
+  const handleDomainSelect = (domain: string) => {
+    setSelectedDomain(domain);
+    sessionStorage.setItem("selectedDomain", domain);
+  };
 
   return (
     <div className="p-10 max-w-4xl">
@@ -52,7 +59,7 @@ export default function Step1Domain() {
               return (
                 <div 
                   key={index}
-                  onClick={() => setSelectedDomain(domain)}
+                  onClick={() => handleDomainSelect(domain)}
                   className={`flex items-center gap-3 px-3 py-2.5 border-b border-[#e0e4e8] last:border-b-0 hover:bg-[#e6ebf1] cursor-pointer ${isEven ? 'bg-[#f4f6f8]' : 'bg-white'}`}
                 >
                   {isSelected ? (
