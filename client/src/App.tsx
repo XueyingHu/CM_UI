@@ -5,14 +5,24 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
+import Sidebar from "@/components/Sidebar";
+import Dashboard from "@/pages/Dashboard";
+import DocumentAnalysis from "@/pages/DocumentAnalysis";
+import StructuredData from "@/pages/StructuredData";
+
 function Router() {
   return (
-    <Switch>
-      {/* Add pages below */}
-      {/* <Route path="/" component={Home}/> */}
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
-    </Switch>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <Sidebar />
+      <main className="flex-1 overflow-y-auto w-full">
+        <Switch>
+          <Route path="/" component={Dashboard}/>
+          <Route path="/document-analysis" component={DocumentAnalysis}/>
+          <Route path="/structured-data" component={StructuredData}/>
+          <Route component={NotFound} />
+        </Switch>
+      </main>
+    </div>
   );
 }
 
