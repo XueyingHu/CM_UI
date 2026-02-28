@@ -74,32 +74,19 @@ export default function Step4Synthesize() {
 
       {/* Footer / Pagination Actions */}
       <div className="flex justify-between items-center max-w-4xl mt-12 mb-8">
-        <div className="flex-1" />
-        
-        <div className="flex items-center justify-center flex-1">
-          <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <span className="text-[15px] font-medium text-[#333] mx-2">Page 2 of 2</span>
-          <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex items-center justify-end gap-3 flex-1">
-          <Button 
-            onClick={() => setLocation("/step-3")}
-            className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
-          >
-            Back
-          </Button>
-          <Button 
-            onClick={() => setLocation("/step-5")}
-            className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
-          >
-            Next <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
-        </div>
+        <Button 
+          variant="outline"
+          onClick={() => setLocation("/step-3")}
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+        >
+          Back
+        </Button>
+        <Button 
+          onClick={() => setLocation("/step-5")}
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+        >
+          Next <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
       </div>
     </div>
   );
