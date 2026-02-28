@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/pages/Dashboard";
 import Step1Domain from "@/pages/Step1Domain";
+import Step2Upload from "@/pages/Step2Upload";
 import DocumentAnalysis from "@/pages/DocumentAnalysis";
 import StructuredData from "@/pages/StructuredData";
 import { Bell, Mail, Menu } from "lucide-react";
@@ -34,6 +35,7 @@ function Router() {
           <Switch>
             <Route path="/" component={Dashboard}/>
             <Route path="/step-1" component={Step1Domain}/>
+            <Route path="/step-2" component={Step2Upload}/>
             <Route path="/document-analysis" component={DocumentAnalysis}/>
             <Route path="/structured-data" component={StructuredData}/>
             <Route component={NotFound} />
