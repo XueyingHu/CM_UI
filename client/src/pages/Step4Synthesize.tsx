@@ -49,7 +49,7 @@ export default function Step4Synthesize() {
       </div>
 
       {/* Footer / Pagination Actions */}
-      <div className="flex justify-between items-center max-w-4xl mt-12 mb-8">
+      <div className="flex justify-between mt-8">
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-3")}

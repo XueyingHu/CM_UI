@@ -41,36 +41,33 @@ export default function Step5Validate() {
       </div>
 
       {/* Footer / Pagination Actions */}
-      <div className="flex justify-between items-center max-w-5xl mt-12 mb-8">
-        <div className="flex-1" />
-        
-        <div className="flex items-center justify-center flex-1">
-          <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
-            <ChevronsLeft className="w-5 h-5" />
-          </button>
-          <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <span className="text-[15px] font-medium text-[#333] mx-2">Page 1 of 2</span>
-          <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="flex items-center justify-center mt-8 mb-4">
+        <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
+          <ChevronsLeft className="w-5 h-5" />
+        </button>
+        <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+        <span className="text-[15px] font-medium text-[#333] mx-2">Page 1 of 2</span>
+        <button className="p-2 text-[#1e3a6a] hover:bg-slate-100 rounded-sm">
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      </div>
 
-        <div className="flex items-center justify-end gap-3 flex-1">
-          <Button 
-            onClick={() => setLocation("/step-4")}
-            className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
-          >
-            Back
-          </Button>
-          <Button 
-            onClick={() => setLocation("/step-6")}
-            className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
-          >
-            Next <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
-        </div>
+      <div className="flex justify-between mt-8">
+        <Button 
+          variant="outline"
+          onClick={() => setLocation("/step-4")}
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+        >
+          Back
+        </Button>
+        <Button 
+          onClick={() => setLocation("/step-6")}
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+        >
+          Next <ChevronRight className="w-4 h-4 ml-1" />
+        </Button>
       </div>
     </div>
   );

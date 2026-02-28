@@ -79,18 +79,18 @@ export default function Step1Domain() {
         </div>
       </div>
 
-      <div className="flex justify-between max-w-[600px]">
+      <div className="flex justify-between mt-8">
         <Button 
           variant="outline"
           onClick={() => setLocation("/")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-10 py-5 text-base rounded-sm shadow-sm font-medium"
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
         >
           Back
         </Button>
         <Button 
           onClick={() => setLocation("/step-2")}
           disabled={!selectedDomain}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-10 py-5 text-base rounded-sm shadow-md font-medium disabled:opacity-50"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium disabled:opacity-50"
         >
           Next
         </Button>

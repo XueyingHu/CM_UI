@@ -129,7 +129,7 @@ export default function Step2Upload() {
       
       <div className="w-full h-px bg-slate-200 mb-8" />
 
-      <div className="flex justify-between items-center max-w-[600px]">
+      <div className="flex justify-between mt-8">
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-1")}

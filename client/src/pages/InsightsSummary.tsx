@@ -172,7 +172,7 @@ export default function InsightsSummary() {
         </div>
       </div>
 
-      <div className="flex justify-start mt-8">
+      <div className="flex justify-between mt-8">
         <button 
           onClick={() => setLocation("/expand-search")}
           className="bg-white hover:bg-slate-50 text-[#1e3a6a] border border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium flex items-center"

@@ -39,7 +39,7 @@ export default function Step3Extract() {
   ];
 
   return (
-    <div className="p-10 max-w-4xl relative min-h-full pb-24">
+    <div className="p-10 max-w-4xl">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6">Step 3: Extract Key Information</h1>
         <div className="w-full h-px bg-slate-200 mb-6" />
@@ -86,11 +86,11 @@ export default function Step3Extract() {
         ))}
       </div>
       
-      {/* Absolute positioned buttons like in the screenshot */}
-      <div className="absolute bottom-10 right-10 flex items-center gap-3">
+      <div className="flex justify-between mt-8">
         <Button 
+          variant="outline"
           onClick={() => setLocation("/step-2")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
         >
           Back
         </Button>
