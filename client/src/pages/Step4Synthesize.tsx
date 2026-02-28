@@ -2,40 +2,16 @@ import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 
-const INSIGHTS = [
-  {
-    title: "Risk Events",
-    content: "A major system outage due to server failure and a fraud incident in the APAC region highlighted vulnerabilities in technology resilience and regional controls. Peak activity periods were identified as critical risk points."
-  },
-  {
-    title: "ORAC Issues",
-    content: "Multiple ORAC issues remain unresolved with extended remediation delays. Weak ownership and reliance on manual processes were noted."
-  },
-  {
-    title: "Key Risk Indicators",
-    content: "Several KRIs breached thresholds in trading operations, indicating rising operational risk exposure and incident frequency."
-  },
-  {
-    title: "Key Staff and Organizational Changes",
-    content: "No significant staff or organizational changes wee noted, raising concerns about succession planning and key person risks."
-  },
-  {
-    title: "Business Process Changes",
-    content: "The new AML monitoring tool was noted as beneficial, but inconsistent adoption and training gaps were observed."
-  },
-  {
-    title: "Critical Change Programs and Status",
-    content: "The digital transformation program is delayed, increasing execution risks and dependency concerns."
-  },
-  {
-    title: "Macro External Events",
-    content: "No major external events were discussed, but geopolitical and market volatility were referenced as ongoing risks."
-  },
-  {
-    title: "Regulatory Exam, Inquiry, or Requirement Changes",
-    content: "Upcoming regulatory attention on data privacy was emphasized, with gaps in current compliance readiness highlighted."
-  }
-];
+const INSIGHTS_DICT: Record<string, string> = {
+  "Risk Events": "A major system outage due to server failure and a fraud incident in the APAC region highlighted vulnerabilities in technology resilience and regional controls. Peak activity periods were identified as critical risk points.",
+  "ORAC Issues": "Multiple ORAC issues remain unresolved with extended remediation delays. Weak ownership and reliance on manual processes were noted.",
+  "Key Risk Indicators": "Several KRIs breached thresholds in trading operations, indicating rising operational risk exposure and incident frequency.",
+  "Key Staff and Organizational Changes": "No significant staff or organizational changes wee noted, raising concerns about succession planning and key person risks.",
+  "Business Process Changes": "The new AML monitoring tool was noted as beneficial, but inconsistent adoption and training gaps were observed.",
+  "Critical Change Programs and Status": "The digital transformation program is delayed, increasing execution risks and dependency concerns.",
+  "Macro External Events": "No major external events were discussed, but geopolitical and market volatility were referenced as ongoing risks.",
+  "Regulatory Exam, Inquiry, or Requirement Changes": "Upcoming regulatory attention on data privacy was emphasized, with gaps in current compliance readiness highlighted."
+};
 
 export default function Step4Synthesize() {
   const [, setLocation] = useLocation();
@@ -57,14 +33,14 @@ export default function Step4Synthesize() {
           </div>
           
           <div className="p-4 px-6 flex flex-col gap-4">
-            {INSIGHTS.map((insight, index) => (
+            {Object.entries(INSIGHTS_DICT).map(([title, content], index) => (
               <div key={index} className="flex flex-col gap-2">
                 <div className="flex items-center gap-4">
-                  <span className="text-[14px] font-bold text-[#1e3a6a] whitespace-nowrap">{insight.title}</span>
+                  <span className="text-[14px] font-bold text-[#1e3a6a] whitespace-nowrap">{title}</span>
                   <div className="flex-1 h-px bg-slate-200 mt-1" />
                 </div>
                 <p className="text-[14px] text-[#333] leading-relaxed">
-                  {insight.content}
+                  {content}
                 </p>
               </div>
             ))}
