@@ -2,7 +2,6 @@ import { useState } from "react";
 import { CheckCircle2, Circle, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { updateSession } from "@/lib/api";
 
 const DOMAINS = [
   "Market Tech - Pre-Trade",
@@ -22,7 +21,6 @@ export default function Step1Domain() {
   const handleDomainSelect = (domain: string) => {
     setSelectedDomain(domain);
     sessionStorage.setItem("selectedDomain", domain);
-    updateSession({ domain, currentStep: 1 });
   };
 
   return (
@@ -34,9 +32,7 @@ export default function Step1Domain() {
       </header>
 
       <div className="mb-8 max-w-[600px]">
-        {/* Fake Open Dropdown */}
         <div className="border border-[#c5cdd4] rounded-sm bg-white shadow-sm flex flex-col">
-          {/* Selected Value Header */}
           <div className="flex items-center justify-between p-3 border-b border-[#c5cdd4] bg-[#f4f6f8] cursor-pointer hover:bg-[#e6ebf1]">
             <div className="flex items-center gap-3">
               {selectedDomain ? (
@@ -53,7 +49,6 @@ export default function Step1Domain() {
             <ChevronDown className="w-5 h-5 text-[#1e3a6a]" />
           </div>
           
-          {/* Dropdown Options */}
           <div className="flex flex-col">
             {DOMAINS.map((domain, index) => {
               const isEven = index % 2 === 0;
@@ -61,6 +56,7 @@ export default function Step1Domain() {
               return (
                 <div 
                   key={index}
+                  data-testid={`domain-option-${index}`}
                   onClick={() => handleDomainSelect(domain)}
                   className={`flex items-center gap-3 px-3 py-2.5 border-b border-[#e0e4e8] last:border-b-0 hover:bg-[#e6ebf1] cursor-pointer ${isEven ? 'bg-[#f4f6f8]' : 'bg-white'}`}
                 >

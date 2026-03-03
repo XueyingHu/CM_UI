@@ -1,13 +1,37 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Check, ChevronDown, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
-import { getReviewItems, updateReviewItemAction, getSessionId } from "@/lib/api";
+
+interface ReviewRow {
+  id: string;
+  eventId: string;
+  title: string;
+  rating: string;
+  status: string;
+  opened: string;
+  owner: string;
+  action: string | null;
+}
+
+const EXPAND_DATA: Record<string, ReviewRow[]> = {
+  events: [
+    { id: "e1", eventId: "EVENT 117502", title: "System failure causing delayed payment processing", rating: "Major", status: "Open", opened: "08/10/2024", owner: "S. Brown", action: null },
+    { id: "e2", eventId: "EVENT 118643", title: "Recurring ACH fraud incidents detected", rating: "Critical", status: "Open", opened: "07/25/2024", owner: "D. Turner", action: null },
+    { id: "e3", eventId: "EVENT 119205", title: "Third-party outage impacting payment reconciliations", rating: "Major", status: "Open", opened: "08/02/2024", owner: "D. Harris", action: null },
+  ],
+  issues: [
+    { id: "e4", eventId: "ISSUE 410293", title: "Data privacy compliance gap in new customer onboarding", rating: "High", status: "Open", opened: "08/15/2024", owner: "L. Chen", action: null },
+    { id: "e5", eventId: "ISSUE 412558", title: "Missing sign-off on Q2 financial reconciliation", rating: "Medium", status: "Open", opened: "07/10/2024", owner: "B. White", action: null },
+  ],
+  changes: [
+    { id: "e6", eventId: "CHG 90221", title: "Migration to new cloud infrastructure provider", rating: "High", status: "Planning", opened: "09/20/2024", owner: "Cloud Team", action: null },
+  ],
+};
 
 export default function ExpandSearch() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("events");
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [items, setItems] = useState<Record<string, ReviewRow[]>>(EXPAND_DATA);
 
   const [isDateOpen, setIsDateOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
@@ -21,25 +45,18 @@ export default function ExpandSearch() {
   const statusOptions = ["Open", "Closed", "Pending", "All Statuses"];
   const ratingOptions = ["Critical, Major", "Critical Only", "Major, Medium", "All Ratings"];
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      setLoading(true);
-      const data = await getReviewItems(activeTab, "expand");
-      setItems(data);
-      setLoading(false);
-    };
-    fetchItems();
-  }, [activeTab]);
+  const currentItems = items[activeTab] || [];
+  const acceptedCount = currentItems.filter(i => i.action === 'accepted').length;
 
-  const handleAction = async (id: string, action: 'accepted' | 'deleted') => {
-    const updated = await updateReviewItemAction(id, action);
-    setItems(prev => prev.map(item => item.id === id ? updated : item));
+  const handleAction = (id: string, action: 'accepted' | 'deleted') => {
+    setItems(prev => ({
+      ...prev,
+      [activeTab]: prev[activeTab].map(item => item.id === id ? { ...item, action } : item),
+    }));
   };
 
-  const acceptedCount = items.filter(i => i.action === 'accepted').length;
-
   return (
-    <div className="p-10 max-w-5xl relative min-h-full pb-32">
+    <div className="p-10 max-w-5xl">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6 flex items-center gap-2">
           Expand Search Criteria <span className="text-[18px] text-[#1e3a6a] font-normal">(optional)</span>
@@ -48,24 +65,19 @@ export default function ExpandSearch() {
       </header>
 
       <div className="flex mb-6">
-        <div 
-          onClick={() => setActiveTab("events")}
-          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "events" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
-        >
-          ORAC Risk Events
-        </div>
-        <div 
-          onClick={() => setActiveTab("issues")}
-          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "issues" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
-        >
-          ORAC Issues
-        </div>
-        <div 
-          onClick={() => setActiveTab("changes")}
-          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "changes" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
-        >
-          Navigator Changes
-        </div>
+        {[
+          { key: "events", label: "ORAC Risk Events" },
+          { key: "issues", label: "ORAC Issues" },
+          { key: "changes", label: "Navigator Changes" },
+        ].map((tab, i) => (
+          <div 
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === tab.key ? "bg-[#1e3a6a] text-white border-r border-white/20" : `bg-[#f4f6f8] text-[#333] border ${i > 0 ? 'border-l-0' : ''} border-[#c5cdd4] hover:bg-[#e6ebf1]`}`}
+          >
+            {tab.label}
+          </div>
+        ))}
       </div>
 
       <div className="mb-6">
@@ -186,14 +198,12 @@ export default function ExpandSearch() {
 
       <div className="mb-4">
         <p className="text-[14px] text-[#333]">
-          Returned <span className="font-bold">{items.length} items</span> | <span className="text-[#1e3a6a]">Accepted so far: <span className="font-bold">{acceptedCount}</span></span>
+          Returned <span className="font-bold">{currentItems.length} items</span> | <span className="text-[#1e3a6a]">Accepted so far: <span className="font-bold">{acceptedCount}</span></span>
         </p>
       </div>
 
       <div className="w-full">
-        {loading ? (
-          <p className="text-[15px] text-[#333]">Loading items...</p>
-        ) : items.length === 0 ? (
+        {currentItems.length === 0 ? (
           <p className="text-[15px] text-[#999]">No items found for this category.</p>
         ) : (
           <table className="w-full text-left border-collapse border border-[#e0e4e8]">
@@ -209,30 +219,18 @@ export default function ExpandSearch() {
               </tr>
             </thead>
             <tbody>
-              {items.map((row) => {
+              {currentItems.map((row) => {
                 const isDeleted = row.action === 'deleted';
                 const isAccepted = row.action === 'accepted';
                 
                 return (
                 <tr key={row.id} className={`border-b border-[#e0e4e8] last:border-0 ${isDeleted ? 'bg-slate-50 opacity-40' : 'bg-white'}`}>
-                  <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">
-                    {row.eventId}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333] leading-snug whitespace-pre-line">
-                    {row.title}
-                  </td>
-                  <td className={`py-4 px-4 text-[14px] ${row.rating === 'Critical' ? 'text-[#c93b3b]' : 'text-[#333]'}`}>
-                    {row.rating}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333]">
-                    {row.status}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333]">
-                    {row.opened}
-                  </td>
-                  <td className="py-4 px-4 text-[14px] text-[#333]">
-                    {row.owner}
-                  </td>
+                  <td className="py-4 px-4 text-[14px] text-[#1e3a6a] font-bold">{row.eventId}</td>
+                  <td className="py-4 px-4 text-[14px] text-[#333] leading-snug whitespace-pre-line">{row.title}</td>
+                  <td className={`py-4 px-4 text-[14px] ${row.rating === 'Critical' ? 'text-[#c93b3b]' : 'text-[#333]'}`}>{row.rating}</td>
+                  <td className="py-4 px-4 text-[14px] text-[#333]">{row.status}</td>
+                  <td className="py-4 px-4 text-[14px] text-[#333]">{row.opened}</td>
+                  <td className="py-4 px-4 text-[14px] text-[#333]">{row.owner}</td>
                   <td className="py-2 px-4 flex flex-col gap-1.5 min-w-[100px]">
                     {!isAccepted && !isDeleted ? (
                       <>

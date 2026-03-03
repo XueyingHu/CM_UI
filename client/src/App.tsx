@@ -1,6 +1,4 @@
 import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -23,7 +21,6 @@ import { Bell, Mail, Menu } from "lucide-react";
 function Router() {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white">
-      {/* Top Header */}
       <header className="h-12 bg-[#2c4b7e] flex items-center justify-between px-4 shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-4 h-4 bg-white/30 rounded-sm"></div>
@@ -62,12 +59,10 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Router />
+    </TooltipProvider>
   );
 }
 

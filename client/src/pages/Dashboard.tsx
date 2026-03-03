@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { getOrCreateSession } from "@/lib/api";
 
 const MAIN_STEPS = [
   "Select business domain",
@@ -13,11 +12,6 @@ const MAIN_STEPS = [
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-
-  const handleStart = async () => {
-    await getOrCreateSession();
-    setLocation("/step-1");
-  };
 
   return (
     <div className="p-10 max-w-4xl">
@@ -45,7 +39,7 @@ export default function Dashboard() {
       <div className="flex justify-end">
         <Button 
           data-testid="button-get-started"
-          onClick={handleStart}
+          onClick={() => setLocation("/step-1")}
           className="bg-[#2c4b7e] hover:bg-[#1e3a6a] text-white px-8 py-6 text-lg rounded-sm shadow-md font-medium"
         >
           Get Started

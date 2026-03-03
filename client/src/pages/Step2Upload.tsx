@@ -1,8 +1,15 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 import { FileText, File, FileImage, ChevronRight, X } from "lucide-react";
-import { addDocument, getDocuments, removeDocument as removeDocApi } from "@/lib/api";
+
+interface DocItem {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  size: string;
+}
 
 function getDocIcon(type: string) {
   if (type === "PDF") return <FileText className="w-5 h-5 text-[#2c4b7e]" />;
@@ -11,24 +18,22 @@ function getDocIcon(type: string) {
   return <FileText className="w-5 h-5 text-[#2c4b7e]" />;
 }
 
+const DEFAULT_DOCS: DocItem[] = [
+  { id: "1", name: "Meeting Pack.pdf", type: "PDF", status: "Readable", size: "2.1 MB" },
+  { id: "2", name: "Quarterly Notes.docx", type: "Word", status: "Readable", size: "1.1 MB" },
+  { id: "3", name: "Budget Presentation.pptx", type: "PowerPoint", status: "Readable", size: "1.4 MB" },
+];
+
+let nextId = 4;
+
 export default function Step2Upload() {
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [documents, setDocuments] = useState<DocItem[]>(DEFAULT_DOCS);
 
-  useEffect(() => {
-    getDocuments().then(docs => {
-      setDocuments(docs);
-      setLoading(false);
-    });
-  }, []);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-      
-      for (const file of files) {
+      const newDocs = Array.from(e.target.files).map(file => {
         const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
         let type = "Document";
         if (file.name.toLowerCase().endsWith('.pdf')) type = "PDF";
@@ -36,15 +41,16 @@ export default function Step2Upload() {
         else if (file.name.toLowerCase().endsWith('.ppt') || file.name.toLowerCase().endsWith('.pptx')) type = "PowerPoint";
         else if (file.type.startsWith('image/')) type = "Image";
 
-        const doc = await addDocument({
+        return {
+          id: String(nextId++),
           name: file.name,
           type,
           status: "Readable",
           size: `${sizeInMB === "0.0" ? "< 0.1" : sizeInMB} MB`,
-        });
-        setDocuments(prev => [...prev, doc]);
-      }
+        };
+      });
 
+      setDocuments(prev => [...prev, ...newDocs]);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -53,8 +59,7 @@ export default function Step2Upload() {
     fileInputRef.current?.click();
   };
 
-  const handleRemove = async (docId: string) => {
-    await removeDocApi(docId);
+  const removeDocument = (docId: string) => {
     setDocuments(documents.filter(d => d.id !== docId));
   };
 
@@ -90,9 +95,7 @@ export default function Step2Upload() {
         
         <div className="w-full h-px bg-slate-200 mb-4" />
 
-        {loading ? (
-          <p className="text-[15px] text-[#333]">Loading documents...</p>
-        ) : documents.length === 0 ? (
+        {documents.length === 0 ? (
           <p className="text-[15px] text-[#999]">No documents uploaded yet.</p>
         ) : (
           <div className="flex flex-col gap-3">
@@ -116,7 +119,7 @@ export default function Step2Upload() {
                 </div>
                 <button 
                   data-testid={`button-remove-${doc.id}`}
-                  onClick={() => handleRemove(doc.id)}
+                  onClick={() => removeDocument(doc.id)}
                   className="text-[#c93b3b] hover:text-[#9c2e2e] text-[14px] font-medium flex items-center gap-1 transition-colors"
                 >
                   <X className="w-4 h-4" /> Remove
