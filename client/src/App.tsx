@@ -25,7 +25,7 @@ import ReviewPublish from "@/pages/ReviewPublish";
 import { Bell, Mail, Menu } from "lucide-react";
 
 function Router() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [selectedDomain, setSelectedDomain] = useState<string | null>(
     sessionStorage.getItem("selectedDomain")
   );
@@ -53,7 +53,11 @@ function Router() {
         </div>
         <div className="flex items-center gap-4 text-white">
           {selectedDomain && (
-            <span data-testid="text-selected-domain" className="text-sm font-medium mr-2">
+            <span
+              data-testid="text-selected-domain"
+              onClick={() => setLocation("/domain-home")}
+              className="text-sm font-medium mr-2 hover:underline cursor-pointer"
+            >
               Selected Domain: {selectedDomain}
             </span>
           )}
