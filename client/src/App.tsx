@@ -52,7 +52,7 @@ function Router() {
           <div className="w-4 h-4 bg-white/30 rounded-sm"></div>
         </div>
         <div className="flex items-center gap-4 text-white">
-          {selectedDomain && (
+          {selectedDomain && location !== "/" && location !== "/step-1" && (
             <Link
               data-testid="text-selected-domain"
               href="/domain-home"
