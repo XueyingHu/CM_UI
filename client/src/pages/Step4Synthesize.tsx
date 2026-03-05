@@ -21,13 +21,13 @@ export default function Step4Synthesize() {
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6">Step 4: Synthesize Insights</h1>
         <div className="w-full h-px bg-slate-200 mb-6" />
-        <p className="text-[15px] text-[#333] mb-6">Summarizing key insights from the documents.</p>
+        <p className="text-sm text-[#333] mb-6">Summarizing key insights from the documents.</p>
       </header>
 
       <div className="mb-8">
         <div className="border border-[#c5cdd4] rounded-sm bg-white shadow-sm overflow-hidden mb-6">
           <div className="bg-[#e6f0fa] border-b border-[#c5cdd4] p-3 px-4">
-            <h2 className="text-[16px] font-bold text-[#1e3a6a]">
+            <h2 className="text-base font-bold text-[#1e3a6a]">
               Risk Management Forum - Q1 Meeting
             </h2>
           </div>
@@ -53,13 +53,13 @@ export default function Step4Synthesize() {
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-3")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+          className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Back
         </Button>
         <Button 
           onClick={() => setLocation("/step-5")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Next <ChevronRight className="w-4 h-4 ml-1" />
         </Button>

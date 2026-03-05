@@ -28,10 +28,10 @@ export default function DomainHome() {
           <div className="flex-1 border border-[#c5cdd4] rounded-sm bg-white shadow-sm flex flex-col overflow-hidden">
             <div className="bg-[#2c4b7e] px-5 py-3 flex items-center gap-3">
               <FileOutput className="w-6 h-6 text-white" />
-              <h2 className="text-[17px] font-bold text-white">Document to CM Insights</h2>
+              <h2 className="text-base font-bold text-white">Document to CM Insights</h2>
             </div>
             <div className="p-5 flex-1 flex flex-col">
-              <ul className="list-disc ml-5 space-y-2 text-[14px] text-[#333] mb-6 flex-1">
+              <ul className="list-disc ml-5 space-y-2 text-sm text-[#333] mb-6 flex-1">
                 <li>Upload CM related documents</li>
                 <li>AI generates summarized CM insights</li>
                 <li>Output aligned to Assure templates</li>
@@ -40,7 +40,7 @@ export default function DomainHome() {
                 <button
                   data-testid="button-start-document-insights"
                   onClick={() => setLocation("/step-1")}
-                  className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-6 py-2 rounded-sm shadow-sm"
+                  className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
                 >
                   Start
                 </button>
@@ -51,10 +51,10 @@ export default function DomainHome() {
           <div className="flex-1 border border-[#c5cdd4] rounded-sm bg-white shadow-sm flex flex-col overflow-hidden">
             <div className="bg-[#2c4b7e] px-5 py-3 flex items-center gap-3">
               <Network className="w-6 h-6 text-white" />
-              <h2 className="text-[17px] font-bold text-white">Audit Universe Mapping</h2>
+              <h2 className="text-base font-bold text-white">Audit Universe Mapping</h2>
             </div>
             <div className="p-5 flex-1 flex flex-col">
-              <ul className="list-disc ml-5 space-y-2 text-[14px] text-[#333] mb-6 flex-1">
+              <ul className="list-disc ml-5 space-y-2 text-sm text-[#333] mb-6 flex-1">
                 <li>AI pre-tags structured data points</li>
                 <li>PM & BMLs validate mappings</li>
                 <li>AI generates summarized insights</li>
@@ -63,7 +63,7 @@ export default function DomainHome() {
                 <button
                   data-testid="button-start-audit-mapping"
                   onClick={() => setLocation("/review-validate")}
-                  className="bg-[#2c4b7e] hover:bg-[#1e3a6a] text-white text-sm font-medium px-6 py-2 rounded-sm border border-[#1e3a6a] shadow-sm"
+                  className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
                 >
                   Start
                 </button>

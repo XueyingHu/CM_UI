@@ -125,7 +125,7 @@ export default function InsightsSummary() {
       <div className="space-y-8">
         <div>
           <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
-            <h2 className="text-[17px] font-bold text-[#1e3a6a]">Key Themes</h2>
+            <h2 className="text-base font-bold text-[#1e3a6a]">Key Themes</h2>
             <button className="text-[13px] text-[#1e3a6a] font-medium flex items-center">
               Modify <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -141,7 +141,7 @@ export default function InsightsSummary() {
 
         <div>
           <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
-            <h2 className="text-[17px] font-bold text-[#1e3a6a]">Emerging Risks</h2>
+            <h2 className="text-base font-bold text-[#1e3a6a]">Emerging Risks</h2>
             <button className="text-[13px] text-[#1e3a6a] font-medium flex items-center">
               Modify <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -157,7 +157,7 @@ export default function InsightsSummary() {
 
         <div>
           <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
-            <h2 className="text-[17px] font-bold text-[#1e3a6a]">Risk Impact Analysis</h2>
+            <h2 className="text-base font-bold text-[#1e3a6a]">Risk Impact Analysis</h2>
             <button className="text-[13px] text-[#1e3a6a] font-medium flex items-center">
               Modify <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -175,7 +175,7 @@ export default function InsightsSummary() {
       <div className="flex justify-between mt-8">
         <button 
           onClick={() => setLocation("/expand-search")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium flex items-center"
+          className="bg-white hover:bg-slate-50 text-[#333] border border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm flex items-center"
         >
           Back
         </button>

@@ -26,7 +26,7 @@ export default function Step5Validate() {
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6">Step 5: Validate Against Source Data</h1>
         <div className="w-full h-px bg-slate-200 mb-6" />
-        <p className="text-[15px] text-[#333] mb-6">Verifying and reconciling information against source data.</p>
+        <p className="text-sm text-[#333] mb-6">Verifying and reconciling information against source data.</p>
       </header>
 
       <div className="flex flex-col gap-6">
@@ -58,13 +58,13 @@ export default function Step5Validate() {
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-4")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+          className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Back
         </Button>
         <Button 
           onClick={() => setLocation("/step-6")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Next <ChevronRight className="w-4 h-4 ml-1" />
         </Button>

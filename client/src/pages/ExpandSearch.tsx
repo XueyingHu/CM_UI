@@ -59,7 +59,7 @@ export default function ExpandSearch() {
     <div className="p-10 max-w-5xl">
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6 flex items-center gap-2">
-          Expand Search Criteria <span className="text-[18px] text-[#1e3a6a] font-normal">(optional)</span>
+          Expand Search Criteria <span className="text-lg text-[#1e3a6a] font-normal">(optional)</span>
         </h1>
         <div className="w-full h-px bg-slate-200 mb-6" />
       </header>
@@ -81,7 +81,7 @@ export default function ExpandSearch() {
       </div>
 
       <div className="mb-6">
-        <p className="text-[15px] text-[#333] leading-relaxed">
+        <p className="text-sm text-[#333] leading-relaxed">
           Add additional search criteria to find more relevant items. Use filters or AI search to supplement your analysis.<br/>
           Please validate by accepting or deleting.
         </p>
@@ -267,13 +267,13 @@ export default function ExpandSearch() {
       <div className="flex justify-between mt-8">
         <button 
           onClick={() => setLocation("/review-validate")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium flex items-center"
+          className="bg-white hover:bg-slate-50 text-[#333] border border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm flex items-center"
         >
           Back
         </button>
         <button 
           onClick={() => setLocation("/insights-summary")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium flex items-center"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm flex items-center"
         >
           Next <ChevronRight className="w-4 h-4 ml-1" />
         </button>

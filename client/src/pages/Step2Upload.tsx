@@ -71,7 +71,7 @@ export default function Step2Upload() {
       </header>
 
       <div className="mb-10">
-        <p className="text-[17px] text-[#333] mb-4">Do you have documents to upload?</p>
+        <p className="text-sm text-[#333] mb-4">Do you have documents to upload?</p>
         <input 
           type="file" 
           multiple 
@@ -82,14 +82,14 @@ export default function Step2Upload() {
         <Button 
           data-testid="button-upload"
           onClick={triggerUpload}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Upload Files
         </Button>
       </div>
 
       <div className="mb-8">
-        <h2 className="text-[17px] font-bold text-[#1e3a6a] mb-4 flex items-center gap-1 cursor-pointer hover:underline">
+        <h2 className="text-base font-bold text-[#1e3a6a] mb-4 flex items-center gap-1 cursor-pointer hover:underline">
           Uploaded Documents Review <ChevronRight className="w-5 h-5" />
         </h2>
         
@@ -136,14 +136,14 @@ export default function Step2Upload() {
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-1")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+          className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Back
         </Button>
         <Button 
           data-testid="button-confirm"
           onClick={() => setLocation("/step-3")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Confirm & Continue
         </Button>

@@ -10,11 +10,11 @@ export default function Step6Summary() {
       <header className="mb-6">
         <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6">Step 6: Generate Executive Summary</h1>
         <div className="w-full h-px bg-slate-200 mb-6" />
-        <p className="text-[15px] text-[#333] mb-6">Review the consolidated executive summary below.</p>
+        <p className="text-sm text-[#333] mb-6">Review the consolidated executive summary below.</p>
       </header>
 
       <div className="mb-10">
-        <h2 className="text-[16px] font-bold text-[#1e3a6a] mb-4">Risk Overview Summary</h2>
+        <h2 className="text-base font-bold text-[#1e3a6a] mb-4">Risk Overview Summary</h2>
         
         <div className="grid grid-cols-3 gap-4">
           {/* Key Risk Areas */}
@@ -68,7 +68,7 @@ export default function Step6Summary() {
       </div>
 
       <div className="mb-10">
-        <h2 className="text-[16px] font-bold text-[#1e3a6a] mb-2">Forum Summary Insights</h2>
+        <h2 className="text-base font-bold text-[#1e3a6a] mb-2">Forum Summary Insights</h2>
         <div className="w-full h-[2px] bg-slate-200 mb-6" />
 
         <div className="mb-6">
@@ -105,13 +105,13 @@ export default function Step6Summary() {
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-5")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+          className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Back
         </Button>
         <Button 
           onClick={() => setLocation("/review-validate")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium flex items-center gap-2"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm flex items-center gap-2"
         >
           <Download className="w-5 h-5" /> Download Report
         </Button>

@@ -46,7 +46,7 @@ export default function Step3Extract() {
       </header>
 
       <div className="mb-10">
-        <p className="text-[15px] text-[#333] mb-4">Extracting key information from documents...</p>
+        <p className="text-sm text-[#333] mb-4">Extracting key information from documents...</p>
         <div className="flex items-center gap-4 max-w-[600px]">
           <Progress value={progress} className="h-6 flex-1 rounded-none border border-[#c5cdd4] bg-[#f4f6f8] [&>div]:bg-[#2c4b7e]" />
           <span className="font-bold text-[#333] min-w-[40px]">{progress}%</span>
@@ -56,7 +56,7 @@ export default function Step3Extract() {
       <div className="mb-8">
         {meetingResults.map((meeting, mIndex) => (
           <div key={mIndex} className="mb-8 last:mb-0">
-            <h2 className="text-[17px] font-bold text-[#1e3a6a] mb-4">
+            <h2 className="text-base font-bold text-[#1e3a6a] mb-4">
               {meeting.title}
             </h2>
             
@@ -90,13 +90,13 @@ export default function Step3Extract() {
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-2")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+          className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Back
         </Button>
         <Button 
           onClick={() => setLocation("/step-4")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Next <ChevronRight className="w-4 h-4 ml-1" />
         </Button>

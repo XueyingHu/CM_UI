@@ -68,7 +68,7 @@ export default function ReviewValidate() {
       </div>
 
       <div className="mb-6">
-        <p className="text-[15px] text-[#333] leading-relaxed">
+        <p className="text-sm text-[#333] leading-relaxed">
           We identified candidate {activeTab === "events" ? "Risk Events" : activeTab === "issues" ? "Issues" : "Navigator Changes"} for your domain using rules and AI semantic matching.
           <br />
           Please validate by accepting or deleting each item.
@@ -143,13 +143,13 @@ export default function ReviewValidate() {
         <Button 
           variant="outline"
           onClick={() => setLocation("/step-6")}
-          className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
+          className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Back
         </Button>
         <Button 
           onClick={() => setLocation("/expand-search")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white px-8 py-5 text-base rounded-sm shadow-md font-medium"
+          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Next <ChevronRight className="w-4 h-4 ml-1" />
         </Button>
