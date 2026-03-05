@@ -135,6 +135,7 @@ export default function DefineDomainDetails() {
             </button>
             <button
               data-testid="button-next-define-domain"
+              onClick={() => setLocation("/review-publish")}
               className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
             >
               Next

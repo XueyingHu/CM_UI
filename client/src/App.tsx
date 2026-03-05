@@ -19,6 +19,7 @@ import DocumentAnalysis from "@/pages/DocumentAnalysis";
 import StructuredData from "@/pages/StructuredData";
 import CreateDomain from "@/pages/CreateDomain";
 import DefineDomainDetails from "@/pages/DefineDomainDetails";
+import ReviewPublish from "@/pages/ReviewPublish";
 import { Bell, Mail, Menu } from "lucide-react";
 
 function Router() {
@@ -39,13 +40,14 @@ function Router() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {location !== "/" && location !== "/create-domain" && location !== "/define-domain" && <Sidebar />}
+        {location !== "/" && location !== "/create-domain" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
         <main className="flex-1 overflow-y-auto w-full bg-white">
           <Switch>
             <Route path="/" component={Welcome}/>
             <Route path="/get-started" component={Dashboard}/>
             <Route path="/create-domain" component={CreateDomain}/>
             <Route path="/define-domain" component={DefineDomainDetails}/>
+            <Route path="/review-publish" component={ReviewPublish}/>
             <Route path="/step-1" component={Step1Domain}/>
             <Route path="/step-2" component={Step2Upload}/>
             <Route path="/step-3" component={Step3Extract}/>
