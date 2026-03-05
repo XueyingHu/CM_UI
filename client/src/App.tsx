@@ -17,6 +17,7 @@ import ExpandSearch from "@/pages/ExpandSearch";
 import InsightsSummary from "@/pages/InsightsSummary";
 import DocumentAnalysis from "@/pages/DocumentAnalysis";
 import StructuredData from "@/pages/StructuredData";
+import DomainHome from "@/pages/DomainHome";
 import CreateDomain from "@/pages/CreateDomain";
 import DefineDomainDetails from "@/pages/DefineDomainDetails";
 import ReviewPublish from "@/pages/ReviewPublish";
@@ -40,10 +41,11 @@ function Router() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {location !== "/" && location !== "/create-domain" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
+        {location !== "/" && location !== "/domain-home" && location !== "/create-domain" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
         <main className="flex-1 overflow-y-auto w-full bg-white">
           <Switch>
             <Route path="/" component={Welcome}/>
+            <Route path="/domain-home" component={DomainHome}/>
             <Route path="/step-1" component={Dashboard}/>
             <Route path="/create-domain" component={CreateDomain}/>
             <Route path="/define-domain" component={DefineDomainDetails}/>
