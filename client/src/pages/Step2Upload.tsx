@@ -135,7 +135,7 @@ export default function Step2Upload() {
       <div className="flex justify-between mt-8">
         <Button 
           variant="outline"
-          onClick={() => setLocation("/step-1")}
+          onClick={() => setLocation("/domain-home")}
           className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
         >
           Back
