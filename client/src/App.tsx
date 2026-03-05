@@ -6,7 +6,7 @@ import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/Sidebar";
 import Welcome from "@/pages/Welcome";
 import Dashboard from "@/pages/Dashboard";
-import Step1Domain from "@/pages/Step1Domain";
+
 import Step2Upload from "@/pages/Step2Upload";
 import Step3Extract from "@/pages/Step3Extract";
 import Step4Synthesize from "@/pages/Step4Synthesize";
@@ -44,11 +44,10 @@ function Router() {
         <main className="flex-1 overflow-y-auto w-full bg-white">
           <Switch>
             <Route path="/" component={Welcome}/>
-            <Route path="/get-started" component={Dashboard}/>
+            <Route path="/step-1" component={Dashboard}/>
             <Route path="/create-domain" component={CreateDomain}/>
             <Route path="/define-domain" component={DefineDomainDetails}/>
             <Route path="/review-publish" component={ReviewPublish}/>
-            <Route path="/step-1" component={Step1Domain}/>
             <Route path="/step-2" component={Step2Upload}/>
             <Route path="/step-3" component={Step3Extract}/>
             <Route path="/step-4" component={Step4Synthesize}/>

@@ -23,7 +23,7 @@ export default function Welcome() {
           <div>
             <button
               data-testid="button-select-domain"
-              onClick={() => setLocation("/get-started")}
+              onClick={() => setLocation("/step-1")}
               className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-[15px] font-medium px-6 py-2.5 rounded-sm shadow-sm transition-colors"
             >
               Select Business Domain

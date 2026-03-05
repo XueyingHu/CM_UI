@@ -86,7 +86,7 @@ export default function Dashboard() {
 
   const handleConfirm = () => {
     if (selectedDomain) {
-      setLocation("/step-1");
+      setLocation("/step-2");
     }
   };
 
