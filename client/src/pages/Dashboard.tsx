@@ -106,16 +106,21 @@ export default function Dashboard() {
               data-testid="input-search-domain"
               type="text"
               placeholder="Type to search..."
-              value={searchQuery}
+              value={isOpen ? searchQuery : (selectedDomain ? selectedDomain.name : searchQuery)}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 setIsOpen(true);
               }}
-              onClick={(e) => {
-                e.stopPropagation();
+              onFocus={() => {
+                setSearchQuery("");
                 setIsOpen(true);
               }}
-              className="flex-1 px-4 py-2.5 text-sm bg-transparent focus:outline-none"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSearchQuery("");
+                setIsOpen(true);
+              }}
+              className={`flex-1 px-4 py-2.5 text-sm bg-transparent focus:outline-none ${selectedDomain && !isOpen ? "font-medium text-[#1e3a6a]" : ""}`}
             />
             <Search className="w-4 h-4 text-[#888] mr-3" />
           </div>
