@@ -50,15 +50,20 @@ const SIDEBAR_STEPS = [
 export default function CreateDomain() {
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedEntities, setSelectedEntities] = useState<string[]>([]);
+  const [selectedEntities, setSelectedEntities] = useState<string[]>(() => {
+    const saved = sessionStorage.getItem("createDomain_selectedEntities");
+    return saved ? JSON.parse(saved) : [];
+  });
   const [activeStep] = useState(1);
 
   const toggleEntity = (entityId: string) => {
-    setSelectedEntities((prev) =>
-      prev.includes(entityId)
+    setSelectedEntities((prev) => {
+      const updated = prev.includes(entityId)
         ? prev.filter((id) => id !== entityId)
-        : [...prev, entityId]
-    );
+        : [...prev, entityId];
+      sessionStorage.setItem("createDomain_selectedEntities", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   return (

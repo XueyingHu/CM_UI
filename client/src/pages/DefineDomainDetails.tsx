@@ -18,10 +18,31 @@ const DROPDOWN_FIELDS = [
 
 export default function DefineDomainDetails() {
   const [, setLocation] = useLocation();
-  const [domainName, setDomainName] = useState("");
-  const [domainDescription, setDomainDescription] = useState("");
-  const [dropdownValues, setDropdownValues] = useState<Record<string, string>>({});
+  const [domainName, setDomainName] = useState(() => sessionStorage.getItem("domainDetails_name") || "");
+  const [domainDescription, setDomainDescription] = useState(() => sessionStorage.getItem("domainDetails_description") || "");
+  const [dropdownValues, setDropdownValues] = useState<Record<string, string>>(() => {
+    const saved = sessionStorage.getItem("domainDetails_dropdowns");
+    return saved ? JSON.parse(saved) : {};
+  });
   const activeStep = 2;
+
+  const updateDomainName = (value: string) => {
+    setDomainName(value);
+    sessionStorage.setItem("domainDetails_name", value);
+  };
+
+  const updateDomainDescription = (value: string) => {
+    setDomainDescription(value);
+    sessionStorage.setItem("domainDetails_description", value);
+  };
+
+  const updateDropdown = (label: string, value: string) => {
+    setDropdownValues((prev) => {
+      const updated = { ...prev, [label]: value };
+      sessionStorage.setItem("domainDetails_dropdowns", JSON.stringify(updated));
+      return updated;
+    });
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -72,7 +93,7 @@ export default function DefineDomainDetails() {
                 type="text"
                 placeholder="Enter domain name"
                 value={domainName}
-                onChange={(e) => setDomainName(e.target.value)}
+                onChange={(e) => updateDomainName(e.target.value)}
                 className="w-full border border-[#c5cdd4] rounded-sm px-4 py-2.5 text-sm bg-[#fafaf2] focus:outline-none focus:border-[#1e3a6a]"
               />
             </div>
@@ -83,7 +104,7 @@ export default function DefineDomainDetails() {
                 data-testid="input-domain-description"
                 placeholder="Enter domain description."
                 value={domainDescription}
-                onChange={(e) => setDomainDescription(e.target.value)}
+                onChange={(e) => updateDomainDescription(e.target.value)}
                 rows={3}
                 className="w-full border border-[#c5cdd4] rounded-sm px-4 py-2.5 text-sm bg-[#fafaf2] focus:outline-none focus:border-[#1e3a6a] resize-y"
               />
@@ -95,9 +116,7 @@ export default function DefineDomainDetails() {
                 <select
                   data-testid={`select-${field.label.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}`}
                   value={dropdownValues[field.label] || ""}
-                  onChange={(e) =>
-                    setDropdownValues((prev) => ({ ...prev, [field.label]: e.target.value }))
-                  }
+                  onChange={(e) => updateDropdown(field.label, e.target.value)}
                   className="w-full border border-[#c5cdd4] rounded-sm px-4 py-2.5 text-sm bg-[#fafaf2] focus:outline-none focus:border-[#1e3a6a] appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23666%22%20stroke-width%3D%222%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_12px_center]"
                 >
                   <option value="">{field.placeholder}</option>
