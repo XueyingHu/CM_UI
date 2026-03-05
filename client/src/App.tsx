@@ -55,7 +55,7 @@ function Router() {
           {selectedDomain && location !== "/" && location !== "/step-1" && (
             <button
               data-testid="text-selected-domain"
-              onClick={() => setLocation("/domain-home")}
+              onClick={() => setLocation("/step-1")}
               className="text-sm font-medium mr-2 text-white hover:underline cursor-pointer bg-transparent border-none p-0"
             >
               Selected Domain: {selectedDomain}
