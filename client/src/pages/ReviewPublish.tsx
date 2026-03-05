@@ -129,12 +129,6 @@ export default function ReviewPublish() {
             </button>
             <div className="flex-1" />
             <button
-              data-testid="button-save-draft"
-              className="bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-8 py-2.5 rounded-sm border border-[#c5cdd4] shadow-sm"
-            >
-              Save as Draft
-            </button>
-            <button
               data-testid="button-publish"
               onClick={() => setPublished(true)}
               className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
