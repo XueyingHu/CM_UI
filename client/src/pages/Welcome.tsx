@@ -41,6 +41,7 @@ export default function Welcome() {
           <div>
             <button
               data-testid="button-create-domain"
+              onClick={() => setLocation("/create-domain")}
               className="bg-white hover:bg-slate-50 text-[#333] text-[15px] font-medium px-6 py-2.5 rounded-sm border border-[#c5cdd4] shadow-sm transition-colors"
             >
               Create New Domain
