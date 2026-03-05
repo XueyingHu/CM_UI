@@ -196,7 +196,7 @@ export default function Dashboard() {
         <div className="flex justify-between mt-8">
           <button
             data-testid="button-back-dashboard"
-            onClick={() => setLocation("/")}
+            onClick={() => setLocation("/domain-home")}
             className="bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-8 py-2.5 rounded-sm border border-[#c5cdd4] shadow-sm"
           >
             Back
