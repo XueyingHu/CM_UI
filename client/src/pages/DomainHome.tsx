@@ -20,7 +20,6 @@ export default function DomainHome() {
           <span className="mx-1">›</span>
           <span className="font-semibold text-[#333]">Select a Business Domain</span>
         </div>
-        <span className="text-[#555] text-sm">Domain: {domainName}</span>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-10 pb-16">
