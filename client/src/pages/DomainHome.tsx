@@ -58,7 +58,7 @@ export default function DomainHome() {
                 <li>PM & BMLs validate mappings</li>
                 <li>AI generates summarized insights</li>
               </ul>
-              <div>
+              <div className="flex justify-center">
                 <button
                   data-testid="button-start-audit-mapping"
                   onClick={() => setLocation("/review-validate")}
