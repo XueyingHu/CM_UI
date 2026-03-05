@@ -35,7 +35,7 @@ export default function DomainHome() {
                 <li>AI generates summarized CM insights</li>
                 <li>Output aligned to Assure templates</li>
               </ul>
-              <div>
+              <div className="flex justify-center">
                 <button
                   data-testid="button-start-document-insights"
                   onClick={() => setLocation("/step-2")}
