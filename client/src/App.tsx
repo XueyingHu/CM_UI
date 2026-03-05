@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route, useLocation } from "wouter";
+import { Switch, Route, useLocation, Link } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -53,13 +53,13 @@ function Router() {
         </div>
         <div className="flex items-center gap-4 text-white">
           {selectedDomain && (
-            <span
+            <Link
               data-testid="text-selected-domain"
-              onClick={() => setLocation("/domain-home")}
-              className="text-sm font-medium mr-2 hover:underline cursor-pointer"
+              href="/domain-home"
+              className="text-sm font-medium mr-2 text-white hover:underline cursor-pointer no-underline"
             >
               Selected Domain: {selectedDomain}
-            </span>
+            </Link>
           )}
           <Mail className="w-4 h-4" />
           <Bell className="w-4 h-4" />
