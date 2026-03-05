@@ -78,7 +78,7 @@ export default function Step1Domain() {
       <div className="flex justify-between mt-8">
         <Button 
           variant="outline"
-          onClick={() => setLocation("/")}
+          onClick={() => setLocation("/get-started")}
           className="bg-white hover:bg-slate-50 text-[#1e3a6a] border-[#c5cdd4] px-8 py-5 text-base rounded-sm shadow-sm font-medium"
         >
           Back

@@ -1,9 +1,10 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import Sidebar from "@/components/Sidebar";
+import Welcome from "@/pages/Welcome";
 import Dashboard from "@/pages/Dashboard";
 import Step1Domain from "@/pages/Step1Domain";
 import Step2Upload from "@/pages/Step2Upload";
@@ -19,6 +20,8 @@ import StructuredData from "@/pages/StructuredData";
 import { Bell, Mail, Menu } from "lucide-react";
 
 function Router() {
+  const [location] = useLocation();
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white">
       <header className="h-12 bg-[#2c4b7e] flex items-center justify-between px-4 shrink-0">
@@ -34,10 +37,11 @@ function Router() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar />
+        {location !== "/" && <Sidebar />}
         <main className="flex-1 overflow-y-auto w-full bg-white">
           <Switch>
-            <Route path="/" component={Dashboard}/>
+            <Route path="/" component={Welcome}/>
+            <Route path="/get-started" component={Dashboard}/>
             <Route path="/step-1" component={Step1Domain}/>
             <Route path="/step-2" component={Step2Upload}/>
             <Route path="/step-3" component={Step3Extract}/>

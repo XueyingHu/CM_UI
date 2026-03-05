@@ -9,7 +9,7 @@ export default function Sidebar() {
 
   // Sidebar changes completely based on the mockup when transitioning to this new phase
   const MAIN_STEPS = [
-    { id: 1, label: "Select business domain", isActive: location === "/step-1", isCompleted: location === "/step-2" || location === "/step-3" || location === "/step-4" || location === "/step-5" || location === "/step-6" },
+    { id: 1, label: "Select business domain", isActive: location === "/get-started" || location === "/step-1", isCompleted: location === "/step-2" || location === "/step-3" || location === "/step-4" || location === "/step-5" || location === "/step-6" },
     { id: 2, label: "Upload Documents", isActive: location === "/step-2", isCompleted: location === "/step-3" || location === "/step-4" || location === "/step-5" || location === "/step-6" },
     { id: 3, label: "Extract Key Information", isActive: location === "/step-3", isCompleted: location === "/step-4" || location === "/step-5" || location === "/step-6" },
     { id: 4, label: "Synthesize Insights", isActive: location === "/step-4", isCompleted: location === "/step-5" || location === "/step-6" },
