@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +26,23 @@ import { Bell, Mail, Menu } from "lucide-react";
 
 function Router() {
   const [location] = useLocation();
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(
+    sessionStorage.getItem("selectedDomain")
+  );
+
+  useEffect(() => {
+    const checkDomain = () => {
+      const domain = sessionStorage.getItem("selectedDomain");
+      setSelectedDomain(domain);
+    };
+    checkDomain();
+    window.addEventListener("storage", checkDomain);
+    const interval = setInterval(checkDomain, 500);
+    return () => {
+      window.removeEventListener("storage", checkDomain);
+      clearInterval(interval);
+    };
+  }, [location]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-white">
@@ -34,6 +52,11 @@ function Router() {
           <div className="w-4 h-4 bg-white/30 rounded-sm"></div>
         </div>
         <div className="flex items-center gap-4 text-white">
+          {selectedDomain && (
+            <span data-testid="text-selected-domain" className="text-sm font-medium mr-2">
+              Selected Domain: {selectedDomain}
+            </span>
+          )}
           <Mail className="w-4 h-4" />
           <Bell className="w-4 h-4" />
           <Menu className="w-5 h-5" />
