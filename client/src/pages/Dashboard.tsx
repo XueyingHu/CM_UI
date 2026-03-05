@@ -193,7 +193,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        <div className="flex justify-end mt-8 gap-3">
+        <div className="flex justify-between mt-8">
           <button
             data-testid="button-back-dashboard"
             onClick={() => setLocation("/")}
