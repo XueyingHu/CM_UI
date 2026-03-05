@@ -7,14 +7,12 @@ export default function Sidebar() {
 
   const isReviewPhase = location === "/review-validate" || location === "/expand-search" || location === "/insights-summary";
 
-  const STEP_1 = { id: 1, label: "Select business domain", isActive: location === "/step-1", isCompleted: location === "/step-2" || location === "/step-3" || location === "/step-4" || location === "/step-5" || location === "/step-6" };
-
   const DOC_STEPS = [
-    { id: 2, label: "Upload Documents", isActive: location === "/step-2", isCompleted: location === "/step-3" || location === "/step-4" || location === "/step-5" || location === "/step-6" },
-    { id: 3, label: "Extract Key Information", isActive: location === "/step-3", isCompleted: location === "/step-4" || location === "/step-5" || location === "/step-6" },
-    { id: 4, label: "Synthesize Insights", isActive: location === "/step-4", isCompleted: location === "/step-5" || location === "/step-6" },
-    { id: 5, label: "Validate Against Source Data", isActive: location === "/step-5", isCompleted: location === "/step-6" },
-    { id: 6, label: "Generate Executive Summary", isActive: location === "/step-6", isCompleted: false },
+    { id: 1, label: "Upload Documents", isActive: location === "/step-2", isCompleted: location === "/step-3" || location === "/step-4" || location === "/step-5" || location === "/step-6" },
+    { id: 2, label: "Extract Key Information", isActive: location === "/step-3", isCompleted: location === "/step-4" || location === "/step-5" || location === "/step-6" },
+    { id: 3, label: "Synthesize Insights", isActive: location === "/step-4", isCompleted: location === "/step-5" || location === "/step-6" },
+    { id: 4, label: "Validate Against Source Data", isActive: location === "/step-5", isCompleted: location === "/step-6" },
+    { id: 5, label: "Generate Executive Summary", isActive: location === "/step-6", isCompleted: false },
   ];
 
   const REVIEW_STEPS = [
@@ -22,6 +20,8 @@ export default function Sidebar() {
     { id: 2, label: "Expand Search Criteria (optional)", isActive: location === "/expand-search", isCompleted: location === "/insights-summary", checkmark: true },
     { id: 3, label: "Generate Insights Summary", isActive: location === "/insights-summary", isCompleted: false, checkmark: true },
   ];
+
+  const currentSteps = isReviewPhase ? REVIEW_STEPS : DOC_STEPS;
 
   const renderStep = (step: any) => {
     const isCompletedAndNotActive = step.isCompleted && !step.isActive;
@@ -48,36 +48,15 @@ export default function Sidebar() {
     );
   };
 
-  if (isReviewPhase) {
-    return (
-      <div className="w-[280px] bg-[#f4f4f4] border-r border-[#e0e0e0] flex flex-col h-full shrink-0 shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)]">
-        <div className="px-6 py-5">
-          <h2 className="text-[#1e3a6a] text-xl font-semibold font-sans mb-4">Your Progress</h2>
-        </div>
-        <nav className="flex-1 bg-white mx-4 rounded-sm border border-[#e0e0e0] overflow-hidden mb-6">
-          <ul className="flex flex-col">
-            {REVIEW_STEPS.map(renderStep)}
-          </ul>
-        </nav>
-      </div>
-    );
-  }
-
   return (
     <div className="w-[280px] bg-[#f4f4f4] border-r border-[#e0e0e0] flex flex-col h-full shrink-0 shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)]">
       <div className="px-6 py-5">
         <h2 className="text-[#1e3a6a] text-xl font-semibold font-sans mb-4">Your Progress</h2>
       </div>
 
-      <nav className="bg-white mx-4 rounded-sm border border-[#e0e0e0] overflow-hidden mb-3">
-        <ul className="flex flex-col">
-          {renderStep(STEP_1)}
-        </ul>
-      </nav>
-
       <nav className="flex-1 bg-white mx-4 rounded-sm border border-[#e0e0e0] overflow-hidden mb-6">
         <ul className="flex flex-col">
-          {DOC_STEPS.map(renderStep)}
+          {currentSteps.map(renderStep)}
         </ul>
       </nav>
     </div>

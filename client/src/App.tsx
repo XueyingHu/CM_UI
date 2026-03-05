@@ -68,7 +68,7 @@ function Router() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {location !== "/" && location !== "/domain-home" && location !== "/create-domain" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
+        {location !== "/" && location !== "/domain-home" && location !== "/step-1" && location !== "/create-domain" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
         <main className="flex-1 overflow-y-auto w-full bg-white">
           <Switch>
             <Route path="/" component={Welcome}/>
