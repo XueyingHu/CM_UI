@@ -8,11 +8,8 @@ Frontend-only React/TypeScript prototype for a Continuous Monitoring tool. Featu
 - **No backend**: All data is local/mock — no database, no server, no API calls
 - **Design System**: Enterprise/government aesthetic — `#1e3a6a` navy primary, `#78b376` green accents, `#fff8cc` yellow active sidebar
 
-## Running Locally
-```
-npm install
-npm run dev
-```
+## Running
+The app runs via Vite dev server on port 5000.
 
 ## Route Map
 `/` → `/step-1` → `/step-2` → `/step-3` → `/step-4` → `/step-5` → `/step-6` → `/review-validate` → `/expand-search` → `/insights-summary`
@@ -21,7 +18,7 @@ npm run dev
 - `client/src/App.tsx` — Main app with routing and layout
 - `client/src/components/Sidebar.tsx` — Sidebar navigation
 - `client/src/pages/` — All page components for wizard and review steps
-- `vite.config.ts` — Vite configuration
+- `vite.config.ts` — Vite configuration (root: client/, port 5000)
 - `client/index.html` — HTML entry point
 
 ## State Management
