@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { ChevronRight, ChevronLeft } from "lucide-react";
 
 const SIDEBAR_STEPS = [
   { id: 1, label: "Portfolio & BML Selection" },
@@ -8,61 +9,31 @@ const SIDEBAR_STEPS = [
   { id: 4, label: "Publish & Export" },
 ];
 
-const ALL_ENTITIES: Record<string, string> = {
-  AE12345: "Trading Systems",
-  AE12346: "Ops Risk Controls",
-  AE12347: "Market Data Services",
-  AE12456: "Regulatory Compliance",
-  AE12457: "Legal Risk Management",
-  AE12458: "Wealth Management Ops",
-  AE12567: "Retail Branch Operations",
-  AE12568: "Consumer Lending Services",
-  AE12569: "Retail Wealth Advisory",
-};
-
-const DROPDOWN_LABEL_MAP: Record<string, string> = {
-  "Business Monitoring Lead:": "Business Monitoring Lead",
-  "Portfolio:": "Portfolio",
-  "Level 3 Responsible Executive:": "Level 3 Responsible Executive",
-  "Level 4 Responsible Executives:": "Level 4 Responsible Executive",
-  "Responsible Legal Entities:": "Responsible Legal Entities",
-  "Responsible Vertical(s):": "Responsible Verticals",
-};
+const DOMAINS = [
+  {
+    id: 1,
+    name: "Risk Oversight & Governance",
+    entityCount: 5,
+    entityIds: ["AE337812", "AE2699541", "AE543276", "AE1575242", "AE2896410"],
+  },
+  {
+    id: 2,
+    name: "Enterprise Risk Strategy",
+    entityCount: 3,
+    entityIds: ["AE1575249", "AE2896410", "AE1234679"],
+  },
+  {
+    id: 3,
+    name: "Compliance & Controls",
+    entityCount: 4,
+    entityIds: ["AE4456789", "AE3789032", "AE2345671", "AE567904"],
+  },
+];
 
 export default function ReviewPublish() {
   const [, setLocation] = useLocation();
   const [published, setPublished] = useState(false);
-  const activeStep = 3;
-
-  const domainName = sessionStorage.getItem("domainDetails_name") || "—";
-  const domainDescription = sessionStorage.getItem("domainDetails_description") || "—";
-
-  const dropdowns: Record<string, string> = (() => {
-    const saved = sessionStorage.getItem("domainDetails_dropdowns");
-    return saved ? JSON.parse(saved) : {};
-  })();
-
-  const selectedEntities: string[] = (() => {
-    const saved = sessionStorage.getItem("createDomain_selectedEntities");
-    return saved ? JSON.parse(saved) : [];
-  })();
-
-  const entitiesDisplay = selectedEntities
-    .map((id) => `${id} – ${ALL_ENTITIES[id] || id}`)
-    .join(", ") || "—";
-
-  const summaryRows = [
-    { label: "Domain Name:", value: domainName },
-    { label: "Domain Description:", value: domainDescription },
-    { label: "Business Monitoring Lead:", value: dropdowns["Business Monitoring Lead:"] || "—" },
-    { label: "Portfolio:", value: dropdowns["Portfolio:"] || "—" },
-    { label: "Level 3 Responsible Executive:", value: dropdowns["Level 3 Responsible Executive:"] || "—" },
-    { label: "Level 4 Responsible Executive:", value: dropdowns["Level 4 Responsible Executives:"] || "—" },
-    { label: "Responsible Legal Entities:", value: dropdowns["Responsible Legal Entities:"] || "—" },
-    { label: "Responsible Verticals:", value: dropdowns["Responsible Vertical(s):"] || "—" },
-    { label: "Auditable Entities:", value: entitiesDisplay },
-    { label: "Effective Date:", value: "January 1, 2026" },
-  ];
+  const activeStep = 4;
 
   return (
     <div className="flex flex-col h-full">
@@ -78,7 +49,6 @@ export default function ReviewPublish() {
           <span className="mx-1">›</span>
           <span className="font-semibold text-[#333]">Create a New Domain</span>
         </div>
-        <span className="text-[#555] text-sm">Domain: Market Tech – Ops Risk</span>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -87,6 +57,7 @@ export default function ReviewPublish() {
             {SIDEBAR_STEPS.map((step) => (
               <div
                 key={step.id}
+                data-testid={`sidebar-step-${step.id}`}
                 className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-l-4 ${
                   step.id === activeStep
                     ? "border-[#1e3a6a] bg-[#1e3a6a] text-white"
@@ -101,60 +72,74 @@ export default function ReviewPublish() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-10 py-8">
-          <h1 className="text-2xl font-bold text-[#1e3a6a] mb-2">
-            <span className="font-normal">Step 3:</span> Review & Publish
+          <h1 data-testid="text-page-title" className="text-2xl font-bold text-[#1e3a6a] mb-3 text-center">
+            Publish & Export Business Domains
           </h1>
-          <p className="text-sm text-[#555] mb-6">Review the details below and publish.</p>
+          <p className="text-sm text-[#555] mb-8 text-center">
+            You are about to publish <span className="font-bold text-[#1e3a6a]">3 Business Domains</span> for
+            Portfolio Manager: <span className="font-bold text-[#1e3a6a]">Alice Wang</span> and
+            BM Lead: <span className="font-bold text-[#1e3a6a]">Michael Smith</span>;
+            Effective <span className="font-bold text-[#1e3a6a]">01 Oct 2026</span>.
+          </p>
 
-          <div className="border border-[#d0d5dd] rounded-sm bg-white">
-            <div className="bg-[#f4f6f8] px-5 py-3 border-b border-[#d0d5dd]">
-              <h2 className="text-[15px] font-bold text-[#333]">Summary</h2>
-            </div>
-            <div className="divide-y divide-[#e8ebee]">
-              {summaryRows.map((row) => (
-                <div key={row.label} className="flex px-5 py-3 text-sm">
-                  <span className="font-bold text-[#1e3a6a] w-[240px] shrink-0">{row.label}</span>
-                  <span className="text-[#333]">{row.value}</span>
+          <div className="space-y-4 max-w-[900px] mx-auto mb-8">
+            {DOMAINS.map((domain) => (
+              <div key={domain.id} className="border border-[#d0d5dd] rounded-sm overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-3.5 bg-[#f7f9fb]">
+                  <ChevronRight className="w-4 h-4 text-[#1e3a6a] shrink-0" />
+                  <span className="text-[15px] font-bold text-[#1e3a6a]">
+                    Domain {domain.id} – {domain.name}
+                  </span>
+                  <span className="text-sm text-[#555] ml-1">
+                    ({domain.entityCount} AEs)
+                  </span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-6 flex items-center gap-3">
-            <button
-              data-testid="button-back-review"
-              onClick={() => setLocation("/define-domain")}
-              className="bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-8 py-2.5 rounded-sm border border-[#c5cdd4] shadow-sm"
-            >
-              Back
-            </button>
-            <div className="flex-1" />
-            <button
-              data-testid="button-publish"
-              onClick={() => setPublished(true)}
-              className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
-            >
-              Publish
-            </button>
-          </div>
-
-          <div className="mt-8 flex items-start gap-3 bg-[#f4f6f8] border border-[#d0d5dd] rounded-sm p-4">
-            <div className="w-8 h-8 bg-[#1e3a6a] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0">
-              A
-            </div>
-            <div>
-              <p className="text-sm font-bold text-[#333] mb-1">Ready to publish?</p>
-              <p className="text-sm text-[#555]">
-                This Business Domain will be available as the golden source for auditors.
-              </p>
-            </div>
+                <div className="px-10 py-3 bg-white border-t border-[#e8ecf0]">
+                  <p data-testid={`text-domain-entities-${domain.id}`} className="text-sm text-[#555]">
+                    {domain.entityIds.join(", ")}
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
 
           {published && (
-            <div className="mt-4 bg-[#e8f5e9] border border-[#78b376] rounded-sm p-4 text-sm text-[#2e7d32] font-medium">
-              Domain published successfully.
+            <div className="max-w-[900px] mx-auto mb-6 bg-[#e8f5e9] border border-[#78b376] rounded-sm p-4 text-sm text-[#2e7d32] font-medium">
+              Domains published successfully to the system.
             </div>
           )}
+
+          <div className="max-w-[900px] mx-auto flex items-center justify-between pt-4 border-t border-[#e0e0e0]">
+            <button
+              data-testid="button-back-publish"
+              onClick={() => setLocation("/review-define-domains")}
+              className="flex items-center gap-1 bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-6 py-2.5 rounded-sm border border-[#c5cdd4] shadow-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Back
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                data-testid="button-publish-to-system"
+                onClick={() => setPublished(true)}
+                className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-semibold px-8 py-3 rounded-sm shadow-sm transition-colors"
+              >
+                Publish to System
+              </button>
+              <button
+                data-testid="button-export-excel"
+                className="bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-6 py-3 rounded-sm border border-[#c5cdd4] shadow-sm"
+              >
+                Export to Excel
+              </button>
+              <button
+                data-testid="button-export-pdf"
+                className="bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-6 py-3 rounded-sm border border-[#c5cdd4] shadow-sm"
+              >
+                Export to PDF
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
