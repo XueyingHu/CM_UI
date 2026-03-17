@@ -289,7 +289,7 @@ export default function BuildDomain() {
             </button>
             <button
               data-testid="button-confirm-domain-groupings"
-              onClick={() => setLocation("/define-domain")}
+              onClick={() => setLocation("/review-define-domains")}
               className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-semibold px-10 py-3 rounded-sm shadow-sm transition-colors"
             >
               Confirm Domain Groupings
