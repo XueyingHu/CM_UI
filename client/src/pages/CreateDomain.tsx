@@ -26,7 +26,7 @@ const BML_OPTIONS = ["Michael Smith", "Rebecca Torres", "David Park"];
 
 export default function CreateDomain() {
   const [, setLocation] = useLocation();
-  const [activeStep] = useState(2);
+  const [activeStep] = useState(1);
   const [portfolioManager, setPortfolioManager] = useState("Alice Wang");
   const [businessMonitoringLead, setBusinessMonitoringLead] = useState("Michael Smith");
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -35,31 +35,31 @@ export default function CreateDomain() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-gradient-to-r from-[#3a6ea5] to-[#5b9bd5] border-b border-[#2c5f8a] px-6 py-2.5 text-sm text-white flex items-center justify-between">
+      <div className="bg-[#eef1f5] border-b border-[#d0d5dd] px-6 py-2 text-sm text-[#555] flex items-center justify-between">
         <div className="flex items-center gap-1">
           <button
             data-testid="link-home"
             onClick={() => setLocation("/")}
-            className="text-white hover:underline font-medium"
+            className="text-[#1e3a6a] hover:underline font-medium"
           >
             Home
           </button>
           <span className="mx-1">›</span>
-          <span className="font-semibold text-white">Create a New Domain</span>
+          <span className="font-semibold text-[#333]">Create a New Domain</span>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-[220px] bg-white border-r border-[#d0d5dd] flex flex-col shrink-0 pt-2">
+        <div className="w-[240px] bg-[#f4f4f4] border-r border-[#e0e0e0] flex flex-col shrink-0 pt-4">
           <nav className="flex flex-col">
             {SIDEBAR_STEPS.map((step) => (
               <div
                 key={step.id}
                 data-testid={`sidebar-step-${step.id}`}
-                className={`flex items-center gap-2 px-5 py-3.5 text-sm font-medium cursor-pointer ${
+                className={`flex items-center gap-2 px-5 py-3 text-sm font-medium border-l-4 ${
                   step.id === activeStep
-                    ? "bg-[#1e3a6a] text-white"
-                    : "text-[#333] hover:bg-[#f0f4f8]"
+                    ? "border-[#1e3a6a] bg-[#1e3a6a] text-white"
+                    : "border-transparent text-[#444] hover:bg-[#eaeaea]"
                 }`}
               >
                 <span>{step.id}.</span>
@@ -76,7 +76,7 @@ export default function CreateDomain() {
 
           <div className="flex gap-8 mb-10 max-w-[700px] mx-auto">
             <div className="flex-1 relative">
-              <label className="block text-sm font-medium text-[#333] mb-1.5">Portfolio Manager:</label>
+              <label className="block text-sm font-bold text-[#1e3a6a] mb-1">Portfolio Manager:</label>
               <button
                 data-testid="select-portfolio-manager"
                 onClick={() => { setPmOpen(!pmOpen); setBmlOpen(false); }}
@@ -102,7 +102,7 @@ export default function CreateDomain() {
             </div>
 
             <div className="flex-1 relative">
-              <label className="block text-sm font-medium text-[#333] mb-1.5">Business Monitoring Lead</label>
+              <label className="block text-sm font-bold text-[#1e3a6a] mb-1">Business Monitoring Lead</label>
               <button
                 data-testid="select-business-monitoring-lead"
                 onClick={() => { setBmlOpen(!bmlOpen); setPmOpen(false); }}

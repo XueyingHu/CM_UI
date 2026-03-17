@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 
 const SIDEBAR_STEPS = [
-  { id: 1, label: "Portfolio & AE Selection" },
-  { id: 2, label: "Define Domain Details" },
-  { id: 3, label: "Review & Publish" },
+  { id: 1, label: "Portfolio & BML Selection" },
+  { id: 2, label: "Build Domain" },
+  { id: 3, label: "Review & Define Domains" },
+  { id: 4, label: "Publish & Export" },
 ];
 
 const ALL_ENTITIES: Record<string, string> = {
