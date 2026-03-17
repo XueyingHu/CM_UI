@@ -176,7 +176,7 @@ export default function CreateDomain() {
             <div className="mt-8 flex justify-center">
               <button
                 data-testid="button-generate-domain-suggestions"
-                onClick={() => setLocation("/define-domain")}
+                onClick={() => setLocation("/build-domain")}
                 className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-semibold px-10 py-3 rounded-sm shadow-sm transition-colors"
               >
                 Generate Domain Suggestions

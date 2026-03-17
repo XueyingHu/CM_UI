@@ -20,6 +20,7 @@ import DocumentAnalysis from "@/pages/DocumentAnalysis";
 import StructuredData from "@/pages/StructuredData";
 import DomainHome from "@/pages/DomainHome";
 import CreateDomain from "@/pages/CreateDomain";
+import BuildDomain from "@/pages/BuildDomain";
 import DefineDomainDetails from "@/pages/DefineDomainDetails";
 import ReviewPublish from "@/pages/ReviewPublish";
 import { Bell, Mail, Menu } from "lucide-react";
@@ -68,13 +69,14 @@ function Router() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {location !== "/" && location !== "/domain-home" && location !== "/step-1" && location !== "/create-domain" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
+        {location !== "/" && location !== "/domain-home" && location !== "/step-1" && location !== "/create-domain" && location !== "/build-domain" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
         <main className="flex-1 overflow-y-auto w-full bg-white">
           <Switch>
             <Route path="/" component={Welcome}/>
             <Route path="/domain-home" component={DomainHome}/>
             <Route path="/step-1" component={Dashboard}/>
             <Route path="/create-domain" component={CreateDomain}/>
+            <Route path="/build-domain" component={BuildDomain}/>
             <Route path="/define-domain" component={DefineDomainDetails}/>
             <Route path="/review-publish" component={ReviewPublish}/>
             <Route path="/step-2" component={Step2Upload}/>
