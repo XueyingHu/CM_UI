@@ -197,7 +197,17 @@ export default function ReviewDefineDomains() {
             </button>
             <button
               data-testid="button-finalize-domains"
-              onClick={() => setLocation("/review-publish")}
+              onClick={() => {
+                const finalDomains = DOMAINS.map((d) => ({
+                  id: d.id,
+                  name: domainNames[d.id],
+                  description: domainDescriptions[d.id],
+                  entityCount: d.entities.length,
+                  entityIds: d.entities.map((e) => e.id),
+                }));
+                sessionStorage.setItem("finalizedDomains", JSON.stringify(finalDomains));
+                setLocation("/review-publish");
+              }}
               className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-semibold px-10 py-3 rounded-sm shadow-sm transition-colors"
             >
               Finalize Domains

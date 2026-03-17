@@ -9,31 +9,50 @@ const SIDEBAR_STEPS = [
   { id: 4, label: "Publish & Export" },
 ];
 
-const DOMAINS = [
+const DEFAULT_DOMAINS = [
   {
     id: 1,
     name: "Risk Oversight & Governance",
     entityCount: 5,
-    entityIds: ["AE337812", "AE2699541", "AE543276", "AE1575242", "AE2896410"],
+    entityIds: ["AE337812", "AE2699541", "AE549286", "AE1372242", "AE2836410"],
   },
   {
     id: 2,
     name: "Enterprise Risk Strategy",
     entityCount: 3,
-    entityIds: ["AE1575249", "AE2896410", "AE1234679"],
+    entityIds: ["AE2232754", "AE2222400", "AE3142465"],
   },
   {
     id: 3,
     name: "Compliance & Controls",
     entityCount: 4,
-    entityIds: ["AE4456789", "AE3789032", "AE2345671", "AE567904"],
+    entityIds: ["AE4569822", "AE357812", "AE2689541", "AE2549286"],
   },
 ];
+
+interface DomainData {
+  id: number;
+  name: string;
+  entityCount: number;
+  entityIds: string[];
+}
 
 export default function ReviewPublish() {
   const [, setLocation] = useLocation();
   const [published, setPublished] = useState(false);
   const activeStep = 4;
+
+  const domains: DomainData[] = (() => {
+    const saved = sessionStorage.getItem("finalizedDomains");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return DEFAULT_DOMAINS;
+      }
+    }
+    return DEFAULT_DOMAINS;
+  })();
 
   return (
     <div className="flex flex-col h-full">
@@ -76,14 +95,14 @@ export default function ReviewPublish() {
             Publish & Export Business Domains
           </h1>
           <p className="text-sm text-[#555] mb-8 text-center">
-            You are about to publish <span className="font-bold text-[#1e3a6a]">3 Business Domains</span> for
+            You are about to publish <span className="font-bold text-[#1e3a6a]">{domains.length} Business Domains</span> for
             Portfolio Manager: <span className="font-bold text-[#1e3a6a]">Alice Wang</span> and
             BM Lead: <span className="font-bold text-[#1e3a6a]">Michael Smith</span>;
             Effective <span className="font-bold text-[#1e3a6a]">01 Oct 2026</span>.
           </p>
 
           <div className="space-y-4 max-w-[900px] mx-auto mb-8">
-            {DOMAINS.map((domain) => (
+            {domains.map((domain) => (
               <div key={domain.id} className="border border-[#d0d5dd] rounded-sm overflow-hidden">
                 <div className="flex items-center gap-2 px-5 py-3.5 bg-[#f7f9fb]">
                   <ChevronRight className="w-4 h-4 text-[#1e3a6a] shrink-0" />
