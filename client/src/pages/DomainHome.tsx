@@ -4,42 +4,8 @@ import { FileOutput, Network } from "lucide-react";
 export default function DomainHome() {
   const [, setLocation] = useLocation();
 
-  const pm = sessionStorage.getItem("selectedDomain") || "";
-  const bml = sessionStorage.getItem("selectedBml") || "";
-
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-[#eef1f5] border-b border-[#d0d5dd] px-6 py-2 text-sm text-[#555] flex items-center justify-between">
-        <div className="flex items-center gap-1">
-          <button
-            data-testid="link-home"
-            onClick={() => setLocation("/")}
-            className="text-[#1e3a6a] hover:underline font-medium"
-          >
-            Home
-          </button>
-          <span className="mx-1">›</span>
-          <span className="font-semibold text-[#333]">Select Module</span>
-        </div>
-        {pm && (
-          <div className="flex items-center gap-4">
-            <div style={{ display: "flex", gap: 6, alignItems: "baseline", fontSize: 12.5 }}>
-              <span style={{ color: "#5b6b7a", fontWeight: 700 }}>PM:</span>
-              <span style={{ color: "#122033", fontWeight: 900 }}>{pm}</span>
-            </div>
-            {bml && (
-              <>
-                <span style={{ color: "#d0d5dd" }}>|</span>
-                <div style={{ display: "flex", gap: 6, alignItems: "baseline", fontSize: 12.5 }}>
-                  <span style={{ color: "#5b6b7a", fontWeight: 700 }}>BML:</span>
-                  <span style={{ color: "#122033", fontWeight: 900 }}>{bml}</span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-
       <div className="flex-1 flex flex-col items-center justify-center px-10 pb-16">
         <div className="flex gap-6 w-full max-w-[800px]">
           <div className="flex-1 border border-[#c5cdd4] rounded-sm bg-white shadow-sm flex flex-col overflow-hidden">
