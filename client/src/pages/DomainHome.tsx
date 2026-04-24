@@ -18,7 +18,7 @@ export default function DomainHome() {
             Home
           </button>
           <span className="mx-1">›</span>
-          <span className="font-semibold text-[#333]">Select a Business Domain</span>
+          <span className="font-semibold text-[#333]">Select Module</span>
         </div>
       </div>
 
