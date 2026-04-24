@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
+import { Pencil, Check } from "lucide-react";
 
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
@@ -102,6 +104,7 @@ const TD: React.CSSProperties = {
 
 export default function Step4Analyze() {
   const [, setLocation] = useLocation();
+  const [editMode, setEditMode] = useState(false);
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
@@ -166,11 +169,35 @@ export default function Step4Analyze() {
           background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12,
           boxShadow: "0 6px 18px rgba(16,24,40,0.08)", padding: 18, maxWidth: 1100,
         }}>
-          <h1 style={{ margin: "0", fontSize: 16, fontWeight: 900, color: TEXT }}>
-            Analyze Events and Impact
-          </h1>
-          <p style={{ fontSize: 12.8, color: MUTED, margin: "6px 0 20px", lineHeight: 1.5 }}>
-            Review and refine events organized by event type. All content below is editable.
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 6 }}>
+            <h1 style={{ margin: "0", fontSize: 16, fontWeight: 900, color: TEXT }}>
+              Analyze Events and Impact
+            </h1>
+            <button
+              data-testid="button-edit-toggle"
+              onClick={() => setEditMode(e => !e)}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "6px 12px", borderRadius: 8, cursor: "pointer",
+                fontSize: 12.5, fontWeight: 900, whiteSpace: "nowrap", flexShrink: 0,
+                border: editMode ? "1px solid rgba(31,122,63,0.3)" : "1px solid rgba(31,94,168,0.3)",
+                background: editMode ? "rgba(31,122,63,0.07)" : "rgba(31,94,168,0.07)",
+                color: editMode ? "#1f7a3f" : "#1f5ea8",
+                transition: "all 140ms ease",
+              }}
+            >
+              {editMode
+                ? <><Check size={13} /><span>Save</span></>
+                : <><Pencil size={13} /><span>Edit</span></>
+              }
+            </button>
+          </div>
+          <p style={{ fontSize: 12.8, color: MUTED, margin: "0 0 20px", lineHeight: 1.5 }}>
+            Review and refine events organized by event type.{" "}
+            {editMode
+              ? <span style={{ color: "#1f5ea8", fontWeight: 700 }}>Editing enabled — click any field to modify.</span>
+              : <span>Click <strong>Edit</strong> to modify content.</span>
+            }
           </p>
 
           {BLOCKS.map((block) => (
@@ -183,14 +210,17 @@ export default function Step4Analyze() {
               </div>
 
               <div
-                contentEditable
+                contentEditable={editMode}
                 suppressContentEditableWarning
                 style={{
                   fontSize: 13, lineHeight: 1.5, marginBottom: 10,
                   color: TEXT, outline: "none", borderRadius: 6, padding: "2px 4px",
+                  cursor: editMode ? "text" : "default",
+                  border: editMode ? "1px dashed #bfdbfe" : "1px dashed transparent",
+                  background: editMode ? "rgba(255,255,255,0.6)" : "transparent",
                 }}
-                onFocus={e => { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; }}
-                onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
+                onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = editMode ? "rgba(255,255,255,0.6)" : "transparent"; }}
               >
                 {block.summary}
               </div>
@@ -217,10 +247,10 @@ export default function Step4Analyze() {
                           ))}
                         </td>
                         <td
-                          contentEditable
+                          contentEditable={editMode}
                           suppressContentEditableWarning
-                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180 }}
-                          onFocus={e => { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; }}
+                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
+                          onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
                           onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                         >
                           {row.taggedAE.map((ae, j) => (
@@ -228,10 +258,10 @@ export default function Step4Analyze() {
                           ))}
                         </td>
                         <td
-                          contentEditable
+                          contentEditable={editMode}
                           suppressContentEditableWarning
-                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180 }}
-                          onFocus={e => { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; }}
+                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
+                          onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
                           onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                         >
                           {row.additionalAE.map((ae, j) => (
@@ -239,10 +269,10 @@ export default function Step4Analyze() {
                           ))}
                         </td>
                         <td
-                          contentEditable
+                          contentEditable={editMode}
                           suppressContentEditableWarning
-                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 200 }}
-                          onFocus={e => { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; }}
+                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 200, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
+                          onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
                           onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
                         >
                           {row.rationale}
