@@ -1,25 +1,45 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 
+const EVENT_TYPES = [
+  "Internal Risk Event",
+  "External Risk Event",
+  "Other Internal Adverse Event",
+  "Known Issue",
+  "Management Risk Tolerance and Governance",
+  "Business Ownership Change",
+  "Significant Organization Change",
+  "Regulatory Exam or Inquiry",
+  "Other",
+];
+
 const MEETINGS = [
   {
     title: "Risk Management Forum, Q1 Meeting",
     events: [
       { label: "Internal Risk Event", source: "Quarterly Notes.docx", found: true },
-      { label: "Known Issue", source: "Quarterly Notes.docx", found: true },
       { label: "External Risk Event", source: null, found: false },
-      { label: "Regulatory Exam or Inquiry", source: "Meeting Pack.pdf", found: true },
+      { label: "Other Internal Adverse Event", source: "Quarterly Notes.docx", found: true },
+      { label: "Known Issue", source: "Quarterly Notes.docx", found: true },
+      { label: "Management Risk Tolerance and Governance", source: null, found: false },
+      { label: "Business Ownership Change", source: null, found: false },
       { label: "Significant Organization Change", source: null, found: false },
+      { label: "Regulatory Exam or Inquiry", source: "Meeting Pack.pdf", found: true },
+      { label: "Other", source: "Meeting Pack.pdf", found: true },
     ],
   },
   {
     title: "Ops Improvement Meeting, March 2025",
     events: [
       { label: "Internal Risk Event", source: "Budget Presentation.pptx", found: true },
-      { label: "Key Risk Indicator Breach", source: "Budget Presentation.pptx", found: true },
+      { label: "External Risk Event", source: "Budget Presentation.pptx", found: true },
+      { label: "Other Internal Adverse Event", source: null, found: false },
       { label: "Known Issue", source: null, found: false },
-      { label: "Critical Change Program", source: "Budget Presentation.pptx", found: true },
-      { label: "Macro External Event", source: null, found: false },
+      { label: "Management Risk Tolerance and Governance", source: "Budget Presentation.pptx", found: true },
+      { label: "Business Ownership Change", source: "Ops Notes.docx", found: true },
+      { label: "Significant Organization Change", source: null, found: false },
+      { label: "Regulatory Exam or Inquiry", source: null, found: false },
+      { label: "Other", source: "Ops Notes.docx", found: true },
     ],
   },
 ];
