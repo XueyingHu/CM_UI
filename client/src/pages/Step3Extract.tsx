@@ -1,105 +1,253 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { Check, X, ChevronRight, ChevronLeft } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+
+const MEETINGS = [
+  {
+    title: "Risk Management Forum, Q1 Meeting",
+    events: [
+      { label: "Internal Risk Event", source: "Quarterly Notes.docx", found: true },
+      { label: "Known Issue", source: "Quarterly Notes.docx", found: true },
+      { label: "External Risk Event", source: null, found: false },
+      { label: "Regulatory Exam or Inquiry", source: "Meeting Pack.pdf", found: true },
+      { label: "Significant Organization Change", source: null, found: false },
+    ],
+  },
+  {
+    title: "Ops Improvement Meeting, March 2025",
+    events: [
+      { label: "Internal Risk Event", source: "Budget Presentation.pptx", found: true },
+      { label: "Key Risk Indicator Breach", source: "Budget Presentation.pptx", found: true },
+      { label: "Known Issue", source: null, found: false },
+      { label: "Critical Change Program", source: "Budget Presentation.pptx", found: true },
+      { label: "Macro External Event", source: null, found: false },
+    ],
+  },
+];
+
+const FOUND_COLOR = "#1f7a3f";
+const NOT_FOUND_COLOR = "#d92d20";
 
 export default function Step3Extract() {
   const [, setLocation] = useLocation();
   const [progress, setProgress] = useState(0);
+  const [page, setPage] = useState(1);
+  const totalPages = MEETINGS.length;
+  const meeting = MEETINGS[page - 1];
+
+  const selectedPm = sessionStorage.getItem("selectedDomain") || "";
+  const selectedBml = sessionStorage.getItem("selectedBml") || "";
+  const selectedTeam = sessionStorage.getItem("selectedTeam") || "";
 
   useEffect(() => {
-    const timer = setTimeout(() => setProgress(75), 500);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setProgress(75), 400);
+    return () => clearTimeout(t);
   }, []);
 
-  const meetingResults = [
-    {
-      title: "Risk Management Forum - Q1 Meeting",
-      results: [
-        { label: "Risk Events", source: "(Quarterly Notes.docx)", found: true },
-        { label: "ORAC Issues", source: "(Quarterly Notes.docx)", found: true },
-        { label: "Key Risk Indicators", source: "(Meeting Pack.pdf)", found: true },
-        { label: "Key Staff / Org Change", source: "Not Found", found: false },
-        { label: "Business Process Change", source: "(Meeting Pack.pdf)", found: true },
-        { label: "Critical Change Program", source: "(Quarterly Notes.docx)", found: true },
-        { label: "Macro External Event", source: "Not Found", found: false },
-        { label: "Regulatory Exam/Inquiry", source: "(Meeting Pack.pdf)", found: true },
-        { label: "Other Notable Items", source: "(Meeting Pack.pdf)", found: true },
-      ]
-    },
-    {
-      title: "Ops Improvement Meeting - March 2022",
-      results: [
-        { label: "Risk Events", source: "(Budget Presentation.pptx)", found: true },
-        { label: "ORAC Issues", source: "Not Found", found: false },
-        { label: "Key Risk Indicators", source: "(Budget Presentation.pptx)", found: true },
-      ]
-    }
-  ];
+  const scopeItems = [
+    selectedPm ? { k: "PM:", v: selectedPm } : null,
+    selectedTeam ? { k: "Responsible Team:", v: selectedTeam } : null,
+    selectedBml ? { k: "BML:", v: selectedBml } : null,
+  ].filter(Boolean) as { k: string; v: string }[];
 
   return (
-    <div className="p-10 max-w-4xl">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6">Step 3: Extract Key Information</h1>
-        <div className="w-full h-px bg-slate-200 mb-6" />
-      </header>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
 
-      <div className="mb-10">
-        <p className="text-sm text-[#333] mb-4">Extracting key information from documents...</p>
-        <div className="flex items-center gap-4 max-w-[600px]">
-          <Progress value={progress} className="h-6 flex-1 rounded-none border border-[#c5cdd4] bg-[#f4f6f8] [&>div]:bg-[#2c4b7e]" />
-          <span className="font-bold text-[#333] min-w-[40px]">{progress}%</span>
-        </div>
+      {/* Breadcrumb bar */}
+      <div style={{
+        background: "#ffffff", borderBottom: "1px solid #e6e9ef",
+        padding: "10px 18px", fontSize: 12.5, color: "#5b6b7a", fontWeight: 600,
+      }}>
+        <span style={{ color: "#122033", fontWeight: 900 }}>Home</span>
+        <span style={{ margin: "0 6px" }}>›</span>
+        <span style={{ color: "#122033", fontWeight: 900 }}>Documents to Insights</span>
+        <span style={{ margin: "0 6px" }}>›</span>
+        <span style={{ color: "#122033", fontWeight: 900 }}>Step 2.</span> Extract Key Events
       </div>
 
-      <div className="mb-8">
-        {meetingResults.map((meeting, mIndex) => (
-          <div key={mIndex} className="mb-8 last:mb-0">
-            <h2 className="text-base font-bold text-[#1e3a6a] mb-4">
+      {/* Monitoring scope bar */}
+      <div style={{
+        background: "linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%)",
+        borderBottom: "1px solid #e6e9ef",
+        padding: "10px 18px",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 14, flexWrap: "wrap",
+      }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          padding: "6px 10px", borderRadius: 999,
+          border: "1px solid rgba(11,42,74,0.15)",
+          background: "rgba(11,42,74,0.08)",
+          color: "#0b2a4a", fontSize: 12, fontWeight: 900, whiteSpace: "nowrap",
+        }}>
+          Monitoring Scope
+        </div>
+        {scopeItems.length > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            {scopeItems.map(({ k, v }) => (
+              <div key={k} style={{
+                display: "flex", gap: 8, alignItems: "baseline",
+                padding: "6px 10px", borderRadius: 10,
+                background: "#f7f9fd", border: "1px solid #eef2f7",
+                fontSize: 12.5, whiteSpace: "nowrap",
+              }}>
+                <span style={{ color: "#5b6b7a", fontWeight: 700 }}>{k}</span>
+                <span style={{ color: "#122033", fontWeight: 900 }}>{v}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Main content */}
+      <div style={{ padding: "18px", flex: 1 }}>
+        <div style={{
+          background: "#ffffff", border: "1px solid #e6e9ef", borderRadius: 12,
+          boxShadow: "0 6px 18px rgba(16,24,40,0.08)", padding: 16, maxWidth: 980,
+        }}>
+          {/* Card header */}
+          <h1 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 900, color: "#122033" }}>
+            Step 2. Extract Key Events
+          </h1>
+          <div style={{ fontSize: 12.5, color: "#5b6b7a", fontWeight: 600, marginBottom: 8 }}>
+            Extracting key information from documents…
+          </div>
+
+          {/* Progress bar */}
+          <div style={{
+            height: 14, borderRadius: 999, background: "#eef2f7",
+            border: "1px solid #e2e8f0", overflow: "hidden", marginBottom: 20,
+          }}>
+            <div style={{
+              height: "100%", width: `${progress}%`,
+              background: "linear-gradient(90deg,#1f5ea8,#2a6acb)",
+              transition: "width 0.8s ease",
+            }} />
+          </div>
+
+          {/* Meeting block */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 13, fontWeight: 900, color: "#122033", marginBottom: 10 }}>
               {meeting.title}
-            </h2>
-            
-            <div className="flex flex-col border border-[#c5cdd4] rounded-sm bg-white shadow-sm overflow-hidden">
-              {meeting.results.map((item, index) => (
-                <div 
-                  key={index}
-                  className="flex items-center gap-2 p-3 border-b border-[#e0e4e8] last:border-b-0 bg-white"
+            </div>
+            <div style={{ border: "1px solid #e6e9ef", borderRadius: 12, overflow: "hidden" }}>
+              {meeting.events.map((ev, i) => (
+                <div
+                  key={i}
+                  data-testid={`event-row-${i}`}
+                  style={{
+                    display: "flex", gap: 10, alignItems: "center",
+                    padding: "10px 12px",
+                    borderTop: i === 0 ? "none" : "1px solid #eef2f7",
+                    background: "#fff",
+                  }}
                 >
-                  <div className="w-5 flex justify-center">
-                    {item.found ? (
-                      <Check className="w-5 h-5 text-[#2c7a3f]" strokeWidth={3} />
+                  {/* Icon */}
+                  <div style={{ width: 18, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {ev.found ? (
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M3 8l3.5 3.5L13 4.5" stroke={FOUND_COLOR} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
                     ) : (
-                      <X className="w-5 h-5 text-[#c93b3b]" strokeWidth={3} />
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M2 2l10 10M12 2L2 12" stroke={NOT_FOUND_COLOR} strokeWidth="2.2" strokeLinecap="round"/>
+                      </svg>
                     )}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[15px]">
-                    <span className="text-[#333] font-medium">{item.label}</span>
-                    <span className={item.found ? "text-[#1e3a6a] italic font-medium ml-1" : "text-[#c93b3b] font-medium ml-1"}>
-                      {item.source}
-                    </span>
+                  {/* Text */}
+                  <div style={{ fontSize: 12.8, color: "#1a2e44" }}>
+                    {ev.found ? (
+                      <>
+                        {ev.label}
+                        <span style={{ color: "#1f5ea8", fontWeight: 700, marginLeft: 6 }}>
+                          ({ev.source})
+                        </span>
+                      </>
+                    ) : (
+                      <span style={{ color: NOT_FOUND_COLOR, fontWeight: 900 }}>
+                        {ev.label} — Not Found
+                      </span>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        ))}
-      </div>
-      
-      <div className="flex justify-between mt-8">
-        <Button 
-          variant="outline"
-          onClick={() => setLocation("/step-2")}
-          className="bg-white hover:bg-slate-50 text-[#333] border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
-        >
-          Back
-        </Button>
-        <Button 
-          onClick={() => setLocation("/step-4")}
-          className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
-        >
-          Next <ChevronRight className="w-4 h-4 ml-1" />
-        </Button>
+
+          {/* Pagination */}
+          <div style={{
+            display: "flex", justifyContent: "center", alignItems: "center",
+            gap: 10, margin: "16px 0",
+          }}>
+            {[
+              { label: "«", action: () => setPage(1) },
+              { label: "‹", action: () => setPage(p => Math.max(1, p - 1)) },
+            ].map(({ label, action }) => (
+              <button
+                key={label}
+                onClick={action}
+                disabled={page === 1}
+                style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  border: "1px solid #e3e9f2", background: "#fff",
+                  cursor: page === 1 ? "not-allowed" : "pointer",
+                  opacity: page === 1 ? 0.4 : 1,
+                  fontWeight: 700, fontSize: 13, display: "grid", placeItems: "center",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+            <span style={{ fontSize: 12.5, fontWeight: 900, color: "#122033" }}>
+              Page {page} of {totalPages}
+            </span>
+            {[
+              { label: "›", action: () => setPage(p => Math.min(totalPages, p + 1)) },
+              { label: "»", action: () => setPage(totalPages) },
+            ].map(({ label, action }) => (
+              <button
+                key={label}
+                onClick={action}
+                disabled={page === totalPages}
+                style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  border: "1px solid #e3e9f2", background: "#fff",
+                  cursor: page === totalPages ? "not-allowed" : "pointer",
+                  opacity: page === totalPages ? 0.4 : 1,
+                  fontWeight: 700, fontSize: 13, display: "grid", placeItems: "center",
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div style={{
+            display: "flex", justifyContent: "space-between",
+            marginTop: 16, paddingTop: 14, borderTop: "1px solid #e6e9ef",
+          }}>
+            <button
+              data-testid="button-back"
+              onClick={() => setLocation("/step-2")}
+              style={{
+                background: "#fff", color: "#122033", fontWeight: 900, fontSize: 13,
+                border: "1px solid #d6deea", borderRadius: 10, padding: "10px 18px", cursor: "pointer",
+              }}
+            >
+              Back
+            </button>
+            <button
+              data-testid="button-next"
+              onClick={() => setLocation("/step-4")}
+              style={{
+                background: "#0b2a4a", color: "#fff", fontWeight: 900, fontSize: 13,
+                border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10, padding: "10px 18px", cursor: "pointer", minWidth: 80,
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

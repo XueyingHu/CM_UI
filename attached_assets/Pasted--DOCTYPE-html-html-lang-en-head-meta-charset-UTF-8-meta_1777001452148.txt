@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents to Insights | Step 2 Extract Key Events</title>
+ 
+<style>
+/* ---------- Base ---------- */
+:root{
+  --navy:#0b2a4a;
+  --navy2:#103a66;
+  --bg:#f6f8fb;
+  --panel:#ffffff;
+  --border:#e6e9ef;
+  --muted:#5b6b7a;
+  --text:#122033;
+ 
+  --blue:#1f5ea8;
+  --success:#1f7a3f;
+  --danger:#d92d20;
+ 
+  --shadow:0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px;
+ 
+  --font:"Segoe UI", system-ui, Arial, sans-serif;
+}
+ 
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+}
+ 
+/* ---------- Header ---------- */
+.appHeader{
+  height:56px;
+  background:linear-gradient(0deg,var(--navy),var(--navy2));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 18px;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+.brandDot{
+  width:10px;height:10px;border-radius:50%;
+  background:#ffcc33;margin-right:10px;
+}
+.appTitle{font-weight:900;font-size:14px;}
+.headerSpacer{flex:1;}
+.rightLink{
+  color:#fff;text-decoration:none;font-size:13px;
+  border:1px solid rgba(255,255,255,.25);
+  padding:6px 10px;border-radius:8px;
+}
+ 
+/* ---------- Frame banners ---------- */
+.frameBanner{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+}
+.breadcrumbBar{position:sticky;top:56px;z-index:90;}
+.scopeBar{position:sticky;top:96px;z-index:80;}
+ 
+.bannerInner{
+  max-width:1400px;
+  margin:0 auto;
+  padding:10px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+ 
+.crumbs{
+  font-size:12.5px;color:var(--muted);
+}
+.crumbs strong{color:var(--text);}
+ 
+.scopeLabel{
+  font-size:12px;font-weight:900;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(11,42,74,.08);
+  border:1px solid rgba(11,42,74,.15);
+  color:var(--navy);
+}
+.scopeRight{
+  display:flex;gap:12px;
+}
+.scopeKV{
+  background:#f7f9fd;
+  border:1px solid #eef2f7;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:12.5px;
+}
+.scopeKV .k{color:var(--muted);font-weight:700;}
+.scopeKV .v{font-weight:900;}
+ 
+/* ---------- Layout ---------- */
+.shell{
+  display:grid;
+  grid-template-columns:260px 1fr;
+}
+.rail{
+  background:#fff;
+  border-right:1px solid var(--border);
+  padding:16px 14px;
+}
+.railTitle{
+  font-size:13px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+ 
+/* Progress list */
+.progressList{
+  padding-left:22px;
+}
+.progressItem{
+  margin:6px 0;
+  padding:8px 10px;
+  font-size:13px;
+  font-weight:800;
+  color:#6b7a8a;
+  border-radius:8px;
+}
+.progressItem.active{
+  color:var(--blue);
+  font-weight:900;
+}
+.progressItem:hover{
+  background:#f3f7ff;
+  box-shadow:inset 3px 0 0 var(--blue);
+}
+ 
+/* ---------- Main ---------- */
+.main{padding:18px;}
+.card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+  max-width:980px;
+}
+ 
+/* ---------- Progress ---------- */
+.statusText{
+  font-size:12.5px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+.progressBar{
+  height:14px;border-radius:999px;
+  background:#eef2f7;border:1px solid #e2e8f0;
+  overflow:hidden;margin-bottom:18px;
+}
+.progressFill{
+  height:100%;width:75%;
+  background:linear-gradient(90deg,#1f5ea8,#2a6acb);
+}
+ 
+/* ---------- Meeting ---------- */
+.meeting{
+  margin-bottom:20px;
+}
+.meetingTitle{
+  font-size:13px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+ 
+.eventBox{
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.eventRow{
+  display:flex;
+  gap:10px;
+  padding:10px 12px;
+  border-top:1px solid #eef2f7;
+}
+.eventRow:first-child{border-top:none;}
+ 
+.icon{
+  width:18px;height:18px;
+}
+.found{color:var(--success);}
+.notFound{color:var(--danger);font-weight:900;}
+ 
+.eventText{
+  font-size:12.8px;
+}
+.source{
+  color:var(--blue);
+  font-weight:700;
+  margin-left:6px;
+}
+ 
+/* ---------- Pagination ---------- */
+.pager{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  margin:16px 0;
+}
+.pagerBtn{
+  width:28px;height:28px;
+  border-radius:8px;
+  border:1px solid #e3e9f2;
+  background:#fff;
+}
+.pagerText{
+  font-size:12.5px;
+  font-weight:900;
+}
+ 
+/* ---------- Footer ---------- */
+.footer{
+  display:flex;
+  justify-content:space-between;
+  margin-top:16px;
+}
+.btn{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #d6deea;
+  background:#fff;
+  font-weight:900;
+}
+.btn.primary{
+  background:var(--navy);
+  color:#fff;
+}
+</style>
+</head>
+ 
+<body>
+ 
+<header class="appHeader">
+  <div class="brandDot"></div>
+  <div class="appTitle">Next Level Continuous Monitoring</div>
+  <div class="headerSpacer"></div>
+  #Next Level Lab</a>
+</header>
+ 
+<div class="frameBanner breadcrumbBar">
+  <div class="bannerInner">
+    <div class="crumbs">
+      <strong>Home</strong> › <strong>Documents to Insights</strong> › <strong>Step 2</strong>. Extract Key Events
+    </div>
+  </div>
+</div>
+ 
+<div class="frameBanner scopeBar">
+  <div class="bannerInner">
+    <div class="scopeLabel">Monitoring Scope</div>
+    <div class="scopeRight">
+      <div class="scopeKV"><span class="k">PM:</span> <span class="v">Jane Do</span></div>
+      <div class="scopeKV"><span class="k">Responsible Team:</span> <span class="v">US Finance Team</span></div>
+      <div class="scopeKV"><span class="k">BML:</span> <span class="v">Mike Smith</span></div>
+    </div>
+  </div>
+</div>
+ 
+<div class="shell">
+  <aside class="rail">
+    <div class="railTitle">Your Progress</div>
+    <ol class="progressList">
+      <li class="progressItem">Upload Documents</li>
+      <li class="progressItem active">Extract Key Events</li>
+      <li class="progressItem">Validate with Source Systems</li>
+      <li class="progressItem">Analyze Events and Impact</li>
+      <li class="progressItem">Finalize Outcome</li>
+    </ol>
+  </aside>
+ 
+  <main class="main">
+    <section class="card">
+      <h1 style="font-size:16px;font-weight:900;">Step 2. Extract Key Events</h1>
+      <div class="statusText">Extracting key information from documents…</div>
+      <div class="progressBar"><div class="progressFill"></div></div>
+ 
+      <!-- Meeting -->
+      <div class="meeting">
+        <div class="meetingTitle">Risk Management Forum, Q1 Meeting</div>
+        <div class="eventBox">
+          <div class="eventRow"><span class="found">✔</span><div class="eventText">Internal Risk Event <span class="source">(Quarterly Notes.docx)</span></div></div>
+          <div class="eventRow"><span class="found">✔</span><div class="eventText">Known Issue <span class="source">(Quarterly Notes.docx)</span></div></div>
+          <div class="eventRow"><span class="notFound">✖</span><div class="eventText">External Risk Event — Not Found</div></div>
+          <div class="eventRow"><span class="found">✔</span><div class="eventText">Regulatory Exam or Inquiry <span class="source">(Meeting Pack.pdf)</span></div></div>
+          <div class="eventRow"><span class="notFound">✖</span><div class="eventText">Significant Organization Change — Not Found</div></div>
+        </div>
+      </div>
+ 
+      <!-- Pagination -->
+      <div class="pager">
+        <button class="pagerBtn">«</button>
+        <button class="pagerBtn">‹</button>
+        <div class="pagerText">Page 1 of 2</div>
+        <button class="pagerBtn">›</button>
+        <button class="pagerBtn">»</button>
+      </div>
+ 
+      <div class="footer">
+        <button class="btn">Back</button>
+        <button class="btn primary">Next</button>
+      </div>
+    </section>
+  </main>
+</div>
+ 
+</body>
+</html>
