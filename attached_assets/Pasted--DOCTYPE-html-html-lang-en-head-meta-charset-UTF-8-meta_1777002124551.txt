@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Documents to Insights | Step 3 Validate with Source Systems</title>
+ 
+<style>
+:root{
+  --navy:#0b2a4a;
+  --navy2:#103a66;
+  --bg:#f6f8fb;
+  --panel:#ffffff;
+  --border:#e6e9ef;
+  --muted:#5b6b7a;
+  --text:#122033;
+ 
+  --blue:#1f5ea8;
+ 
+  --success:#1f7a3f;
+  --warning:#b54708;
+  --warningBg:#fff6ed;
+ 
+  --shadow:0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px;
+ 
+  --font:"Segoe UI", system-ui, Arial, sans-serif;
+}
+ 
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+}
+ 
+/* Header */
+.appHeader{
+  height:56px;
+  background:linear-gradient(0deg,var(--navy),var(--navy2));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 18px;
+  position:sticky;
+  top:0;
+  z-index:100;
+}
+.brandDot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#ffcc33;
+  margin-right:10px;
+}
+.appTitle{
+  font-weight:900;
+  font-size:14px;
+}
+.headerSpacer{ flex:1; }
+.rightLink{
+  color:#fff;
+  text-decoration:none;
+  font-size:13px;
+  border:1px solid rgba(255,255,255,.25);
+  padding:6px 10px;
+  border-radius:8px;
+}
+ 
+/* Frame banners */
+.frameBanner{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+}
+.breadcrumbBar{ position:sticky; top:56px; z-index:90; }
+.scopeBar{ position:sticky; top:96px; z-index:80; }
+ 
+.bannerInner{
+  max-width:1400px;
+  margin:0 auto;
+  padding:10px 18px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+}
+.crumbs{
+  font-size:12.5px;
+  color:var(--muted);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.crumbs strong{ color:var(--text); font-weight:900; }
+ 
+.scopeLabel{
+  font-size:12px;
+  font-weight:900;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(11,42,74,.08);
+  border:1px solid rgba(11,42,74,.15);
+  color:var(--navy);
+  white-space:nowrap;
+}
+.scopeRight{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.scopeKV{
+  background:#f7f9fd;
+  border:1px solid #eef2f7;
+  padding:6px 10px;
+  border-radius:10px;
+  font-size:12.5px;
+  white-space:nowrap;
+}
+.scopeKV .k{ color:var(--muted); font-weight:700; }
+.scopeKV .v{ font-weight:900; }
+ 
+/* Layout */
+.shell{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  min-height: calc(100vh - 56px);
+}
+.rail{
+  background:#fff;
+  border-right:1px solid var(--border);
+  padding:16px 14px;
+}
+.railTitle{
+  font-size:13px;
+  font-weight:900;
+  margin-bottom:10px;
+  color:#2b3c50;
+}
+.progressList{ padding-left:22px; }
+.progressItem{
+  margin:6px 0;
+  padding:8px 10px;
+  font-size:13px;
+  font-weight:800;
+  color:#6b7a8a;
+  border-radius:8px;
+  cursor:pointer;
+  transition: background-color 140ms ease, box-shadow 140ms ease, color 140ms ease;
+}
+.progressItem:hover{
+  background:#f3f7ff;
+  box-shadow: inset 3px 0 0 var(--blue);
+  color:#2b3c50;
+}
+.progressItem.active{
+  color:var(--blue);
+  font-weight:900;
+}
+ 
+/* Main */
+.main{ padding:18px; }
+.card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:16px;
+  max-width:1100px;
+}
+ 
+.cardHeader{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+.cardTitleWrap{
+  min-width:0;
+}
+.card h1{
+  font-size:16px;
+  font-weight:900;
+  margin:0 0 6px 0;
+}
+.cardDesc{
+  font-size:12.8px;
+  color:var(--muted);
+  line-height:1.4;
+  margin:0 0 10px 0;
+}
+ 
+/* Pager, in frame */
+.pager{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  user-select:none;
+  margin-top:2px;
+}
+.pagerBtn{
+  width:28px;
+  height:28px;
+  border-radius:8px;
+  border:1px solid #e3e9f2;
+  background:#fff;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+.pagerBtn:hover{
+  background:#f7f9fd;
+  box-shadow:0 0 0 3px rgba(31,94,168,0.10);
+}
+.pagerText{
+  font-size:12.5px;
+  font-weight:900;
+  color:#2b3c50;
+  min-width:92px;
+  text-align:center;
+}
+.pagerBtn svg{
+  width:16px;
+  height:16px;
+  opacity:0.85;
+}
+ 
+/* Sections and tables */
+.section{ margin-top:18px; }
+.sectionTitle{
+  font-size:13.5px;
+  font-weight:900;
+  margin-bottom:8px;
+  color:#1c2f45;
+}
+.tableWrap{
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12.5px;
+}
+thead{ background:#f7f9fd; }
+th, td{
+  padding:10px 12px;
+  border-bottom:1px solid #eef2f7;
+  text-align:left;
+  vertical-align:top;
+}
+th{
+  font-weight:900;
+  color:#334155;
+}
+tbody tr:last-child td{ border-bottom:none; }
+ 
+.statusOk{
+  font-weight:900;
+  color:var(--success);
+}
+ 
+/* Rating badge */
+.rating{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:3px 8px;
+  border-radius:999px;
+  font-weight:900;
+  font-size:11.5px;
+  border:1px solid #e6e9ef;
+  background:#fff;
+  white-space:nowrap;
+}
+.rating.critical{
+  border-color: rgba(180,35,24,0.25);
+  background: rgba(180,35,24,0.06);
+  color:#b42318;
+}
+.rating.major{
+  border-color: rgba(181,71,8,0.30);
+  background: rgba(181,71,8,0.08);
+  color:#b54708;
+}
+.rating.limited{
+  border-color: rgba(31,94,168,0.25);
+  background: rgba(31,94,168,0.08);
+  color:#1f5ea8;
+}
+ 
+/* Not found box */
+.notFoundBox{
+  border:1px solid #fed7aa;
+  background:var(--warningBg);
+  border-radius:12px;
+  padding:12px;
+}
+.notFoundIntro{
+  font-size:12.5px;
+  color:#7c2d12;
+  margin:0 0 10px 0;
+  line-height:1.35;
+  font-weight:700;
+}
+ 
+/* Compact not found table inside callout */
+.compactTableWrap{
+  border:1px solid rgba(124,45,18,0.15);
+  border-radius:10px;
+  overflow:hidden;
+  background:#fff;
+}
+.compactTableWrap thead{
+  background:rgba(181,71,8,0.08);
+}
+.compactTableWrap th{
+  color:#7c2d12;
+}
+.compactNote{
+  margin-top:10px;
+  font-size:12.5px;
+  color:#7c2d12;
+  line-height:1.4;
+}
+ 
+/* Footer */
+.footer{
+  display:flex;
+  justify-content:space-between;
+  margin-top:18px;
+  gap:12px;
+}
+.btn{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #d6deea;
+  background:#fff;
+  font-weight:900;
+  cursor:pointer;
+  min-width:120px;
+}
+.btn.primary{
+  background:var(--navy);
+  color:#fff;
+  border-color:rgba(0,0,0,0.1);
+}
+ 
+/* Responsive */
+@media (max-width: 980px){
+  .shell{ grid-template-columns:1fr; }
+  .rail{ border-right:none; border-bottom:1px solid var(--border); }
+  .main{ padding:12px 14px 22px; }
+  .card{ max-width:none; }
+  .pager{ justify-content:flex-start; margin-top:10px; }
+  .scopeRight{ gap:10px; }
+}
+</style>
+</head>
+ 
+<body>
+  <header class="appHeader" aria-label="Application header">
+    <div class="brandDot" aria-hidden="true"></div>
+    <div class="appTitle">Next Level Continuous Monitoring</div>
+    <div class="headerSpacer"></div>
+    <a class="rightLink" href="#" aria-label="Next Level Lab">Next Level Lab</a>
+  </header>
+ 
+  <div class="frameBanner breadcrumbBar" aria-label="Breadcrumb banner">
+    <div class="bannerInner">
+      <div class="crumbs" title="Navigation hierarchy">
+        <strong>Home</strong> › <strong>Documents to Insights</strong> › <strong>Step 3</strong>. Validate with Source Systems
+      </div>
+    </div>
+  </div>
+ 
+  <div class="frameBanner scopeBar" aria-label="Monitoring scope banner">
+    <div class="bannerInner">
+      <div class="scopeLabel">Monitoring Scope</div>
+      <div class="scopeRight" aria-label="Monitoring scope values">
+        <div class="scopeKV"><span class="k">PM:</span> <span class="v">Jane Do</span></div>
+        <div class="scopeKV"><span class="k">Responsible Team:</span> <span class="v">US Finance Team</span></div>
+        <div class="scopeKV"><span class="k">BML:</span> <span class="v">Mike Smith</span></div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="shell">
+    <aside class="rail" aria-label="Your Progress">
+      <div class="railTitle">Your Progress</div>
+      <ol class="progressList">
+        <li class="progressItem">Upload Documents</li>
+        <li class="progressItem">Extract Key Events</li>
+        <li class="progressItem active" aria-current="step">Validate with Source Systems</li>
+        <li class="progressItem">Analyze Events and Impact</li>
+        <li class="progressItem">Finalize Outcome</li>
+      </ol>
+    </aside>
+ 
+    <main class="main" aria-label="Step content">
+      <section class="card" aria-label="Step 3 Validate with Source Systems">
+        <div class="cardHeader">
+          <div class="cardTitleWrap">
+            <h1>Step 3. Validate with Source Systems</h1>
+            <p class="cardDesc">
+              Items identified from documents are validated against authoritative source systems.
+              The information below reflects the latest confirmed records.
+              This step is read only and shows only current, canonical records.
+            </p>
+          </div>
+ 
+          <!-- In frame paging -->
+          <div class="pager" aria-label="In frame pagination">
+            <button class="pagerBtn" type="button" aria-label="First page">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M18 6 12 12l6 6" stroke="#2b3c50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 6 6 12l6 6" stroke="#2b3c50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="pagerBtn" type="button" aria-label="Previous page">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M15 18 9 12l6-6" stroke="#2b3c50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="pagerText" aria-label="Page indicator">Page 1 of 2</div>
+            <button class="pagerBtn" type="button" aria-label="Next page">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M9 18l6-6-6-6" stroke="#2b3c50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="pagerBtn" type="button" aria-label="Last page">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 6l6 6-6 6" stroke="#2b3c50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 6l6 6-6 6" stroke="#2b3c50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+ 
+        <!-- ORAC Risk Events -->
+        <div class="section">
+          <div class="sectionTitle">ORAC Risk Events</div>
+          <div class="tableWrap">
+            <table aria-label="ORAC Risk Events table">
+              <thead>
+                <tr>
+                  <th>Event ID</th>
+                  <th>Event Name</th>
+                  <th>Rating</th>
+                  <th>Current Status</th>
+                  <th>Last Updated</th>
+                  <th>Source System</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>RE-102345</td>
+                  <td>System outage impacting payments</td>
+                  <td><span class="rating critical">Critical</span></td>
+                  <td class="statusOk">Open</td>
+                  <td>2026-03-18</td>
+                  <td>ORAC Risk Events</td>
+                </tr>
+                <tr>
+                  <td>RE-104118</td>
+                  <td>Processing delays due to vendor capacity</td>
+                  <td><span class="rating major">Major</span></td>
+                  <td class="statusOk">Monitoring</td>
+                  <td>2026-03-22</td>
+                  <td>ORAC Risk Events</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+ 
+        <!-- ORAC Issues -->
+        <div class="section">
+          <div class="sectionTitle">ORAC Issues</div>
+          <div class="tableWrap">
+            <table aria-label="ORAC Issues table">
+              <thead>
+                <tr>
+                  <th>Issue ID</th>
+                  <th>Issue Summary</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                  <th>Target Remediation Date</th>
+                  <th>Source System</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>ISS-778901</td>
+                  <td>Access control gaps in core platform</td>
+                  <td><span class="rating major">Major</span></td>
+                  <td class="statusOk">In Progress</td>
+                  <td>2026-06-30</td>
+                  <td>ORAC Issues</td>
+                </tr>
+                <tr>
+                  <td>ISS-781220</td>
+                  <td>Incomplete evidence retention for reconciliations</td>
+                  <td><span class="rating limited">Limited</span></td>
+                  <td class="statusOk">Open</td>
+                  <td>2026-05-15</td>
+                  <td>ORAC Issues</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+ 
+        <!-- Navigator Changes -->
+        <div class="section">
+          <div class="sectionTitle">Navigator Changes</div>
+          <div class="tableWrap">
+            <table aria-label="Navigator Changes table">
+              <thead>
+                <tr>
+                  <th>Change ID</th>
+                  <th>Change Description</th>
+                  <th>Rating</th>
+                  <th>Current Phase</th>
+                  <th>Target Go Live</th>
+                  <th>Source System</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>CHG-445612</td>
+                  <td>Payments platform upgrade</td>
+                  <td><span class="rating major">Major</span></td>
+                  <td class="statusOk">Execution</td>
+                  <td>2026-09-15</td>
+                  <td>Navigator</td>
+                </tr>
+                <tr>
+                  <td>CHG-447908</td>
+                  <td>Risk controls monitoring automation rollout</td>
+                  <td><span class="rating limited">Limited</span></td>
+                  <td class="statusOk">Design</td>
+                  <td>2026-07-30</td>
+                  <td>Navigator</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+ 
+        <!-- Not found in source systems -->
+        <div class="section">
+          <div class="sectionTitle">Items Identified in Documents but Not Found in Source Systems</div>
+          <div class="notFoundBox" aria-label="Not found callout">
+            <p class="notFoundIntro">
+              These items were extracted from documents, but no current matching record was found in ORAC or Navigator.
+              The list below is retained for traceability and follow up.
+            </p>
+ 
+            <div class="compactTableWrap">
+              <table aria-label="Not found items table">
+                <thead>
+                  <tr>
+                    <th>Extracted Item</th>
+                    <th>Expected System</th>
+                    <th>Rating</th>
+                    <th>Document Source</th>
+                    <th>Validation Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Internal Risk Event, third party processing delay</td>
+                    <td>ORAC Risk Events</td>
+                    <td><span class="rating major">Major</span></td>
+                    <td>Quarterly Notes.docx</td>
+                    <td><strong style="color:var(--warning);">No matching record found</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Known Issue, legacy reconciliation workaround</td>
+                    <td>ORAC Issues</td>
+                    <td><span class="rating limited">Limited</span></td>
+                    <td>Meeting Pack.pdf</td>
+                    <td><strong style="color:var(--warning);">No matching record found</strong></td>
+                  </tr>
+                  <tr>
+                    <td>Change, minor release referenced as CHG 44 5612</td>
+                    <td>Navigator</td>
+                    <td><span class="rating limited">Limited</span></td>
+                    <td>Meeting Minutes.docx</td>
+                    <td><strong style="color:var(--warning);">No matching record found</strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+ 
+            <div class="compactNote">
+              Possible reasons include misspelled or incomplete IDs, alias naming differences between documents and source systems,
+              timing delays in system updates, or references to discussions that were not formally registered in ORAC or Navigator.
+            </div>
+          </div>
+        </div>
+ 
+        <!-- Footer actions -->
+        <div class="footer" aria-label="Step actions">
+          <button class="btn" type="button" aria-label="Back">Back</button>
+          <button class="btn primary" type="button" aria-label="Next">Next</button>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

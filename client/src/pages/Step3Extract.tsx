@@ -1,69 +1,116 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 
-const FILES = [
+const NAVY = "#0b2a4a";
+const SUCCESS = "#1f7a3f";
+const WARNING = "#b54708";
+const BORDER = "#e6e9ef";
+const MUTED = "#5b6b7a";
+const TEXT = "#122033";
+
+type Rating = "Critical" | "Major" | "Limited";
+
+interface RiskEvent {
+  id: string; name: string; rating: Rating; status: string; lastUpdated: string; source: string;
+}
+interface Issue {
+  id: string; summary: string; rating: Rating; status: string; remediationDate: string; source: string;
+}
+interface Change {
+  id: string; description: string; rating: Rating; phase: string; goLive: string; source: string;
+}
+interface NotFoundItem {
+  item: string; expectedSystem: string; rating: Rating; docSource: string;
+}
+
+const PAGES: Array<{
+  riskEvents: RiskEvent[];
+  issues: Issue[];
+  changes: Change[];
+  notFound: NotFoundItem[];
+}> = [
   {
-    filename: "Ops Risk Summary.docx",
-    events: [
-      { label: "Internal Risk Event", found: true },
-      { label: "External Risk Event", found: false },
-      { label: "Other Internal Adverse Event", found: true },
-      { label: "Known Issue", found: true },
-      { label: "Management Risk Tolerance and Governance", found: false },
-      { label: "Business Ownership Change", found: false },
-      { label: "Significant Organization Change", found: false },
-      { label: "Regulatory Exam or Inquiry", found: true },
-      { label: "Other", found: true },
+    riskEvents: [
+      { id: "RE-102345", name: "System outage impacting payments", rating: "Critical", status: "Open", lastUpdated: "2026-03-18", source: "ORAC Risk Events" },
+      { id: "RE-104118", name: "Processing delays due to vendor capacity", rating: "Major", status: "Monitoring", lastUpdated: "2026-03-22", source: "ORAC Risk Events" },
+    ],
+    issues: [
+      { id: "ISS-778901", summary: "Access control gaps in core platform", rating: "Major", status: "In Progress", remediationDate: "2026-06-30", source: "ORAC Issues" },
+      { id: "ISS-781220", summary: "Incomplete evidence retention for reconciliations", rating: "Limited", status: "Open", remediationDate: "2026-05-15", source: "ORAC Issues" },
+    ],
+    changes: [
+      { id: "CHG-445612", description: "Payments platform upgrade", rating: "Major", phase: "Execution", goLive: "2026-09-15", source: "Navigator" },
+      { id: "CHG-447908", description: "Risk controls monitoring automation rollout", rating: "Limited", phase: "Design", goLive: "2026-07-30", source: "Navigator" },
+    ],
+    notFound: [
+      { item: "Internal Risk Event, third party processing delay", expectedSystem: "ORAC Risk Events", rating: "Major", docSource: "Quarterly Notes.docx" },
+      { item: "Known Issue, legacy reconciliation workaround", expectedSystem: "ORAC Issues", rating: "Limited", docSource: "Meeting Pack.pdf" },
+      { item: "Change, minor release referenced as CHG 44 5612", expectedSystem: "Navigator", rating: "Limited", docSource: "Meeting Minutes.docx" },
     ],
   },
   {
-    filename: "Incident Report.pdf",
-    events: [
-      { label: "Internal Risk Event", found: true },
-      { label: "External Risk Event", found: true },
-      { label: "Other Internal Adverse Event", found: false },
-      { label: "Known Issue", found: true },
-      { label: "Management Risk Tolerance and Governance", found: true },
-      { label: "Business Ownership Change", found: false },
-      { label: "Significant Organization Change", found: false },
-      { label: "Regulatory Exam or Inquiry", found: false },
-      { label: "Other", found: false },
+    riskEvents: [
+      { id: "RE-109022", name: "Data integrity failure in reporting pipeline", rating: "Critical", status: "Open", lastUpdated: "2026-04-01", source: "ORAC Risk Events" },
     ],
-  },
-  {
-    filename: "Ops Workflow.vsdx",
-    events: [
-      { label: "Internal Risk Event", found: false },
-      { label: "External Risk Event", found: false },
-      { label: "Other Internal Adverse Event", found: false },
-      { label: "Known Issue", found: false },
-      { label: "Management Risk Tolerance and Governance", found: true },
-      { label: "Business Ownership Change", found: true },
-      { label: "Significant Organization Change", found: true },
-      { label: "Regulatory Exam or Inquiry", found: false },
-      { label: "Other", found: false },
+    issues: [
+      { id: "ISS-790034", summary: "Manual override procedure not documented", rating: "Major", status: "Open", remediationDate: "2026-07-01", source: "ORAC Issues" },
+    ],
+    changes: [
+      { id: "CHG-451100", description: "Core banking system refresh", rating: "Major", phase: "Planning", goLive: "2026-12-01", source: "Navigator" },
+    ],
+    notFound: [
+      { item: "Regulatory Exam, Q4 review findings", expectedSystem: "ORAC Issues", rating: "Major", docSource: "Ops Risk Summary.docx" },
     ],
   },
 ];
 
-const FOUND_COLOR = "#1f7a3f";
-const NOT_FOUND_COLOR = "#d92d20";
+function RatingBadge({ rating }: { rating: Rating }) {
+  const styles: Record<Rating, { border: string; bg: string; color: string }> = {
+    Critical: { border: "rgba(180,35,24,0.25)", bg: "rgba(180,35,24,0.06)", color: "#b42318" },
+    Major: { border: "rgba(181,71,8,0.30)", bg: "rgba(181,71,8,0.08)", color: "#b54708" },
+    Limited: { border: "rgba(31,94,168,0.25)", bg: "rgba(31,94,168,0.08)", color: "#1f5ea8" },
+  };
+  const s = styles[rating];
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", justifyContent: "center",
+      padding: "3px 8px", borderRadius: 999, fontWeight: 900, fontSize: 11.5,
+      border: `1px solid ${s.border}`, background: s.bg, color: s.color, whiteSpace: "nowrap",
+    }}>
+      {rating}
+    </span>
+  );
+}
 
-export default function Step3Extract() {
+const TH_STYLE: React.CSSProperties = {
+  padding: "10px 12px", background: "#f7f9fd", fontWeight: 900, fontSize: 12.5,
+  color: "#334155", textAlign: "left", borderBottom: "1px solid #eef2f7",
+};
+const TD_STYLE: React.CSSProperties = {
+  padding: "10px 12px", fontSize: 12.5, borderBottom: "1px solid #eef2f7",
+  color: TEXT, textAlign: "left", verticalAlign: "top",
+};
+const TD_LAST: React.CSSProperties = { ...TD_STYLE, borderBottom: "none" };
+
+function tableWrap(children: React.ReactNode) {
+  return (
+    <div style={{ border: `1px solid ${BORDER}`, borderRadius: 12, overflow: "hidden" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+        {children}
+      </table>
+    </div>
+  );
+}
+
+export default function Step3Validate() {
   const [, setLocation] = useLocation();
-  const [progress, setProgress] = useState(0);
   const [page, setPage] = useState(1);
-  const totalPages = FILES.length;
-  const file = FILES[page - 1];
+  const totalPages = PAGES.length;
+  const data = PAGES[page - 1];
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
   const selectedTeam = sessionStorage.getItem("selectedTeam") || "";
-
-  useEffect(() => {
-    const t = setTimeout(() => setProgress(75), 400);
-    return () => clearTimeout(t);
-  }, []);
 
   const scopeItems = [
     selectedPm ? { k: "PM:", v: selectedPm } : null,
@@ -71,25 +118,41 @@ export default function Step3Extract() {
     selectedBml ? { k: "BML:", v: selectedBml } : null,
   ].filter(Boolean) as { k: string; v: string }[];
 
+  const pagerBtn = (label: React.ReactNode, action: () => void, disabled: boolean, testId: string) => (
+    <button
+      data-testid={testId}
+      onClick={action}
+      disabled={disabled}
+      style={{
+        width: 28, height: 28, borderRadius: 8,
+        border: "1px solid #e3e9f2", background: "#fff",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.4 : 1,
+        display: "grid", placeItems: "center",
+      }}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
 
-      {/* Breadcrumb bar */}
+      {/* Breadcrumb */}
       <div style={{
-        background: "#ffffff", borderBottom: "1px solid #e6e9ef",
-        padding: "10px 18px", fontSize: 12.5, color: "#5b6b7a", fontWeight: 600,
+        background: "#fff", borderBottom: `1px solid ${BORDER}`,
+        padding: "10px 18px", fontSize: 12.5, color: MUTED, fontWeight: 600,
       }}>
-        <span style={{ color: "#122033", fontWeight: 900 }}>Home</span>
+        <span style={{ color: TEXT, fontWeight: 900 }}>Home</span>
         <span style={{ margin: "0 6px" }}>›</span>
-        <span style={{ color: "#122033", fontWeight: 900 }}>Documents to Insights</span>
+        <span style={{ color: TEXT, fontWeight: 900 }}>Documents to Insights</span>
         <span style={{ margin: "0 6px" }}>›</span>
-        <span style={{ color: "#122033", fontWeight: 900 }}>Step 2.</span> Extract Key Events
+        <span style={{ color: TEXT, fontWeight: 900 }}>Step 3.</span>{" "}Validate with Source Systems
       </div>
 
       {/* Monitoring scope bar */}
       <div style={{
-        background: "linear-gradient(180deg,#ffffff 0%,#fbfcfe 100%)",
-        borderBottom: "1px solid #e6e9ef",
+        background: "#fff", borderBottom: `1px solid ${BORDER}`,
         padding: "10px 18px",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: 14, flexWrap: "wrap",
@@ -99,7 +162,7 @@ export default function Step3Extract() {
           padding: "6px 10px", borderRadius: 999,
           border: "1px solid rgba(11,42,74,0.15)",
           background: "rgba(11,42,74,0.08)",
-          color: "#0b2a4a", fontSize: 12, fontWeight: 900, whiteSpace: "nowrap",
+          color: NAVY, fontSize: 12, fontWeight: 900, whiteSpace: "nowrap",
         }}>
           Monitoring Scope
         </div>
@@ -112,143 +175,226 @@ export default function Step3Extract() {
                 background: "#f7f9fd", border: "1px solid #eef2f7",
                 fontSize: 12.5, whiteSpace: "nowrap",
               }}>
-                <span style={{ color: "#5b6b7a", fontWeight: 700 }}>{k}</span>
-                <span style={{ color: "#122033", fontWeight: 900 }}>{v}</span>
+                <span style={{ color: MUTED, fontWeight: 700 }}>{k}</span>
+                <span style={{ color: TEXT, fontWeight: 900 }}>{v}</span>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      {/* Main content */}
-      <div style={{ padding: "18px", flex: 1 }}>
+      {/* Main */}
+      <div style={{ padding: 18, flex: 1 }}>
         <div style={{
-          background: "#ffffff", border: "1px solid #e6e9ef", borderRadius: 12,
-          boxShadow: "0 6px 18px rgba(16,24,40,0.08)", padding: 16, maxWidth: 980,
+          background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12,
+          boxShadow: "0 6px 18px rgba(16,24,40,0.08)", padding: 16, maxWidth: 1100,
         }}>
-          {/* Card header */}
-          <h1 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 900, color: "#122033" }}>
-            Step 2. Extract Key Events
-          </h1>
-          <div style={{ fontSize: 12.5, color: "#5b6b7a", fontWeight: 600, marginBottom: 8 }}>
-            Extracting key information from documents…
+
+          {/* Card header row */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
+            <div style={{ minWidth: 0 }}>
+              <h1 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 900, color: TEXT }}>
+                Step 3. Validate with Source Systems
+              </h1>
+              <p style={{ margin: "0 0 10px", fontSize: 12.8, color: MUTED, lineHeight: 1.4 }}>
+                Items identified from documents are validated against authoritative source systems.
+                The information below reflects the latest confirmed records.
+                This step is read only and shows only current, canonical records.
+              </p>
+            </div>
+
+            {/* In-card pager */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginTop: 2, userSelect: "none" }}>
+              {pagerBtn(
+                <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M18 6 12 12l6 6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 6 6 12l6 6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                () => setPage(1), page === 1, "pager-first"
+              )}
+              {pagerBtn(
+                <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M15 18 9 12l6-6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                () => setPage(p => Math.max(1, p - 1)), page === 1, "pager-prev"
+              )}
+              <span style={{ fontSize: 12.5, fontWeight: 900, color: "#2b3c50", minWidth: 92, textAlign: "center" }}>
+                Page {page} of {totalPages}
+              </span>
+              {pagerBtn(
+                <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                () => setPage(p => Math.min(totalPages, p + 1)), page === totalPages, "pager-next"
+              )}
+              {pagerBtn(
+                <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M6 6l6 6-6 6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 6l6 6-6 6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+                () => setPage(totalPages), page === totalPages, "pager-last"
+              )}
+            </div>
           </div>
 
-          {/* Progress bar */}
-          <div style={{
-            height: 14, borderRadius: 999, background: "#eef2f7",
-            border: "1px solid #e2e8f0", overflow: "hidden", marginBottom: 20,
-          }}>
-            <div style={{
-              height: "100%", width: `${progress}%`,
-              background: "linear-gradient(90deg,#1f5ea8,#2a6acb)",
-              transition: "width 0.8s ease",
-            }} />
+          {/* ORAC Risk Events */}
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1c2f45", marginBottom: 8 }}>ORAC Risk Events</div>
+            {tableWrap(
+              <>
+                <thead>
+                  <tr>
+                    {["Event ID", "Event Name", "Rating", "Current Status", "Last Updated", "Source System"].map(h => (
+                      <th key={h} style={TH_STYLE}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.riskEvents.map((r, i) => {
+                    const isLast = i === data.riskEvents.length - 1;
+                    const td = isLast ? TD_LAST : TD_STYLE;
+                    return (
+                      <tr key={r.id}>
+                        <td style={td}>{r.id}</td>
+                        <td style={td}>{r.name}</td>
+                        <td style={td}><RatingBadge rating={r.rating} /></td>
+                        <td style={{ ...td, fontWeight: 900, color: SUCCESS }}>{r.status}</td>
+                        <td style={td}>{r.lastUpdated}</td>
+                        <td style={td}>{r.source}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </>
+            )}
           </div>
 
-          {/* File block */}
-          <div style={{ marginBottom: 18 }}>
+          {/* ORAC Issues */}
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1c2f45", marginBottom: 8 }}>ORAC Issues</div>
+            {tableWrap(
+              <>
+                <thead>
+                  <tr>
+                    {["Issue ID", "Issue Summary", "Rating", "Status", "Target Remediation Date", "Source System"].map(h => (
+                      <th key={h} style={TH_STYLE}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.issues.map((iss, i) => {
+                    const isLast = i === data.issues.length - 1;
+                    const td = isLast ? TD_LAST : TD_STYLE;
+                    return (
+                      <tr key={iss.id}>
+                        <td style={td}>{iss.id}</td>
+                        <td style={td}>{iss.summary}</td>
+                        <td style={td}><RatingBadge rating={iss.rating} /></td>
+                        <td style={{ ...td, fontWeight: 900, color: SUCCESS }}>{iss.status}</td>
+                        <td style={td}>{iss.remediationDate}</td>
+                        <td style={td}>{iss.source}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </>
+            )}
+          </div>
+
+          {/* Navigator Changes */}
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1c2f45", marginBottom: 8 }}>Navigator Changes</div>
+            {tableWrap(
+              <>
+                <thead>
+                  <tr>
+                    {["Change ID", "Change Description", "Rating", "Current Phase", "Target Go Live", "Source System"].map(h => (
+                      <th key={h} style={TH_STYLE}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.changes.map((c, i) => {
+                    const isLast = i === data.changes.length - 1;
+                    const td = isLast ? TD_LAST : TD_STYLE;
+                    return (
+                      <tr key={c.id}>
+                        <td style={td}>{c.id}</td>
+                        <td style={td}>{c.description}</td>
+                        <td style={td}><RatingBadge rating={c.rating} /></td>
+                        <td style={{ ...td, fontWeight: 900, color: SUCCESS }}>{c.phase}</td>
+                        <td style={td}>{c.goLive}</td>
+                        <td style={td}>{c.source}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </>
+            )}
+          </div>
+
+          {/* Not Found callout */}
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1c2f45", marginBottom: 8 }}>
+              Items Identified in Documents but Not Found in Source Systems
+            </div>
             <div style={{
-              fontSize: 13, fontWeight: 900, color: "#fff",
-              background: "#0b2a4a", borderRadius: "10px 10px 0 0",
-              padding: "10px 14px", marginBottom: 0,
+              border: "1px solid #fed7aa", background: "#fff6ed",
+              borderRadius: 12, padding: 12,
             }}>
-              {file.filename}
+              <p style={{ fontSize: 12.5, color: "#7c2d12", margin: "0 0 10px", lineHeight: 1.35, fontWeight: 700 }}>
+                These items were extracted from documents, but no current matching record was found in ORAC or Navigator.
+                The list below is retained for traceability and follow up.
+              </p>
+              <div style={{
+                border: "1px solid rgba(124,45,18,0.15)", borderRadius: 10,
+                overflow: "hidden", background: "#fff",
+              }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
+                  <thead>
+                    <tr>
+                      {["Extracted Item", "Expected System", "Rating", "Document Source", "Validation Result"].map(h => (
+                        <th key={h} style={{
+                          padding: "10px 12px", textAlign: "left",
+                          background: "rgba(181,71,8,0.08)", fontWeight: 900,
+                          fontSize: 12.5, color: "#7c2d12",
+                          borderBottom: "1px solid #eef2f7",
+                        }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.notFound.map((nf, i) => {
+                      const isLast = i === data.notFound.length - 1;
+                      const td: React.CSSProperties = {
+                        padding: "10px 12px", fontSize: 12.5,
+                        borderBottom: isLast ? "none" : "1px solid #eef2f7",
+                        verticalAlign: "top",
+                      };
+                      return (
+                        <tr key={i}>
+                          <td style={td}>{nf.item}</td>
+                          <td style={td}>{nf.expectedSystem}</td>
+                          <td style={td}><RatingBadge rating={nf.rating} /></td>
+                          <td style={td}>{nf.docSource}</td>
+                          <td style={td}>
+                            <strong style={{ color: WARNING }}>No matching record found</strong>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ marginTop: 10, fontSize: 12.5, color: "#7c2d12", lineHeight: 1.4 }}>
+                Possible reasons include misspelled or incomplete IDs, alias naming differences between documents and
+                source systems, timing delays in system updates, or references to discussions that were not formally
+                registered in ORAC or Navigator.
+              </div>
             </div>
-            <div style={{ border: "1px solid #e6e9ef", borderTop: "none", borderRadius: "0 0 12px 12px", overflow: "hidden" }}>
-              {file.events.map((ev, i) => (
-                <div
-                  key={i}
-                  data-testid={`event-row-${i}`}
-                  style={{
-                    display: "flex", gap: 10, alignItems: "center",
-                    padding: "10px 12px",
-                    borderTop: i === 0 ? "none" : "1px solid #eef2f7",
-                    background: "#fff",
-                  }}
-                >
-                  <div style={{ width: 18, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {ev.found ? (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M3 8l3.5 3.5L13 4.5" stroke={FOUND_COLOR} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    ) : (
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                        <path d="M2 2l10 10M12 2L2 12" stroke={NOT_FOUND_COLOR} strokeWidth="2.2" strokeLinecap="round"/>
-                      </svg>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 12.8 }}>
-                    {ev.found ? (
-                      <span style={{ color: "#1a2e44", fontWeight: 600 }}>{ev.label}</span>
-                    ) : (
-                      <span style={{ color: NOT_FOUND_COLOR, fontWeight: 900 }}>{ev.label} — Not Found</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Pagination */}
-          <div style={{
-            display: "flex", justifyContent: "center", alignItems: "center",
-            gap: 10, margin: "16px 0",
-          }}>
-            {[
-              { label: "«", action: () => setPage(1) },
-              { label: "‹", action: () => setPage(p => Math.max(1, p - 1)) },
-            ].map(({ label, action }) => (
-              <button
-                key={label}
-                onClick={action}
-                disabled={page === 1}
-                style={{
-                  width: 28, height: 28, borderRadius: 8,
-                  border: "1px solid #e3e9f2", background: "#fff",
-                  cursor: page === 1 ? "not-allowed" : "pointer",
-                  opacity: page === 1 ? 0.4 : 1,
-                  fontWeight: 700, fontSize: 13, display: "grid", placeItems: "center",
-                }}
-              >
-                {label}
-              </button>
-            ))}
-            <span style={{ fontSize: 12.5, fontWeight: 900, color: "#122033" }}>
-              Page {page} of {totalPages}
-            </span>
-            {[
-              { label: "›", action: () => setPage(p => Math.min(totalPages, p + 1)) },
-              { label: "»", action: () => setPage(totalPages) },
-            ].map(({ label, action }) => (
-              <button
-                key={label}
-                onClick={action}
-                disabled={page === totalPages}
-                style={{
-                  width: 28, height: 28, borderRadius: 8,
-                  border: "1px solid #e3e9f2", background: "#fff",
-                  cursor: page === totalPages ? "not-allowed" : "pointer",
-                  opacity: page === totalPages ? 0.4 : 1,
-                  fontWeight: 700, fontSize: 13, display: "grid", placeItems: "center",
-                }}
-              >
-                {label}
-              </button>
-            ))}
           </div>
 
           {/* Footer */}
           <div style={{
             display: "flex", justifyContent: "space-between",
-            marginTop: 16, paddingTop: 14, borderTop: "1px solid #e6e9ef",
+            marginTop: 18, gap: 12,
           }}>
             <button
               data-testid="button-back"
               onClick={() => setLocation("/step-2")}
               style={{
-                background: "#fff", color: "#122033", fontWeight: 900, fontSize: 13,
-                border: "1px solid #d6deea", borderRadius: 10, padding: "10px 18px", cursor: "pointer",
+                padding: "10px 14px", borderRadius: 10, border: "1px solid #d6deea",
+                background: "#fff", fontWeight: 900, cursor: "pointer", minWidth: 120, fontSize: 13,
               }}
             >
               Back
@@ -257,13 +403,14 @@ export default function Step3Extract() {
               data-testid="button-next"
               onClick={() => setLocation("/step-4")}
               style={{
-                background: "#0b2a4a", color: "#fff", fontWeight: 900, fontSize: 13,
-                border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10, padding: "10px 18px", cursor: "pointer", minWidth: 80,
+                padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
+                background: NAVY, color: "#fff", fontWeight: 900, cursor: "pointer", minWidth: 120, fontSize: 13,
               }}
             >
               Next
             </button>
           </div>
+
         </div>
       </div>
     </div>
