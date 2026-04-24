@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents to Insights | Step 5 Finalize Outcome</title>
+ 
+<style>
+:root{
+  --navy:#0b2a4a;
+  --bg:#f6f8fb;
+  --panel:#ffffff;
+  --border:#e6e9ef;
+  --muted:#5b6b7a;
+  --text:#122033;
+ 
+  /* Section accent colors */
+  --accent-meeting:#e8f1fb;
+  --accent-snapshot:#ecfdf3;
+  --accent-register:#fef3c7;
+ 
+  --divider:#eef2f7;
+ 
+  --shadow:0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px;
+ 
+  --font:"Segoe UI", system-ui, Arial, sans-serif;
+}
+ 
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+}
+ 
+/* ===== Frame ===== */
+.appHeader{
+  height:56px;
+  background:var(--navy);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 18px;
+}
+.brandDot{
+  width:10px;height:10px;border-radius:50%;
+  background:#ffcc33;margin-right:10px;
+}
+.appTitle{font-weight:900;font-size:14px;}
+.headerSpacer{flex:1;}
+ 
+.frameBanner{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+}
+.bannerInner{
+  max-width:1100px;
+  margin:0 auto;
+  padding:10px 18px;
+}
+.crumbs{
+  font-size:12.5px;
+  color:var(--muted);
+}
+.crumbs strong{color:var(--text);}
+ 
+/* ===== Layout ===== */
+.shell{
+  display:grid;
+  grid-template-columns:260px 1fr;
+}
+.rail{
+  background:#fff;
+  border-right:1px solid var(--border);
+  padding:16px 14px;
+}
+.railTitle{
+  font-size:13px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+.progressList{ padding-left:22px; }
+.progressItem{
+  margin:6px 0;
+  padding:8px 10px;
+  font-size:13px;
+  font-weight:800;
+  color:#6b7a8a;
+  border-radius:8px;
+}
+.progressItem.active{
+  color:#1f5ea8;
+  font-weight:900;
+}
+ 
+.main{
+  padding:22px 18px 90px;
+}
+.container{
+  max-width:900px;
+  margin:0 auto;
+}
+ 
+/* ===== Section Blocks ===== */
+.section{
+  margin-bottom:34px;
+}
+.sectionTile{
+  padding:9px 14px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:900;
+  margin-bottom:12px;
+}
+.tile-meeting{ background:var(--accent-meeting); }
+.tile-snapshot{ background:var(--accent-snapshot); }
+.tile-register{ background:var(--accent-register); }
+ 
+.sectionBody{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:16px;
+}
+ 
+/* ===== Meeting Summary ===== */
+.meetingBlock{
+  margin-bottom:16px;
+}
+.meetingBlock:last-child{ margin-bottom:0; }
+.meetingHeader{
+  font-size:13.5px;
+  font-weight:900;
+}
+.meetingMeta{
+  font-size:12.5px;
+  color:var(--muted);
+  margin:3px 0 6px;
+}
+.meetingDesc{
+  font-size:13px;
+  line-height:1.5;
+}
+.docList{
+  margin-top:12px;
+  font-size:12.5px;
+}
+.docItem{ margin-bottom:4px; }
+ 
+/* ===== Executive Snapshot ===== */
+.snapshotSection{
+  margin-bottom:20px;
+}
+.snapshotSection:last-child{ margin-bottom:0; }
+ 
+.snapshotHeader{
+  font-size:13.5px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.snapshotText{
+  font-size:13px;
+  line-height:1.6;
+}
+.snapshotList{
+  padding-left:18px;
+  margin:8px 0 0;
+}
+.snapshotList li{
+  margin-bottom:8px;
+  line-height:1.55;
+}
+.snapshotDivider{
+  height:1px;
+  background:var(--divider);
+  margin:18px 0;
+}
+ 
+/* ===== Event Register ===== */
+.registerToggle{
+  font-size:13px;
+  font-weight:900;
+  color:#92400e;
+  cursor:pointer;
+  margin-bottom:12px;
+}
+ 
+.eventTypeBlock{
+  margin-bottom:22px;
+}
+.eventTypeTitle{
+  font-size:13.5px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+ 
+.eventTable{
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+}
+.eventTable table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12.5px;
+}
+.eventTable th{
+  background:#f7f9fd;
+  padding:10px;
+  font-weight:900;
+  color:#334155;
+  text-align:left;
+}
+.eventTable td{
+  padding:10px;
+  border-top:1px solid #eef2f7;
+  vertical-align:top;
+}
+ 
+/* ===== Action Bar ===== */
+.actionBar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#fff;
+  border-top:1px solid var(--border);
+  padding:12px 18px;
+}
+.actionInner{
+  max-width:1100px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+}
+.btn{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #d6deea;
+  background:#fff;
+  font-weight:900;
+}
+.btn.primary{
+  background:var(--navy);
+  color:#fff;
+}
+</style>
+</head>
+ 
+<body>
+ 
+<header class="appHeader">
+  <div class="brandDot"></div>
+  <div class="appTitle">Next Level Continuous Monitoring</div>
+  <div class="headerSpacer"></div>
+</header>
+ 
+<div class="frameBanner">
+  <div class="bannerInner">
+    <div class="crumbs">
+      <strong>Home</strong> › <strong>Documents to Insights</strong> › <strong>Step 5</strong>. Finalize Outcome
+    </div>
+  </div>
+</div>
+ 
+<div class="shell">
+  <aside class="rail">
+    <div class="railTitle">Your Progress</div>
+    <ol class="progressList">
+      <li class="progressItem">Upload Documents</li>
+      <li class="progressItem">Extract Key Events</li>
+      <li class="progressItem">Validate with Source Systems</li>
+      <li class="progressItem">Analyze Events and Impact</li>
+      <li class="progressItem active">Finalize Outcome</li>
+    </ol>
+  </aside>
+ 
+  <main class="main">
+    <div class="container">
+ 
+      <!-- 1. Meeting / Forum Summary -->
+      <section class="section">
+        <div class="sectionTile tile-meeting">Meeting and Forum Summary</div>
+        <div class="sectionBody">
+          <div class="meetingBlock">
+            <div class="meetingHeader">Risk Management Forum, Q1</div>
+            <div class="meetingMeta">Risk Governance Forum • March 2026</div>
+            <div class="meetingDesc">
+              Reviewed operational risk events, remediation progress, regulatory matters,
+              and technology and governance topics impacting core control environments.
+            </div>
+          </div>
+ 
+          <div class="meetingBlock">
+            <div class="meetingHeader">Operations Risk Committee</div>
+            <div class="meetingMeta">Committee Session • February 2026</div>
+            <div class="meetingDesc">
+              Focused on execution challenges, remediation ownership, and issue aging
+              across key operational and support processes.
+            </div>
+          </div>
+ 
+          <div class="meetingBlock">
+            <div class="meetingHeader">Technology Governance Forum</div>
+            <div class="meetingMeta">Governance Forum • January 2026</div>
+            <div class="meetingDesc">
+              Discussed system resilience, incident response effectiveness, and
+              governance implications of ongoing transformation initiatives.
+            </div>
+          </div>
+ 
+          <div class="docList">
+            <div class="docItem">• Quarterly Notes.docx</div>
+            <div class="docItem">• Risk Management Forum Pack.pdf</div>
+            <div class="docItem">• Ops Risk Committee Minutes.docx</div>
+            <div class="docItem">• Technology Governance Deck.pptx</div>
+          </div>
+        </div>
+      </section>
+ 
+      <!-- 2. Executive Snapshot -->
+      <section class="section">
+        <div class="sectionTile tile-snapshot">Executive Snapshot</div>
+        <div class="sectionBody">
+ 
+          <div class="snapshotSection">
+            <div class="snapshotHeader">Key Risk Areas and Themes</div>
+            <ul class="snapshotList">
+              <li>Concentration of control execution risk across critical operational processes, indicating sustained exposure requiring continued monitoring focus.</li>
+              <li>Governance and oversight challenges linked to delayed remediation and evolving ownership models, impacting accountability for control effectiveness.</li>
+              <li>Reliance on manual and compensating controls across impacted areas, increasing execution risk and reducing control sustainability.</li>
+              <li>Technology enabled processes emerging as a recurring risk domain, reflecting heightened sensitivity to control design and resilience.</li>
+            </ul>
+          </div>
+ 
+          <div class="snapshotDivider"></div>
+ 
+          <div class="snapshotSection">
+            <div class="snapshotHeader">Emerging Risks</div>
+            <div class="snapshotText">
+              Early signals point to increased regulatory scrutiny related to data governance
+              and evidence retention, which may translate into heightened compliance pressure
+              over future monitoring cycles. Recurrent organizational change themes suggest
+              potential downstream impacts to control ownership, stability, and handoff
+              effectiveness during transition periods.
+            </div>
+          </div>
+ 
+          <div class="snapshotDivider"></div>
+ 
+          <div class="snapshotSection">
+            <div class="snapshotHeader">Audit Universe Impact and Coverage</div>
+            <div class="snapshotText">
+              Observed impacts are concentrated within a defined subset of the audit universe,
+              indicating focused rather than isolated exposure. Certain auditable entities
+              appear across multiple risk themes, suggesting interconnected drivers that
+              warrant sustained continuous monitoring attention. Current coverage is
+              sufficient to support monitoring objectives, with targeted follow up expected
+              in selected areas.
+            </div>
+          </div>
+ 
+        </div>
+      </section>
+ 
+      <!-- 3. Event Register -->
+      <section class="section">
+        <div class="sectionTile tile-register">Event Register</div>
+        <div class="sectionBody">
+          <div class="registerToggle">Expand Event Register</div>
+ 
+          <!-- Content mirrors Step 4 -->
+          <div class="eventTypeBlock">
+            <div class="eventTypeTitle">Internal Risk Event</div>
+            <div class="eventTable">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Reference</th>
+                    <th>Source</th>
+                    <th>Existing Assure Tagging (AE)</th>
+                    <th>Tagging to be uploaded to Assure (AE)</th>
+                    <th>Impact Rationale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>ISSUE 778901</td>
+                    <td>Risk Management Forum, Q1</td>
+                    <td>AE‑1023 Payments Processing Platform</td>
+                    <td>AE‑3301 Financial Controls Oversight</td>
+                    <td>
+                      Weaknesses in access provisioning may impact downstream financial
+                      controls and oversight processes.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+ 
+        </div>
+      </section>
+ 
+    </div>
+  </main>
+</div>
+ 
+<!-- Action Bar -->
+<div class="actionBar">
+  <div class="actionInner">
+    <button class="btn">Back</button>
+    <div>
+      <button class="btn">Export</button>
+      <button class="btn primary">Publish</button>
+    </div>
+  </div>
+</div>
+ 
+</body>
+</html>
