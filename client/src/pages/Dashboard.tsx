@@ -149,6 +149,11 @@ export default function Dashboard() {
     } else {
       sessionStorage.removeItem("selectedBml");
     }
+    if (team) {
+      sessionStorage.setItem("selectedTeam", team);
+    } else {
+      sessionStorage.removeItem("selectedTeam");
+    }
   };
 
   const handleReset = () => {

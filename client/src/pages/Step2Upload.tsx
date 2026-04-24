@@ -39,6 +39,7 @@ export default function Step2Upload() {
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
+  const selectedTeam = sessionStorage.getItem("selectedTeam") || "";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -100,6 +101,7 @@ export default function Step2Upload() {
           {[
             selectedPm ? { k: "PM:", v: selectedPm } : null,
             selectedBml ? { k: "BML:", v: selectedBml } : null,
+            selectedTeam ? { k: "Team:", v: selectedTeam } : null,
           ].filter(Boolean).map(({ k, v }) => (
             <div key={k} style={{
               display: "flex", gap: 8, alignItems: "baseline",
