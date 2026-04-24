@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Check, MoreHorizontal, ChevronRight, ChevronDown, RotateCcw, Download, X, Pencil } from "lucide-react";
+import { Check, ChevronRight, ChevronDown, RotateCcw, Download, X, Pencil } from "lucide-react";
 
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
@@ -194,9 +194,6 @@ export default function ReviewValidate() {
                     ) : (
                       <span style={{ padding: "6px 12px", borderRadius: 7, background: "#fee2e2", color: "#b91c1c", fontSize: 12.5, fontWeight: 900 }}>Removed</span>
                     )}
-                    <button data-testid={`button-more-${row.id}`} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 7, cursor: "pointer", border: "1px solid #e2e8f0", background: "#f8fafc", color: MUTED }}>
-                      <MoreHorizontal size={15} />
-                    </button>
                     <button data-testid={`button-expand-${row.id}`} onClick={() => toggleExpand(row.id)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 7, cursor: "pointer", border: "1px solid #e2e8f0", background: "#f8fafc", color: MUTED }}>
                       {row.expanded ? <ChevronDown size={15} /> : <ChevronRight size={15} />}
                     </button>
