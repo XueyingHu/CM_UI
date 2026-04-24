@@ -144,6 +144,11 @@ export default function Dashboard() {
       sessionStorage.setItem("selectedDomain", pm);
       sessionStorage.setItem("selectedDomainId", pm.toLowerCase().replace(/\s+/g, "-"));
     }
+    if (bml) {
+      sessionStorage.setItem("selectedBml", bml);
+    } else {
+      sessionStorage.removeItem("selectedBml");
+    }
   };
 
   const handleReset = () => {
