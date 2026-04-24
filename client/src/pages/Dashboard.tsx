@@ -1,219 +1,355 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Search, Check } from "lucide-react";
+import { Search, ChevronDown, ChevronUp, X, Check } from "lucide-react";
 
-const DOMAINS = [
-  {
-    id: "market-tech-ops-risk",
-    name: "Market Tech - Ops Risk",
-    businessMonitoringLead: "John Smith",
-    portfolio: "Markets and Technology",
-    portfolioManager: "Sarah Johnson",
-    auditableEntities: [
-      { id: "AE12345", name: "Trading Systems" },
-      { id: "AE23456", name: "Ops Risk Controls" },
-      { id: "AE34567", name: "Market Data Services" },
-      { id: "AE45678", name: "Tech Infrastructure" },
-    ],
-    description: "This domain focuses on operational risk management for markets and technology functions.",
-    effectiveDate: "January 1, 2026",
-  },
-  {
-    id: "retail-banking-compliance",
-    name: "Retail Banking - Compliance",
-    businessMonitoringLead: "Emily Chen",
-    portfolio: "Retail Banking",
-    portfolioManager: "David Lee",
-    auditableEntities: [
-      { id: "AE55001", name: "Consumer Lending" },
-      { id: "AE55002", name: "Deposit Operations" },
-      { id: "AE55003", name: "Branch Compliance" },
-    ],
-    description: "This domain covers compliance monitoring for retail banking operations and consumer-facing services.",
-    effectiveDate: "January 1, 2026",
-  },
-  {
-    id: "global-markets-credit-risk",
-    name: "Global Markets - Credit Risk",
-    businessMonitoringLead: "Robert Taylor",
-    portfolio: "Global Markets",
-    portfolioManager: "Maria Garcia",
-    auditableEntities: [
-      { id: "AE66001", name: "Credit Derivatives" },
-      { id: "AE66002", name: "Counterparty Risk" },
-      { id: "AE66003", name: "Credit Portfolio Mgmt" },
-    ],
-    description: "This domain addresses credit risk assessment and monitoring across global markets trading activities.",
-    effectiveDate: "January 1, 2026",
-  },
+const PORTFOLIO_MANAGERS = ["Sarah Johnson", "David Lee", "Maria Garcia", "James Okafor", "Linda Park"];
+const BML_OPTIONS = ["John Smith", "Emily Chen", "Robert Taylor", "Priya Nair", "Carlos Mendez"];
+const TEAM_OPTIONS = ["Markets & Technology", "Retail Banking", "Global Risk", "Corporate Audit", "Compliance & Legal", "Operations"];
+
+const ALL_ENTITIES = [
+  { id: "AE12345", name: "Trading Systems", pm: "Sarah Johnson", bml: "John Smith", team: "Markets & Technology" },
+  { id: "AE23456", name: "Ops Risk Controls", pm: "Sarah Johnson", bml: "John Smith", team: "Operations" },
+  { id: "AE34567", name: "Market Data Services", pm: "Sarah Johnson", bml: "Robert Taylor", team: "Markets & Technology" },
+  { id: "AE45678", name: "Tech Infrastructure", pm: "Sarah Johnson", bml: "Emily Chen", team: "Markets & Technology" },
+  { id: "AE55001", name: "Consumer Lending", pm: "David Lee", bml: "Emily Chen", team: "Retail Banking" },
+  { id: "AE55002", name: "Deposit Operations", pm: "David Lee", bml: "Emily Chen", team: "Retail Banking" },
+  { id: "AE55003", name: "Branch Compliance", pm: "David Lee", bml: "Priya Nair", team: "Compliance & Legal" },
+  { id: "AE66001", name: "Credit Derivatives", pm: "Maria Garcia", bml: "Robert Taylor", team: "Global Risk" },
+  { id: "AE66002", name: "Counterparty Risk", pm: "Maria Garcia", bml: "Robert Taylor", team: "Global Risk" },
+  { id: "AE66003", name: "Credit Portfolio Mgmt", pm: "Maria Garcia", bml: "Carlos Mendez", team: "Corporate Audit" },
+  { id: "AE77001", name: "Fixed Income Trading", pm: "James Okafor", bml: "Carlos Mendez", team: "Markets & Technology" },
+  { id: "AE77002", name: "Equity Research", pm: "James Okafor", bml: "Priya Nair", team: "Global Risk" },
+  { id: "AE77003", name: "Structured Products", pm: "James Okafor", bml: "Robert Taylor", team: "Global Risk" },
+  { id: "AE88001", name: "Wealth Management", pm: "Linda Park", bml: "Priya Nair", team: "Retail Banking" },
+  { id: "AE88002", name: "Private Banking", pm: "Linda Park", bml: "Emily Chen", team: "Retail Banking" },
+  { id: "AE88003", name: "Asset Management", pm: "Linda Park", bml: "Carlos Mendez", team: "Corporate Audit" },
+  { id: "AE88004", name: "Trust Services", pm: "Linda Park", bml: "John Smith", team: "Compliance & Legal" },
+  { id: "AE88005", name: "Insurance Products", pm: "Linda Park", bml: "Priya Nair", team: "Operations" },
 ];
+
+interface SearchDropdownProps {
+  placeholder: string;
+  options: string[];
+  value: string;
+  onChange: (v: string) => void;
+  required?: boolean;
+  label?: string;
+}
+
+function SearchDropdown({ placeholder, options, value, onChange, required, label }: SearchDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = options.filter(o => o.toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <div>
+      {label && (
+        <div style={{ fontSize: 13, fontWeight: 900, color: "#1a2e44", marginBottom: 6 }}>
+          {label} {required && <span style={{ fontWeight: 900, color: "#1a2e44" }}>(Required)</span>}
+        </div>
+      )}
+      <div ref={ref} style={{ position: "relative" }}>
+        <div
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            border: "1px solid #ccd5df", borderRadius: 6,
+            background: "#fff", padding: "8px 10px", cursor: "text",
+          }}
+          onClick={() => { setOpen(true); setQuery(""); }}
+        >
+          <Search size={14} color="#6b7a8a" style={{ flexShrink: 0 }} />
+          <input
+            data-testid={`input-${placeholder.toLowerCase().replace(/\s+/g, "-")}`}
+            type="text"
+            placeholder={placeholder}
+            value={open ? query : value}
+            onChange={e => { setQuery(e.target.value); setOpen(true); }}
+            onFocus={() => { setOpen(true); setQuery(""); }}
+            style={{ border: "none", outline: "none", background: "transparent", fontSize: 13, flex: 1, color: "#1a2e44", fontWeight: value && !open ? 700 : 400 }}
+          />
+          {value && !open && (
+            <button
+              onClick={e => { e.stopPropagation(); onChange(""); setQuery(""); }}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", color: "#6b7a8a" }}
+            >
+              <X size={13} />
+            </button>
+          )}
+          <ChevronDown size={14} color="#6b7a8a" style={{ flexShrink: 0 }} />
+        </div>
+        {open && (
+          <div style={{
+            position: "absolute", top: "100%", left: 0, right: 0, zIndex: 50,
+            background: "#fff", border: "1px solid #ccd5df", borderTop: "none",
+            borderRadius: "0 0 6px 6px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+            maxHeight: 200, overflowY: "auto",
+          }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: "10px 14px", fontSize: 13, color: "#9aa5b4" }}>No results found</div>
+            ) : filtered.map(opt => (
+              <div
+                key={opt}
+                onClick={() => { onChange(opt); setOpen(false); setQuery(""); }}
+                style={{
+                  padding: "9px 14px", fontSize: 13, cursor: "pointer",
+                  display: "flex", alignItems: "center", gap: 8,
+                  background: value === opt ? "#0b2a4a" : undefined,
+                  color: value === opt ? "#fff" : "#1a2e44",
+                  fontWeight: value === opt ? 700 : 400,
+                }}
+                onMouseEnter={e => { if (value !== opt) (e.currentTarget as HTMLElement).style.background = "#f3f7ff"; }}
+                onMouseLeave={e => { if (value !== opt) (e.currentTarget as HTMLElement).style.background = ""; }}
+              >
+                {value === opt && <Check size={13} style={{ flexShrink: 0 }} />}
+                {opt}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [selectedDomainId, setSelectedDomainId] = useState<string | null>(() => {
-    return sessionStorage.getItem("selectedDomainId") || null;
-  });
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const selectedDomain = DOMAINS.find((d) => d.id === selectedDomainId) || null;
-
-  const filteredDomains = DOMAINS.filter((d) =>
-    d.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const [pm, setPm] = useState("");
+  const [bml, setBml] = useState("");
+  const [team, setTeam] = useState("");
+  const [scopeApplied, setScopeApplied] = useState(false);
+  const [filteredEntities, setFilteredEntities] = useState(ALL_ENTITIES);
+  const [listOpen, setListOpen] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
+    const handler = (e: MouseEvent) => {
+      if (listRef.current && !listRef.current.contains(e.target as Node)) setListOpen(false);
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const selectDomain = (domainId: string) => {
-    setSelectedDomainId(domainId);
-    sessionStorage.setItem("selectedDomainId", domainId);
-    const domain = DOMAINS.find((d) => d.id === domainId);
-    if (domain) {
-      sessionStorage.setItem("selectedDomain", domain.name);
+  const handleApply = () => {
+    let result = ALL_ENTITIES;
+    if (pm) result = result.filter(e => e.pm === pm);
+    if (bml) result = result.filter(e => e.bml === bml);
+    if (team) result = result.filter(e => e.team === team);
+    setFilteredEntities(result);
+    setScopeApplied(true);
+    setListOpen(false);
+
+    if (pm) {
+      sessionStorage.setItem("selectedDomain", pm);
+      sessionStorage.setItem("selectedDomainId", pm.toLowerCase().replace(/\s+/g, "-"));
     }
-    setIsOpen(false);
-    setSearchQuery("");
+  };
+
+  const handleReset = () => {
+    setPm(""); setBml(""); setTeam("");
+    setFilteredEntities(ALL_ENTITIES);
+    setScopeApplied(false);
+    setListOpen(false);
   };
 
   const handleConfirm = () => {
-    if (selectedDomain) {
+    if (scopeApplied && filteredEntities.length > 0) {
       setLocation("/domain-home");
     }
   };
 
-  return (
-    <div className="flex items-start justify-center min-h-full px-10 py-12">
-      <div className="w-full max-w-[700px]">
-        <h1 className="text-2xl font-bold text-[#1e3a6a] mb-8 text-center">
-          Select a Business Domain
-        </h1>
+  const canConfirm = scopeApplied && filteredEntities.length > 0 && pm !== "";
 
-        <div ref={dropdownRef} className="relative mb-6">
-          <div
-            className="flex items-center border border-[#c5cdd4] rounded-sm bg-white cursor-pointer"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            <input
-              data-testid="input-search-domain"
-              type="text"
-              placeholder="Type to search..."
-              value={isOpen ? searchQuery : (selectedDomain ? selectedDomain.name : searchQuery)}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setIsOpen(true);
-              }}
-              onFocus={() => {
-                setSearchQuery("");
-                setIsOpen(true);
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSearchQuery("");
-                setIsOpen(true);
-              }}
-              className={`flex-1 px-4 py-2.5 text-sm bg-transparent focus:outline-none ${selectedDomain && !isOpen ? "font-medium text-[#1e3a6a]" : ""}`}
-            />
-            <Search className="w-4 h-4 text-[#888] mr-3" />
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minHeight: "100%", padding: "40px 24px 48px", background: "#f6f8fb" }}>
+
+      {/* Page heading */}
+      <div style={{ textAlign: "center", marginBottom: 28, maxWidth: 680 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: "#0b2a4a", margin: "0 0 14px" }}>AI Continuous Monitoring</h1>
+        <p style={{ fontSize: 13.5, color: "#4a5d70", margin: "0 0 4px", fontWeight: 600, lineHeight: 1.6 }}>
+          Define your monitoring scope to generate insights and maintain audit universe coverage.
+        </p>
+        <p style={{ fontSize: 13.5, color: "#4a5d70", margin: "0 0 4px", fontWeight: 600, lineHeight: 1.6 }}>
+          You define the scope once.
+        </p>
+        <p style={{ fontSize: 13, color: "#4a5d70", margin: 0, fontStyle: "italic", fontWeight: 600, lineHeight: 1.6 }}>
+          You define the scope once. All modules use the same auditable entities.
+        </p>
+      </div>
+
+      {/* Define Monitoring Scope card */}
+      <div style={{ width: "100%", maxWidth: 720, marginBottom: 18 }}>
+        <div style={{ borderRadius: 10, border: "1px solid #ccd5df", overflow: "hidden", background: "#fff", boxShadow: "0 4px 14px rgba(16,24,40,0.07)" }}>
+          {/* Card header */}
+          <div style={{ background: "#0b2a4a", padding: "12px 20px" }}>
+            <span style={{ color: "#fff", fontWeight: 900, fontSize: 14, letterSpacing: 0.3 }}>Define Monitoring Scope</span>
           </div>
 
-          {isOpen && (
-            <div className="absolute z-10 w-full border border-[#c5cdd4] border-t-0 bg-white shadow-md rounded-b-sm">
-              {filteredDomains.map((domain) => (
-                <div
-                  key={domain.id}
-                  data-testid={`option-domain-${domain.id}`}
-                  onClick={() => selectDomain(domain.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 text-sm cursor-pointer ${
-                    selectedDomainId === domain.id
-                      ? "bg-[#1e3a6a] text-white font-medium"
-                      : "text-[#333] hover:bg-[#f0f2f5]"
-                  }`}
-                >
-                  {selectedDomainId === domain.id && (
-                    <Check className="w-4 h-4 shrink-0" />
-                  )}
-                  <span>{domain.name}</span>
+          {/* Card body */}
+          <div style={{ padding: "18px 20px 16px" }}>
+            <p style={{ fontSize: 13, color: "#4a5d70", fontWeight: 600, margin: "0 0 14px" }}>
+              Start by selecting a Portfolio Manager.
+            </p>
+
+            {/* Portfolio Manager */}
+            <div style={{ marginBottom: 16 }}>
+              <SearchDropdown
+                label="Portfolio Manager"
+                required
+                placeholder="Search Portfolio Manager"
+                options={PORTFOLIO_MANAGERS}
+                value={pm}
+                onChange={setPm}
+              />
+            </div>
+
+            {/* Optional filters */}
+            <div style={{ fontSize: 13, fontWeight: 900, color: "#1a2e44", marginBottom: 10 }}>Optional Filters:</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
+              <SearchDropdown
+                placeholder="Search Business Monitoring Lead"
+                options={BML_OPTIONS}
+                value={bml}
+                onChange={setBml}
+              />
+              <SearchDropdown
+                placeholder="Search Responsible Teams"
+                options={TEAM_OPTIONS}
+                value={team}
+                onChange={setTeam}
+              />
+            </div>
+
+            {/* Footer buttons */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <button
+                data-testid="button-reset-filters"
+                onClick={handleReset}
+                style={{
+                  background: "#fff", color: "#1a2e44", fontWeight: 900, fontSize: 13,
+                  border: "1px solid #ccd5df", borderRadius: 8, padding: "9px 18px", cursor: "pointer",
+                }}
+              >
+                Reset Filters
+              </button>
+              <button
+                data-testid="button-apply-scope"
+                onClick={handleApply}
+                disabled={!pm}
+                style={{
+                  background: pm ? "#0b2a4a" : "#a0b0c4", color: "#fff", fontWeight: 900, fontSize: 13,
+                  border: "1px solid rgba(0,0,0,0.1)", borderRadius: 8, padding: "9px 18px",
+                  cursor: pm ? "pointer" : "not-allowed",
+                }}
+              >
+                Apply Scope
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Monitoring Scope Applied card */}
+      <div style={{ width: "100%", maxWidth: 720, marginBottom: 20 }}>
+        <div style={{ borderRadius: 10, border: "1px solid #ccd5df", overflow: "visible", background: "#fff", boxShadow: "0 4px 14px rgba(16,24,40,0.07)" }}>
+          {/* Card header */}
+          <div style={{ background: "#0b2a4a", padding: "12px 20px", borderRadius: "10px 10px 0 0" }}>
+            <span style={{ color: "#fff", fontWeight: 900, fontSize: 14, letterSpacing: 0.3 }}>Monitoring Scope Applied</span>
+          </div>
+
+          {/* Card body */}
+          <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 14, fontWeight: 900, color: "#0b2a4a" }}>
+              Total Auditable Entities:{" "}
+              <span style={{ color: scopeApplied ? "#1f5ea8" : "#9aa5b4" }}>
+                {scopeApplied ? filteredEntities.length : "—"}
+              </span>
+            </span>
+
+            {/* View full list dropdown */}
+            <div ref={listRef} style={{ position: "relative" }}>
+              <button
+                data-testid="button-view-full-list"
+                onClick={() => scopeApplied && setListOpen(v => !v)}
+                disabled={!scopeApplied}
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  fontSize: 13, fontWeight: 900,
+                  color: scopeApplied ? "#1f5ea8" : "#9aa5b4",
+                  background: "none", border: "none", cursor: scopeApplied ? "pointer" : "not-allowed", padding: "4px 0",
+                }}
+              >
+                View full list
+                {listOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+
+              {listOpen && scopeApplied && (
+                <div style={{
+                  position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 50,
+                  background: "#fff", border: "1px solid #ccd5df", borderRadius: 10,
+                  boxShadow: "0 8px 24px rgba(16,24,40,0.12)", minWidth: 360, maxHeight: 280, overflowY: "auto",
+                }}>
+                  <div style={{ padding: "10px 14px 6px", borderBottom: "1px solid #eef2f7" }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 900, color: "#0b2a4a" }}>
+                      Auditable Entities ({filteredEntities.length})
+                    </span>
+                  </div>
+                  {filteredEntities.map(e => (
+                    <div
+                      key={e.id}
+                      style={{
+                        display: "grid", gridTemplateColumns: "80px 1fr auto",
+                        alignItems: "center", padding: "9px 14px", gap: 10,
+                        borderBottom: "1px solid #f5f7fa", fontSize: 12.5,
+                      }}
+                    >
+                      <span style={{ color: "#5b6b7a", fontWeight: 700 }}>{e.id}</span>
+                      <span style={{ color: "#1a2e44", fontWeight: 800 }}>{e.name}</span>
+                      <span style={{ color: "#7a8fa3", fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap" }}>{e.team}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {filteredDomains.length === 0 && (
-                <div className="px-4 py-3 text-sm text-[#888]">No domains found.</div>
               )}
             </div>
-          )}
-        </div>
-
-        {selectedDomain && (
-          <div
-            data-testid="domain-details-panel"
-            className="border border-[#c5cdd4] rounded-sm bg-white p-6 space-y-3 text-sm"
-          >
-            <div>
-              <span className="font-bold text-[#1e3a6a]">Domain Name: </span>
-              <span className="text-[#333]">{selectedDomain.name}</span>
-            </div>
-            <div>
-              <span className="font-bold text-[#1e3a6a]">Business Monitoring Lead: </span>
-              <span className="text-[#333]">{selectedDomain.businessMonitoringLead}</span>
-            </div>
-            <div>
-              <span className="font-bold text-[#1e3a6a]">Portfolio: </span>
-              <span className="text-[#333]">{selectedDomain.portfolio}</span>
-            </div>
-            <div>
-              <span className="font-bold text-[#1e3a6a]">Portfolio Manager: </span>
-              <span className="text-[#333]">{selectedDomain.portfolioManager}</span>
-            </div>
-            <div>
-              <span className="font-bold text-[#1e3a6a]">Auditable Entities:</span>
-              <ul className="list-disc ml-6 mt-1 space-y-1 text-[#333]">
-                {selectedDomain.auditableEntities.map((ae) => (
-                  <li key={ae.id}>
-                    {ae.id} - {ae.name}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <span className="font-bold text-[#1e3a6a]">Domain Description: </span>
-              <span className="text-[#333]">{selectedDomain.description}</span>
-            </div>
-            <div>
-              <span className="font-bold text-[#1e3a6a]">Effective Date: </span>
-              <span className="text-[#333]">{selectedDomain.effectiveDate}</span>
-            </div>
           </div>
-        )}
-
-        <div className="flex justify-between mt-8">
-          <button
-            data-testid="button-back-dashboard"
-            onClick={() => setLocation("/domain-home")}
-            className="bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-8 py-2.5 rounded-sm border border-[#c5cdd4] shadow-sm"
-          >
-            Back
-          </button>
-          <button
-            data-testid="button-confirm-next"
-            onClick={handleConfirm}
-            disabled={!selectedDomain}
-            className={`text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm ${
-              selectedDomain
-                ? "bg-[#1e3a6a] hover:bg-[#152a4d] text-white"
-                : "bg-[#a0b0c4] text-white cursor-not-allowed"
-            }`}
-          >
-            Confirm and Next
-          </button>
         </div>
+      </div>
+
+      {/* Confirm button */}
+      <div style={{ width: "100%", maxWidth: 720, display: "flex", justifyContent: "flex-end" }}>
+        <button
+          data-testid="button-confirm"
+          onClick={handleConfirm}
+          disabled={!canConfirm}
+          style={{
+            background: canConfirm ? "#0b2a4a" : "#a0b0c4",
+            color: "#fff", fontWeight: 900, fontSize: 13,
+            border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10,
+            padding: "11px 28px", cursor: canConfirm ? "pointer" : "not-allowed",
+            minWidth: 130,
+          }}
+        >
+          Confirm
+        </button>
+      </div>
+
+      {/* Footer links */}
+      <div style={{ marginTop: 40, display: "flex", alignItems: "center", gap: 12, fontSize: 13, color: "#0b2a4a" }}>
+        <button style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, color: "#0b2a4a" }}>Data Retention Policy</button>
+        <span style={{ color: "#ccd5df" }}>|</span>
+        <button style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, color: "#0b2a4a" }}>User Guide</button>
+        <span style={{ color: "#ccd5df" }}>|</span>
+        <button style={{ background: "none", border: "none", cursor: "pointer", fontWeight: 700, color: "#0b2a4a" }}>Support</button>
       </div>
     </div>
   );
