@@ -89,6 +89,7 @@ export default function ReviewValidate() {
   const [items, setItems] = useState(INITIAL);
   const [editingRationale, setEditingRationale] = useState<string | null>(null);
   const [openAEDropdown, setOpenAEDropdown] = useState<string | null>(null);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
 
   const current = items[activeTab] || [];
 
@@ -275,7 +276,12 @@ export default function ReviewValidate() {
                           <div style={{ position: "relative", marginTop: 4 }}>
                             <button
                               data-testid={`button-tag-ae-${row.id}`}
-                              onClick={() => setOpenAEDropdown(openAEDropdown === row.id ? null : row.id)}
+                              onClick={(e) => {
+                                if (openAEDropdown === row.id) { setOpenAEDropdown(null); return; }
+                                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                                setDropdownPos({ top: rect.bottom + 4, left: rect.left });
+                                setOpenAEDropdown(row.id);
+                              }}
                               style={{
                                 display: "inline-flex", alignItems: "center", gap: 6,
                                 padding: "6px 12px", borderRadius: 8, cursor: "pointer",
@@ -288,8 +294,11 @@ export default function ReviewValidate() {
                             </button>
 
                             {openAEDropdown === row.id && (
+                              <>
+                              <div onClick={() => setOpenAEDropdown(null)} style={{ position: "fixed", inset: 0, zIndex: 9998 }} />
                               <div style={{
-                                position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 100,
+                                position: "fixed", zIndex: 9999,
+                                top: dropdownPos.top, left: dropdownPos.left,
                                 background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10,
                                 boxShadow: "0 8px 24px rgba(16,24,40,0.12)",
                                 minWidth: 280, maxHeight: 240, overflowY: "auto",
@@ -317,6 +326,7 @@ export default function ReviewValidate() {
                                   <div style={{ padding: "10px 12px", fontSize: 12.5, color: MUTED }}>All AEs already tagged.</div>
                                 )}
                               </div>
+                              </>
                             )}
                           </div>
                         </div>
