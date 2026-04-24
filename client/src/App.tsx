@@ -47,31 +47,32 @@ function Router() {
   }, [location]);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-white">
-      <header className="h-12 bg-[#2c4b7e] flex items-center justify-between px-4 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-white/30 rounded-sm"></div>
-          <div className="w-4 h-4 bg-white/30 rounded-sm"></div>
+    <div className="flex flex-col h-screen overflow-hidden" style={{ background: "#f6f8fb" }}>
+      <header className="h-14 flex items-center justify-between px-4 shrink-0 gap-3" style={{ background: "linear-gradient(0deg, #0b2a4a 0%, #103a66 100%)", boxShadow: "0 2px 10px rgba(0,0,0,0.12)" }}>
+        <div className="flex items-center gap-3">
+          <div className="w-2.5 h-2.5 rounded-full bg-[#ffcc33] shrink-0" style={{ boxShadow: "0 0 0 3px rgba(255,204,51,0.25)" }} />
+          <span className="text-white font-black text-sm tracking-wide whitespace-nowrap">Next Level Continuous Monitoring</span>
         </div>
-        <div className="flex items-center gap-4 text-white">
+        <div className="flex items-center gap-3 text-white">
           {selectedDomain && location !== "/" && location !== "/step-1" && (
             <button
               data-testid="text-selected-domain"
               onClick={() => setLocation("/step-1")}
-              className="text-sm font-medium mr-2 text-white hover:underline cursor-pointer bg-transparent border-none p-0"
+              className="text-xs font-bold text-white hover:underline cursor-pointer bg-transparent border-none p-0 mr-1 opacity-90"
             >
-              Selected Domain: {selectedDomain}
+              Domain: {selectedDomain}
             </button>
           )}
-          <Mail className="w-4 h-4" />
-          <Bell className="w-4 h-4" />
-          <Menu className="w-5 h-5" />
+          <Mail className="w-4 h-4 opacity-80" />
+          <Bell className="w-4 h-4 opacity-80" />
+          <Menu className="w-5 h-5 opacity-80" />
+          <a href="#" className="text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-white/20 bg-white/6 opacity-95 whitespace-nowrap hidden sm:inline-flex items-center" style={{ background: "rgba(255,255,255,0.06)" }}>Next Level Lab</a>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
         {location !== "/" && location !== "/domain-home" && location !== "/step-1" && location !== "/create-domain" && location !== "/build-domain" && location !== "/review-define-domains" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
-        <main className="flex-1 overflow-y-auto w-full bg-white">
+        <main className="flex-1 overflow-y-auto w-full" style={{ background: "#f6f8fb" }}>
           <Switch>
             <Route path="/" component={Welcome}/>
             <Route path="/domain-home" component={DomainHome}/>

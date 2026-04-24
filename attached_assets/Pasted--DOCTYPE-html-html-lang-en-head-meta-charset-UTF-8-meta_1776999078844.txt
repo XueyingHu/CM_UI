@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Next Level Continuous Monitoring | Documents to Insights | Step 1</title>
+ 
+  <style>
+    :root{
+      --navy:#0b2a4a;
+      --navy2:#103a66;
+      --bg:#f6f8fb;
+      --panel:#ffffff;
+      --border:#e6e9ef;
+      --muted:#5b6b7a;
+      --text:#122033;
+ 
+      --accent:#ffcc33;
+ 
+      --row:#ffffff;
+      --rowBorder:#e9eef5;
+ 
+      --danger:#d92d20;
+ 
+      --shadow: 0 6px 18px rgba(16,24,40,0.08);
+      --radius:12px;
+ 
+      --hoverBg:#f3f7ff;
+      --hoverAccent:#2a6acb;
+      --activeBlue:#1f5ea8;
+ 
+      --font:"Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    }
+ 
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:var(--bg);
+    }
+ 
+    /* Top application header */
+    .appHeader{
+      height:56px;
+      background:linear-gradient(0deg, var(--navy) 0%, var(--navy2) 100%);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      padding:0 18px;
+      gap:14px;
+      position:sticky;
+      top:0;
+      z-index:80;
+      box-shadow:0 2px 10px rgba(0,0,0,0.12);
+    }
+    .brandDot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:var(--accent);
+      box-shadow:0 0 0 3px rgba(255,204,51,0.25);
+      flex:0 0 auto;
+    }
+    .appTitle{
+      font-weight:900;
+      font-size:14px;
+      letter-spacing:0.2px;
+      opacity:0.98;
+      white-space:nowrap;
+    }
+    .headerSpacer{ flex:1 1 auto; }
+    .rightLink{
+      color:#fff;
+      text-decoration:none;
+      font-size:13px;
+      opacity:0.96;
+      padding:8px 10px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.06);
+      white-space:nowrap;
+    }
+    .rightLink:focus{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(255,255,255,0.22);
+    }
+ 
+    /* Frame wide banners */
+    .frameBanner{
+      width:100%;
+      background:var(--panel);
+      border-bottom:1px solid var(--border);
+    }
+ 
+    /* Breadcrumb bar below header */
+    .breadcrumbBar{
+      position:sticky;
+      top:56px;
+      z-index:70;
+      background:#ffffff;
+    }
+    .breadcrumbInner{
+      max-width:1400px;
+      margin:0 auto;
+      padding:10px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .crumbText{
+      font-size:12.5px;
+      color:var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .crumbText strong{
+      color:var(--text);
+      font-weight:900;
+    }
+ 
+    /* Monitoring Scope bar below breadcrumb */
+    .scopeBar{
+      position:sticky;
+      top:96px;
+      z-index:60;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    }
+    .scopeInner{
+      max-width:1400px;
+      margin:0 auto;
+      padding:10px 18px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+    .scopeLabel{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(11,42,74,0.15);
+      background:rgba(11,42,74,0.08);
+      color:var(--navy);
+      font-size:12px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .scopeRight{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .scopeKV{
+      display:flex;
+      gap:8px;
+      align-items:baseline;
+      padding:6px 10px;
+      border-radius:10px;
+      background:#f7f9fd;
+      border:1px solid #eef2f7;
+      font-size:12.5px;
+      white-space:nowrap;
+    }
+    .scopeKV .k{ color:var(--muted); font-weight:900; }
+    .scopeKV .v{ color:var(--text); font-weight:900; }
+ 
+    /* Page layout below the banners */
+    .shell{
+      display:grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 56px);
+    }
+ 
+    /* Left progress panel */
+    .rail{
+      background:#ffffff;
+      border-right:1px solid var(--border);
+      padding:16px 14px;
+    }
+    .railTitle{
+      margin:0 8px 12px;
+      font-size:13px;
+      font-weight:900;
+      color:#2b3c50;
+    }
+ 
+    /* Exactly like screenshot: ordered list with simple numbering */
+    .progressList{
+      margin:0;
+      padding-left:22px;
+      list-style:decimal;
+    }
+ 
+    .progressItem{
+      margin:6px 0;
+      padding:8px 10px;
+      border-radius:8px;
+      color:#6b7a8a;
+      font-size:13px;
+      font-weight:800;
+      line-height:1.25;
+      transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+      cursor:pointer;
+    }
+ 
+    /* Hover effect requested */
+    .progressItem:hover{
+      background:var(--hoverBg);
+      color:#2b3c50;
+      box-shadow: inset 3px 0 0 var(--hoverAccent);
+    }
+ 
+    /* Active step matches screenshot: blue text */
+    .progressItem.active{
+      color:var(--activeBlue);
+      font-weight:900;
+    }
+    .progressItem.active:hover{
+      background:#eef5ff;
+      box-shadow: inset 3px 0 0 var(--activeBlue);
+    }
+ 
+    /* Marker inherits color like screenshot */
+    .progressItem::marker{
+      font-weight:900;
+      color:inherit;
+    }
+ 
+    .progressText{
+      display:inline-block;
+      margin-left:4px;
+    }
+ 
+    /* Main content */
+    .main{
+      padding:16px 18px 24px;
+    }
+ 
+    .card{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin-top:14px;
+      max-width: 980px;
+    }
+ 
+    .cardHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .cardHeader h1{
+      margin:0;
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:0.2px;
+    }
+    .support{
+      color:var(--muted);
+      font-size:12.5px;
+      margin-top:6px;
+      font-weight:600;
+      line-height:1.35;
+    }
+ 
+    /* Upload box: simple baseline style */
+    .uploadBox{
+      border:1px dashed #cfd8e6;
+      background:linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+      border-radius:12px;
+      padding:26px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      margin-bottom:14px;
+    }
+    .uploadBox .prompt{
+      font-size:13px;
+      font-weight:800;
+      color:#2b3c50;
+    }
+ 
+    .btn{
+      border:1px solid #d6deea;
+      background:#fff;
+      border-radius:10px;
+      padding:10px 14px;
+      font-weight:900;
+      font-size:13px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      color:var(--text);
+      min-width:120px;
+    }
+    .btn.primary{
+      background:var(--navy);
+      border-color:rgba(0,0,0,0.1);
+      color:#fff;
+    }
+    .btn.primary:disabled{
+      opacity:0.5;
+      cursor:not-allowed;
+    }
+    .btn:focus{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(31,94,168,0.18);
+    }
+ 
+    /* Uploaded documents preview */
+    .uploadedTitleRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-top:4px;
+      margin-bottom:10px;
+    }
+    .uploadedTitle{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      font-size:14px;
+      color:#213547;
+    }
+    .chev{
+      width:16px;
+      height:16px;
+      display:inline-grid;
+      place-items:center;
+      opacity:0.9;
+    }
+ 
+    .fileRows{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin:0;
+      padding:0;
+      list-style:none;
+    }
+    .fileRow{
+      display:grid;
+      grid-template-columns: 34px 1fr auto;
+      gap:12px;
+      align-items:center;
+      padding:12px 12px;
+      border-radius:12px;
+      background:var(--row);
+      border:1px solid var(--rowBorder);
+      box-shadow: 0 2px 10px rgba(16,24,40,0.04);
+    }
+    .fileIcon{
+      width:34px;
+      height:34px;
+      border-radius:10px;
+      background:#eef4ff;
+      border:1px solid #d9e6ff;
+      display:grid;
+      place-items:center;
+    }
+    .fileIcon svg{
+      width:18px;
+      height:18px;
+      opacity:0.95;
+    }
+ 
+    .fileMeta{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+      color:#243447;
+    }
+    .fileName{
+      font-weight:900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 460px;
+    }
+    .sep{
+      width:1px;
+      height:14px;
+      background:#dbe3ee;
+      opacity:0.9;
+    }
+    .metaText{
+      font-size:12.5px;
+      color:#3a5168;
+      font-weight:800;
+    }
+ 
+    .remove{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      font-weight:900;
+      font-size:12.5px;
+      color:var(--danger);
+      padding:7px 10px;
+      border-radius:10px;
+      border:1px solid rgba(217,45,32,0.18);
+      background:rgba(217,45,32,0.06);
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .remove svg{ width:14px; height:14px; }
+ 
+    /* Footer actions */
+    .footer{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-top:14px;
+    }
+    .btn.secondary{
+      background:#fff;
+      color:var(--text);
+    }
+ 
+    /* Responsive */
+    @media (max-width: 980px){
+      .shell{ grid-template-columns: 1fr; }
+      .rail{ border-right:none; border-bottom:1px solid var(--border); }
+      .main{ padding:12px 14px 22px; }
+      .card{ max-width:none; }
+      .fileName{ max-width:100%; }
+      .scopeRight{ gap:10px; }
+    }
+  </style>
+</head>
+ 
+<body>
+  <!-- Top header -->
+  <header class="appHeader" aria-label="Application header">
+    <div class="brandDot" aria-hidden="true"></div>
+    <div class="appTitle">Next Level Continuous Monitoring</div>
+    <div class="headerSpacer"></div>
+    <a class="rightLink" href="#" aria-label="Open Next Level Lab">Next Level Lab</a>
+  </header>
+ 
+  <!-- Breadcrumb banner -->
+  <div class="frameBanner breadcrumbBar" aria-label="Breadcrumb banner">
+    <div class="breadcrumbInner">
+      <div class="crumbText" title="Navigation hierarchy">
+        <strong>Home</strong> &nbsp;›&nbsp; <strong>Documents to Insights</strong> &nbsp;›&nbsp; <strong>Step 1</strong>. Upload Documents
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Monitoring scope banner -->
+  <div class="frameBanner scopeBar" aria-label="Monitoring scope banner">
+    <div class="scopeInner">
+      <div class="scopeLabel">Monitoring Scope</div>
+      <div class="scopeRight" aria-label="Monitoring scope values">
+        <div class="scopeKV"><span class="k">PM:</span><span class="v">Jane Do</span></div>
+        <div class="scopeKV"><span class="k">Responsible Team:</span><span class="v">US Finance Team</span></div>
+        <div class="scopeKV"><span class="k">BML:</span><span class="v">Mike Smith</span></div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Main layout -->
+  <div class="shell">
+    <!-- Progress panel -->
+    <aside class="rail" aria-label="Your Progress">
+      <div class="railTitle">Your Progress</div>
+ 
+      <ol class="progressList">
+        <li class="progressItem active" aria-current="step">
+          <span class="progressText">Upload Documents</span>
+        </li>
+        <li class="progressItem">
+          <span class="progressText">Extract Key Events</span>
+        </li>
+        <li class="progressItem">
+          <span class="progressText">Validate with Source Systems</span>
+        </li>
+        <li class="progressItem">
+          <span class="progressText">Analyze Events and Impact</span>
+        </li>
+        <li class="progressItem">
+          <span class="progressText">Finalize Outcome</span>
+        </li>
+      </ol>
+    </aside>
+ 
+    <!-- Step content -->
+    <main class="main" aria-label="Step content">
+      <section class="card" aria-label="Step 1 Upload Documents">
+        <div class="cardHeader">
+          <div>
+            <h1>Step 1. Upload Documents</h1>
+            <div class="support">
+              Upload meeting materials, reports, or other supporting documents to serve as source evidence for analysis.
+            </div>
+          </div>
+        </div>
+ 
+        <div class="uploadBox" aria-label="Upload files area">
+          <div class="prompt">Do you have documents to upload?</div>
+          <button class="btn primary" type="button" aria-label="Upload Files">Upload Files</button>
+        </div>
+ 
+        <div class="uploadedTitleRow">
+          <div class="uploadedTitle">
+            Uploaded Documents Review
+            <span class="chev" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18l6-6-6-6" stroke="#2a4a6a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+          </div>
+          <div class="support">3 files</div>
+        </div>
+ 
+        <ul class="fileRows" aria-label="Uploaded documents list">
+          <li class="fileRow">
+            <div class="fileIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-6Z" stroke="#0b2a4a" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M14 2v6h6" stroke="#0b2a4a" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+ 
+            <div class="fileMeta">
+              <div class="fileName">Ops Risk Summary.docx</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">Word</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">Readable</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">1.8 MB</div>
+            </div>
+ 
+            <div class="remove" role="button" tabindex="0" aria-label="Remove Ops Risk Summary.docx">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" stroke="#d92d20" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Remove
+            </div>
+          </li>
+ 
+          <li class="fileRow">
+            <div class="fileIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-6Z" stroke="#0b2a4a" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M14 2v6h6" stroke="#0b2a4a" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+ 
+            <div class="fileMeta">
+              <div class="fileName">Incident Report.pdf</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">PDF</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">Readable</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">917 KB</div>
+            </div>
+ 
+            <div class="remove" role="button" tabindex="0" aria-label="Remove Incident Report.pdf">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" stroke="#d92d20" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Remove
+            </div>
+          </li>
+ 
+          <li class="fileRow">
+            <div class="fileIcon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-6Z" stroke="#0b2a4a" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M14 2v6h6" stroke="#0b2a4a" stroke-width="2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+ 
+            <div class="fileMeta">
+              <div class="fileName">Ops Workflow.vsdx</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">Visio</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">Readable</div>
+              <div class="sep" aria-hidden="true"></div>
+              <div class="metaText">1.3 MB</div>
+            </div>
+ 
+            <div class="remove" role="button" tabindex="0" aria-label="Remove Ops Workflow.vsdx">
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12" stroke="#d92d20" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Remove
+            </div>
+          </li>
+        </ul>
+ 
+        <div class="footer" aria-label="Step actions">
+          <div>
+            <button class="btn secondary" type="button" aria-label="Back" disabled>Back</button>
+          </div>
+          <div>
+            <button class="btn primary" type="button" aria-label="Confirm and Continue">Confirm and Continue</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

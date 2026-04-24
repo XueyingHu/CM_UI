@@ -1,5 +1,3 @@
-import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 
 export default function Sidebar() {
@@ -8,56 +6,62 @@ export default function Sidebar() {
   const isReviewPhase = location === "/review-validate" || location === "/expand-search" || location === "/insights-summary";
 
   const DOC_STEPS = [
-    { id: 1, label: "Upload Documents", isActive: location === "/step-2", isCompleted: location === "/step-3" || location === "/step-4" || location === "/step-5" || location === "/step-6" },
-    { id: 2, label: "Extract Key Information", isActive: location === "/step-3", isCompleted: location === "/step-4" || location === "/step-5" || location === "/step-6" },
-    { id: 3, label: "Synthesize Insights", isActive: location === "/step-4", isCompleted: location === "/step-5" || location === "/step-6" },
-    { id: 4, label: "Validate Against Source Data", isActive: location === "/step-5", isCompleted: location === "/step-6" },
-    { id: 5, label: "Generate Executive Summary", isActive: location === "/step-6", isCompleted: false },
+    { id: 1, label: "Upload Documents", path: "/step-2" },
+    { id: 2, label: "Extract Key Events", path: "/step-3" },
+    { id: 3, label: "Validate with Source Systems", path: "/step-4" },
+    { id: 4, label: "Analyze Events and Impact", path: "/step-5" },
+    { id: 5, label: "Finalize Outcome", path: "/step-6" },
   ];
 
   const REVIEW_STEPS = [
-    { id: 1, label: "Review and Validate\nRelevant Items", isActive: location === "/review-validate", isCompleted: location === "/expand-search" || location === "/insights-summary", checkmark: true },
-    { id: 2, label: "Expand Search Criteria (optional)", isActive: location === "/expand-search", isCompleted: location === "/insights-summary", checkmark: true },
-    { id: 3, label: "Generate Insights Summary", isActive: location === "/insights-summary", isCompleted: false, checkmark: true },
+    { id: 1, label: "Review and Validate Relevant Items", path: "/review-validate" },
+    { id: 2, label: "Expand Search Criteria (optional)", path: "/expand-search" },
+    { id: 3, label: "Generate Insights Summary", path: "/insights-summary" },
   ];
 
   const currentSteps = isReviewPhase ? REVIEW_STEPS : DOC_STEPS;
 
-  const renderStep = (step: any) => {
-    const isCompletedAndNotActive = step.isCompleted && !step.isActive;
-    const isCompletedAndActive = step.isCompleted && step.isActive;
-
-    return (
-      <li key={step.id}>
-        <div
-          className={cn(
-            "flex items-center px-4 py-3 text-sm font-medium border-b border-[#e0e0e0] last:border-0",
-            (step.isActive || isCompletedAndNotActive) ? "bg-[#fff8cc] text-[#333]" : "bg-white text-[#333]"
-          )}
-        >
-          <div className="w-6 flex-shrink-0 flex justify-center mr-2">
-            {step.isCompleted || isCompletedAndActive || (step.isActive && step.checkmark) ? (
-              <Check className="w-5 h-5 text-black" strokeWidth={2.5} />
-            ) : (
-              <span className="font-bold">{step.id}.</span>
-            )}
-          </div>
-          <span className="whitespace-pre-line">{step.label}</span>
-        </div>
-      </li>
-    );
-  };
+  const isActive = (path: string) => location === path;
 
   return (
-    <div className="w-[280px] bg-[#f4f4f4] border-r border-[#e0e0e0] flex flex-col h-full shrink-0 shadow-[inset_-1px_0_0_rgba(0,0,0,0.05)]">
-      <div className="px-6 py-5">
-        <h2 className="text-[#1e3a6a] text-xl font-semibold font-sans mb-4">Your Progress</h2>
+    <div className="w-[260px] bg-white border-r flex flex-col h-full shrink-0" style={{ borderColor: "#e6e9ef" }}>
+      <div className="px-4 pt-4 pb-2">
+        <p className="text-[13px] font-black" style={{ color: "#2b3c50" }}>Your Progress</p>
       </div>
 
-      <nav className="flex-1 bg-white mx-4 rounded-sm border border-[#e0e0e0] overflow-hidden mb-6">
-        <ul className="flex flex-col">
-          {currentSteps.map(renderStep)}
-        </ul>
+      <nav className="flex-1 px-2 pb-4">
+        <ol className="list-decimal pl-5 space-y-0.5">
+          {currentSteps.map((step) => {
+            const active = isActive(step.path);
+            return (
+              <li
+                key={step.id}
+                data-testid={`sidebar-step-${step.id}`}
+                className="py-2 px-2.5 rounded-lg text-[13px] font-extrabold leading-snug cursor-pointer transition-all duration-150"
+                style={{
+                  color: active ? "#1f5ea8" : "#6b7a8a",
+                  fontWeight: active ? 900 : 800,
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.background = "#f3f7ff";
+                    (e.currentTarget as HTMLElement).style.color = "#2b3c50";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "inset 3px 0 0 #2a6acb";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    (e.currentTarget as HTMLElement).style.background = "";
+                    (e.currentTarget as HTMLElement).style.color = "#6b7a8a";
+                    (e.currentTarget as HTMLElement).style.boxShadow = "";
+                  }
+                }}
+              >
+                {step.label}
+              </li>
+            );
+          })}
+        </ol>
       </nav>
     </div>
   );
