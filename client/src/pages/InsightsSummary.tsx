@@ -1,184 +1,316 @@
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
+import { ChevronRight, ChevronDown, FileSpreadsheet, FileText, Send } from "lucide-react";
 
-const TAB_DATA: Record<string, {
-  kpis: { title: string; value: number; trend: string; color: string; bg: string; borderColor: string }[];
-  keyThemes: { text: string; ref: string }[];
-  emergingRisks: { text: string; ref: string }[];
-  riskImpact: { label: string; text: string; ref: string }[];
-}> = {
-  events: {
-    kpis: [
-      { title: "New Risk Events", value: 9, trend: "New This Month", color: "#1e3a6a", bg: "#f8fbff", borderColor: "#c5cdd4" },
-      { title: "Risk Events Still Open or Valid", value: 14, trend: "1 New This Month", color: "#333", bg: "#ffffff", borderColor: "#c5cdd4" },
-      { title: "Overdue Risk Events", value: 5, trend: "1 New Overdue", color: "#b33a3a", bg: "#fffaf5", borderColor: "#e8d5cc" },
-    ],
-    keyThemes: [
-      { text: "Vendor patch management issues are leading to validation problems and reconciliation breakdowns.", ref: "EVENT 109771" },
-      { text: "Settlement processing delays are inflating downstream queue saturation and operational risk.", ref: "EVENT 104382" },
-      { text: "Third-party impacts continue to disrupt payment reconciliation processes.", ref: "EVENT 119205" },
-    ],
-    emergingRisks: [
-      { text: "Increase in incidents post-deployment change failure across applications", ref: "EVENT 112205, 119025" },
-      { text: "Recurring fraud threats detected in ACH transactions point to gaps in financial controls", ref: "EVENT 118643" },
-    ],
-    riskImpact: [
-      { label: "Operational Impacts:", text: "Recently surfacing risks indicate potential for substantial system downtime", ref: "EVENT 104382, EVENT 117502" },
-      { label: "Financial Impacts:", text: "ACH and settlement risks imply recurring financial losses if not mitigated", ref: "EVENT 118643, EVENT 117502" },
-      { label: "Regulatory Impacts:", text: "Further scrutiny is expected to repeat third-party vendor disruptions", ref: "EVENT 119205" },
-    ],
-  },
-  issues: {
-    kpis: [
-      { title: "New Issues Identified", value: 6, trend: "New This Month", color: "#1e3a6a", bg: "#f8fbff", borderColor: "#c5cdd4" },
-      { title: "Issues Still Open or Pending", value: 11, trend: "2 New This Month", color: "#333", bg: "#ffffff", borderColor: "#c5cdd4" },
-      { title: "Overdue Issues", value: 3, trend: "1 Newly Overdue", color: "#b33a3a", bg: "#fffaf5", borderColor: "#e8d5cc" },
-    ],
-    keyThemes: [
-      { text: "Missing authorization controls in manual override processes are creating compliance gaps and audit exposure.", ref: "ISSUE 402911" },
-      { text: "Incomplete training records for newly deployed AML monitoring tools are limiting effectiveness of fraud detection.", ref: "ISSUE 405822" },
-      { text: "Data privacy compliance gaps in customer onboarding flows risk regulatory penalties under GDPR and local data protection laws.", ref: "ISSUE 410293" },
-    ],
-    emergingRisks: [
-      { text: "Growing backlog of unresolved issues in manual reconciliation processes increasing error rates", ref: "ISSUE 402911, 412558" },
-      { text: "Inadequate sign-off procedures on quarterly financial reconciliations creating audit trail gaps", ref: "ISSUE 412558" },
-    ],
-    riskImpact: [
-      { label: "Compliance Impacts:", text: "Authorization and training deficiencies could result in regulatory findings during upcoming audits", ref: "ISSUE 402911, ISSUE 405822" },
-      { label: "Financial Impacts:", text: "Missing reconciliation sign-offs may lead to undetected discrepancies and financial misstatements", ref: "ISSUE 412558" },
-      { label: "Operational Impacts:", text: "Data privacy gaps in onboarding could halt new customer acquisition if enforcement actions are taken", ref: "ISSUE 410293" },
-    ],
-  },
-  changes: {
-    kpis: [
-      { title: "Upcoming Changes", value: 4, trend: "Scheduled This Quarter", color: "#1e3a6a", bg: "#f8fbff", borderColor: "#c5cdd4" },
-      { title: "Changes In Progress", value: 7, trend: "2 Nearing Completion", color: "#333", bg: "#ffffff", borderColor: "#c5cdd4" },
-      { title: "High-Risk Changes", value: 2, trend: "Requires Attention", color: "#b33a3a", bg: "#fffaf5", borderColor: "#e8d5cc" },
-    ],
-    keyThemes: [
-      { text: "Core banking platform upgrade (v2.4) introduces significant infrastructure dependencies and requires coordinated downtime planning.", ref: "CHG 89012" },
-      { text: "Cloud infrastructure migration is in planning phase with broad impact across multiple business domains and application stacks.", ref: "CHG 90221" },
-      { text: "Firewall ruleset updates for APAC region have been completed, reducing exposure to cross-region network vulnerabilities.", ref: "CHG 89105" },
-    ],
-    emergingRisks: [
-      { text: "Delayed core banking upgrade increasing technical debt and compatibility risks with downstream systems", ref: "CHG 89012" },
-      { text: "Cloud migration planning gaps may lead to service disruptions if rollback procedures are not validated", ref: "CHG 90221" },
-    ],
-    riskImpact: [
-      { label: "Operational Impacts:", text: "Core banking upgrade downtime could affect real-time transaction processing and settlement cycles", ref: "CHG 89012" },
-      { label: "Strategic Impacts:", text: "Cloud migration delays may push back digital transformation milestones and increase total cost of ownership", ref: "CHG 90221" },
-      { label: "Security Impacts:", text: "Completed APAC firewall changes reduce network attack surface but ongoing monitoring is required", ref: "CHG 89105" },
-    ],
-  },
-};
+const NAVY = "#0b2a4a";
+const BORDER = "#e6e9ef";
+const MUTED = "#5b6b7a";
+const TEXT = "#122033";
+const DIVIDER = "#eef2f7";
+
+const TABS = [
+  { key: "events", label: "ORAC Risk Events" },
+  { key: "issues", label: "ORAC Issues" },
+  { key: "changes", label: "Navigator Changes" },
+];
+
+/* ─── Donut chart ─────────────────────────────────────── */
+interface Slice { label: string; value: number; color: string; }
+
+function DonutChart({ slices, label }: { slices: Slice[]; label: string }) {
+  const total = slices.reduce((s, r) => s + r.value, 0);
+  const R = 52; const cx = 70; const cy = 70; const stroke = 18;
+  const circumference = 2 * Math.PI * R;
+
+  let offset = 0;
+  const segments = slices.map(s => {
+    const pct = s.value / total;
+    const dash = pct * circumference;
+    const seg = { ...s, dash, offset, pct };
+    offset += dash;
+    return seg;
+  });
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+      <svg width={140} height={140}>
+        {segments.map((seg, i) => (
+          <circle
+            key={i}
+            cx={cx} cy={cy} r={R}
+            fill="none"
+            stroke={seg.color}
+            strokeWidth={stroke}
+            strokeDasharray={`${seg.dash} ${circumference - seg.dash}`}
+            strokeDashoffset={-seg.offset}
+            transform={`rotate(-90 ${cx} ${cy})`}
+          />
+        ))}
+        <text x={cx} y={cy - 6} textAnchor="middle" fontSize={9} fill={MUTED} fontWeight={700}>{label}</text>
+        <text x={cx} y={cy + 10} textAnchor="middle" fontSize={18} fill={TEXT} fontWeight={900}>{total}</text>
+      </svg>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {slices.map(s => (
+          <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5 }}>
+            <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+            <span style={{ color: TEXT, fontWeight: 700, minWidth: 60 }}>{s.label}</span>
+            <span style={{ color: MUTED, fontWeight: 900 }}>{s.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Register row ─────────────────────────────────────── */
+interface RegRow { id: string; title: string; rating: string; status: string; assureAE: string; additionalAE: string; rationale: string; expanded: boolean; }
+
+const REGISTER_ROWS: RegRow[] = [
+  { id: "rr1", title: "RE 1024 Data Privacy Breach", rating: "High", status: "Overdue", assureAE: "AE‑1023 Payments Processing Platform", additionalAE: "AE‑3301 Financial Controls Oversight", rationale: "Weaknesses in access provisioning may impact downstream financial controls.", expanded: false },
+  { id: "rr2", title: "RE 1098 Compliance Failure", rating: "Medium", status: "Open", assureAE: "AE‑2210 Issue Management", additionalAE: "AE‑3301 Financial Controls Oversight", rationale: "Delayed remediation increases likelihood of control failures.", expanded: false },
+  { id: "rr3", title: "RE 1156 Fraudulent Transactions", rating: "High", status: "Open", assureAE: "AE‑2340 Fraud Detection", additionalAE: "AE‑4102 Regulatory Reporting", rationale: "Fraud pattern impacts downstream compliance and reporting processes.", expanded: false },
+];
+
+const RATING_COLOR: Record<string, string> = { Critical: "#b42318", High: "#b54708", Major: "#b54708", Medium: "#1f5ea8", Low: "#1f7a3f" };
+const STATUS_COLOR: Record<string, string> = { Overdue: "#b42318", Open: "#1f5ea8", Closed: "#1f7a3f", Scheduled: "#6d28d9" };
 
 export default function InsightsSummary() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("events");
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [rows, setRows] = useState<RegRow[]>(REGISTER_ROWS);
 
-  const data = TAB_DATA[activeTab];
+  const toggleRow = (id: string) => setRows(prev => prev.map(r => r.id === id ? { ...r, expanded: !r.expanded } : r));
+  const expandAll = () => setRows(prev => prev.map(r => ({ ...r, expanded: true })));
+  const collapseAll = () => setRows(prev => prev.map(r => ({ ...r, expanded: false })));
+
+  const ratingSlices: Slice[] = [
+    { label: "Critical", value: 2, color: "#b42318" },
+    { label: "Major", value: 4, color: "#b54708" },
+    { label: "High", value: 3, color: "#1f5ea8" },
+    { label: "Medium", value: 2, color: "#94a3b8" },
+    { label: "Low", value: 1, color: "#cbd5e1" },
+  ];
+  const statusSlices: Slice[] = [
+    { label: "Open", value: 5, color: "#1f5ea8" },
+    { label: "Overdue", value: 5, color: "#b54708" },
+    { label: "Closed", value: 2, color: "#94a3b8" },
+  ];
+
+  const BtnStyle = (primary?: boolean): React.CSSProperties => ({
+    display: "inline-flex", alignItems: "center", gap: 5,
+    padding: "7px 13px", borderRadius: 8, cursor: "pointer", fontSize: 12.5, fontWeight: 900,
+    border: primary ? "none" : `1px solid ${BORDER}`,
+    background: primary ? NAVY : "#fff",
+    color: primary ? "#fff" : TEXT,
+    whiteSpace: "nowrap",
+  });
 
   return (
-    <div className="p-10 max-w-5xl relative min-h-full pb-32">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold text-[#1e3a6a] mb-6">Insights Analysis and Summary</h1>
-        <div className="w-full h-px bg-slate-200 mb-6" />
-      </header>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
 
-      <div className="flex mb-6">
-        <div 
-          data-testid="tab-events"
-          onClick={() => setActiveTab("events")}
-          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "events" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
-        >
-          ORAC Risk Events
+      {/* Breadcrumb */}
+      <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "10px 18px", fontSize: 12.5, color: MUTED, fontWeight: 600 }}>
+        <span style={{ color: TEXT, fontWeight: 900 }}>Home</span>
+        <span style={{ margin: "0 6px" }}>›</span>
+        <span style={{ color: TEXT, fontWeight: 900 }}>Audit Universe Mapping</span>
+        <span style={{ margin: "0 6px" }}>›</span>
+        <span style={{ color: TEXT, fontWeight: 900 }}>Step 3.</span>{" "}Executive Summary
+      </div>
+
+      {/* Tab bar + export/publish */}
+      <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+        <div style={{ display: "flex" }}>
+          {TABS.map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ padding: "12px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", border: "none", borderBottom: activeTab === tab.key ? `2px solid ${NAVY}` : "2px solid transparent", background: "transparent", color: activeTab === tab.key ? NAVY : MUTED, transition: "all 120ms" }}>
+              {tab.label}
+            </button>
+          ))}
         </div>
-        <div 
-          data-testid="tab-issues"
-          onClick={() => setActiveTab("issues")}
-          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "issues" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
-        >
-          ORAC Issues
-        </div>
-        <div 
-          data-testid="tab-changes"
-          onClick={() => setActiveTab("changes")}
-          className={`px-6 py-2.5 text-[15px] font-medium cursor-pointer shadow-sm ${activeTab === "changes" ? "bg-[#1e3a6a] text-white border-r border-white/20" : "bg-[#f4f6f8] text-[#333] border border-l-0 border-[#c5cdd4] hover:bg-[#e6ebf1]"}`}
-        >
-          Navigator Changes
+        <div style={{ display: "flex", gap: 8, paddingBlock: 8 }}>
+          <button style={BtnStyle()}><FileSpreadsheet size={13} /> Export to Excel</button>
+          <button style={BtnStyle()}><FileText size={13} /> Export to PDF</button>
+          <button style={BtnStyle(true)}><Send size={13} /> Publish</button>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {data.kpis.map((kpi, i) => (
-          <div key={i} className="rounded-sm p-5 shadow-sm" style={{ border: `1px solid ${kpi.borderColor}`, backgroundColor: kpi.bg }}>
-            <h3 className="text-[15px] font-medium mb-3" style={{ color: kpi.color }}>{kpi.title}</h3>
-            <div className="text-[36px] font-bold mb-2 leading-none" style={{ color: kpi.color }}>{kpi.value}</div>
-            <div className="text-[13px] flex items-center gap-1 font-medium" style={{ color: i === 1 ? "#6b9c41" : kpi.color }}>
-              <span className="text-[14px]">↗</span> {kpi.trend}
+      {/* Main */}
+      <div style={{ padding: 18, flex: 1 }}>
+
+        {/* Title */}
+        <div style={{ marginBottom: 18 }}>
+          <h1 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 900, color: TEXT }}>Step 3. Executive Summary</h1>
+          <p style={{ margin: 0, fontSize: 12.5, color: MUTED, lineHeight: 1.55 }}>
+            This page consolidates finalized outputs for ORAC Risk Events. Executive Snapshot provides leadership ready insights. Risk Event Register is collapsed by default for drilldown, reporting, and logging.
+          </p>
+        </div>
+
+        {/* Note banner */}
+        <div style={{ fontSize: 12, color: MUTED, fontStyle: "italic", marginBottom: 18, textAlign: "right" }}>
+          Executive summary reflects accepted ORAC Risk Events only.
+        </div>
+
+        {/* Executive Snapshot card */}
+        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: 18, marginBottom: 16, boxShadow: "0 6px 18px rgba(16,24,40,0.08)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: TEXT }}>Executive Snapshot</div>
+            <div style={{ fontSize: 12, color: MUTED, fontStyle: "italic" }}>Synthesized insights across accepted risk events.</div>
+          </div>
+
+          {/* Key Risk Areas */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: TEXT, marginBottom: 8 }}>Key Risk Areas and Themes</div>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {[
+                "Control execution risk concentrated in critical operational processes, suggesting sustained exposure that warrants continued monitoring focus.",
+                "Recurring governance and oversight weaknesses, including unclear ownership and delayed remediation, impacting accountability for control effectiveness.",
+                "Manual and compensating controls used across impacted areas, increasing execution risk and reducing control sustainability.",
+                "Technology and access control dependencies appear repeatedly, indicating heightened sensitivity to control design, resilience, and monitoring coverage.",
+                "Cross functional impacts observed where one risk event creates downstream pressure on reporting, reconciliation, and oversight processes.",
+              ].map((item, i) => (
+                <li key={i} style={{ fontSize: 13, lineHeight: 1.6, marginBottom: 6, color: TEXT }}>{item}</li>
+              ))}
+            </ul>
+            <div style={{ fontSize: 12, color: MUTED, fontStyle: "italic", marginTop: 6 }}>
+              Themes reflect patterns across accepted events, not a restatement of individual event descriptions.
             </div>
           </div>
-        ))}
-      </div>
 
-      <div className="space-y-8">
-        <div>
-          <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
-            <h2 className="text-base font-bold text-[#1e3a6a]">Key Themes</h2>
-            <button className="text-[13px] text-[#1e3a6a] font-medium flex items-center">
-              Modify <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+          <div style={{ height: 1, background: DIVIDER, margin: "14px 0" }} />
+
+          {/* Emerging Risks */}
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: TEXT, marginBottom: 8 }}>Emerging Risks</div>
+            <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.6 }}>
+              Early signals suggest increased regulatory scrutiny linked to data governance, evidence retention, and access control expectations. Several events indicate risk amplification through shared dependencies, where localized failures can propagate into broader operational disruption.
+            </div>
+            <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.6, marginTop: 8 }}>
+              Organizational and process changes present an ongoing risk signal, with potential impacts to control ownership clarity, handoff effectiveness, and timely remediation. These conditions may increase the likelihood of recurring issues if monitoring focus is not sustained during transition periods.
+            </div>
           </div>
-          <div className="space-y-4">
-            {data.keyThemes.map((item, i) => (
-              <p key={i} className="text-[14px] text-[#333]">
-                {item.text} <span className="font-bold text-[#1e3a6a]">{item.ref}</span>
-              </p>
-            ))}
+
+          <div style={{ height: 1, background: DIVIDER, margin: "14px 0" }} />
+
+          {/* Audit Universe */}
+          <div>
+            <div style={{ fontSize: 13.5, fontWeight: 900, color: TEXT, marginBottom: 8 }}>Audit Universe Exposure and Coverage Perspective</div>
+            <div style={{ fontSize: 13, color: TEXT, lineHeight: 1.6, marginBottom: 8 }}>
+              Impact appears concentrated within a defined subset of auditable entities, indicating focused exposure rather than isolated events. Certain auditable entities recur across multiple themes, which suggests interconnected drivers that merit sustained continuous monitoring attention.
+            </div>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>
+              {[
+                "Repeated exposure in entities supporting control execution, oversight, and reporting.",
+                "Downstream impact risk where operational failures influence financial and regulatory processes.",
+                "Current coverage is sufficient to support monitoring objectives, with targeted follow up expected in selected areas.",
+              ].map((item, i) => (
+                <li key={i} style={{ fontSize: 13, lineHeight: 1.6, marginBottom: 4, color: TEXT }}>{item}</li>
+              ))}
+            </ul>
           </div>
         </div>
 
-        <div>
-          <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
-            <h2 className="text-base font-bold text-[#1e3a6a]">Emerging Risks</h2>
-            <button className="text-[13px] text-[#1e3a6a] font-medium flex items-center">
-              Modify <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+        {/* Distribution Snapshot card */}
+        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: 18, marginBottom: 16, boxShadow: "0 6px 18px rgba(16,24,40,0.08)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: TEXT }}>Distribution Snapshot</div>
+            <div style={{ fontSize: 12, color: MUTED, fontStyle: "italic" }}>Minimal stats focused on severity and status.</div>
           </div>
-          <ul className="space-y-4">
-            {data.emergingRisks.map((item, i) => (
-              <li key={i} className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
-                {item.text} <span className="font-bold text-[#1e3a6a]">({item.ref})</span>
-              </li>
-            ))}
-          </ul>
+
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 10px", borderRadius: 8, border: `1px solid ${BORDER}`, background: "#f8fafc", fontSize: 12.5, fontWeight: 900, color: TEXT }}>
+              Accepted risk events: 12
+              <ChevronDown size={13} style={{ color: MUTED }} />
+            </div>
+            <div style={{ fontSize: 12, color: MUTED }}>Scope: ORAC Risk Events</div>
+          </div>
+
+          <div style={{ display: "flex", gap: 40, flexWrap: "wrap" }}>
+            <DonutChart slices={ratingSlices} label="By rating" />
+            <DonutChart slices={statusSlices} label="By status" />
+          </div>
+
+          <div style={{ fontSize: 11.5, color: MUTED, fontStyle: "italic", marginTop: 14 }}>
+            Donut charts display accepted risk events only. Detailed records are available in the Risk Event Register below.
+          </div>
         </div>
 
-        <div>
-          <div className="flex items-center justify-between border-b-2 border-slate-200 pb-2 mb-4">
-            <h2 className="text-base font-bold text-[#1e3a6a]">Risk Impact Analysis</h2>
-            <button className="text-[13px] text-[#1e3a6a] font-medium flex items-center">
-              Modify <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+        {/* Risk Event Register card */}
+        <div style={{ background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12, padding: 18, marginBottom: 20, boxShadow: "0 6px 18px rgba(16,24,40,0.08)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+            <div style={{ fontSize: 14, fontWeight: 900, color: TEXT }}>Risk Event Register</div>
+            <div style={{ fontSize: 12, color: MUTED, fontStyle: "italic" }}>Default collapsed for clean review, expand for full details.</div>
           </div>
-          <ul className="space-y-4">
-            {data.riskImpact.map((item, i) => (
-              <li key={i} className="text-[14px] text-[#333] relative pl-4 before:content-['•'] before:absolute before:left-0 before:text-[#1e3a6a]">
-                <span className="font-bold">{item.label}</span> {item.text} <span className="font-bold text-[#1e3a6a]">({item.ref})</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
 
-      <div className="flex justify-between mt-8">
-        <button 
-          onClick={() => setLocation("/expand-search")}
-          className="bg-white hover:bg-slate-50 text-[#333] border border-[#c5cdd4] text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm flex items-center"
-        >
-          Back
-        </button>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <button
+              onClick={() => setRegisterOpen(o => !o)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: 0, fontSize: 13, fontWeight: 900, color: NAVY }}
+            >
+              {registerOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+              {registerOpen ? "Collapse" : "Expand"} Risk Event Register
+            </button>
+            {registerOpen && (
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={expandAll} style={{ padding: "4px 10px", borderRadius: 7, border: `1px solid ${BORDER}`, background: "#f8fafc", cursor: "pointer", fontSize: 12, fontWeight: 900, color: MUTED }}>Expand all</button>
+                <button onClick={collapseAll} style={{ padding: "4px 10px", borderRadius: 7, border: `1px solid ${BORDER}`, background: "#f8fafc", cursor: "pointer", fontSize: 12, fontWeight: 900, color: MUTED }}>Collapse all</button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ fontSize: 12.5, color: MUTED, marginBottom: registerOpen ? 14 : 0 }}>
+            Includes full event details, Assure tagged auditable entities, additional impacted auditable entities, and final impact rationale.
+          </div>
+
+          {registerOpen && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {rows.map(row => (
+                <div key={row.id} style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between", cursor: "pointer", background: row.expanded ? "#f8fafd" : "#fff" }} onClick={() => toggleRow(row.id)}>
+                    <div>
+                      <div style={{ fontSize: 13.5, fontWeight: 900, color: TEXT, marginBottom: 5 }}>{row.title}</div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <span style={{ padding: "2px 8px", borderRadius: 6, background: "#f1f5f9", border: "1px solid #e2e8f0", fontSize: 12, fontWeight: 700, color: RATING_COLOR[row.rating] ?? TEXT }}>Rating: {row.rating}</span>
+                        <span style={{ padding: "2px 8px", borderRadius: 6, background: "#f1f5f9", border: "1px solid #e2e8f0", fontSize: 12, fontWeight: 700, color: STATUS_COLOR[row.status] ?? TEXT }}>Status: {row.status}</span>
+                      </div>
+                    </div>
+                    <button style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: 7, border: `1px solid ${BORDER}`, background: "#f8fafc", color: MUTED, cursor: "pointer" }}>
+                      {row.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    </button>
+                  </div>
+                  {row.expanded && (
+                    <div style={{ borderTop: `1px solid ${DIVIDER}`, background: "#fafbfd", padding: "12px 16px" }}>
+                      <div style={{ display: "grid", gridTemplateColumns: "170px 1fr", gap: 8 }}>
+                        {[
+                          ["Assure Tagged AE(s)", row.assureAE],
+                          ["Additional Impacted AE(s)", row.additionalAE],
+                          ["Impact Rationale", row.rationale],
+                        ].map(([k, v]) => (
+                          <>
+                            <span key={`k${k}`} style={{ fontSize: 12.5, fontWeight: 900, color: MUTED }}>{k}</span>
+                            <span key={`v${k}`} style={{ fontSize: 12.5, color: TEXT, lineHeight: 1.5 }}>{v}</span>
+                          </>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <button onClick={() => setLocation("/expand-search")} style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #d6deea", background: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 13, minWidth: 100 }}>
+            Back
+          </button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button style={BtnStyle()}><FileSpreadsheet size={13} /> Export to Excel</button>
+            <button style={BtnStyle()}><FileText size={13} /> Export to PDF</button>
+            <button style={BtnStyle(true)}><Send size={13} /> Publish</button>
+          </div>
+        </div>
+
       </div>
     </div>
   );
