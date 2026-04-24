@@ -6,7 +6,7 @@ export default function Sidebar() {
   const isReviewPhase = location === "/review-validate" || location === "/expand-search" || location === "/insights-summary";
 
   const DOC_STEPS = [
-    { id: 1, label: "Upload Documents", path: "/step-2" },
+    { id: 1, label: "Upload Documents", path: "/step-1" },
     { id: 2, label: "Extract Key Events", path: "/step-2b" },
     { id: 3, label: "Validate with Source Systems", path: "/step-3" },
     { id: 4, label: "Analyze Events and Impact", path: "/step-4" },

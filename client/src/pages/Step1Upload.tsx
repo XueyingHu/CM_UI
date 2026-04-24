@@ -32,7 +32,7 @@ const DEFAULT_DOCS: DocItem[] = [
 
 let nextId = 4;
 
-export default function Step2Upload() {
+export default function Step1Upload() {
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [documents, setDocuments] = useState<DocItem[]>(DEFAULT_DOCS);

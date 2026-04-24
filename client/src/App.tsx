@@ -5,10 +5,10 @@ import NotFound from "@/pages/not-found";
 
 import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/pages/Dashboard";
-import Step2Upload from "@/pages/Step2Upload";
-import Step3Extract from "@/pages/Step3Extract";
-import Step4Synthesize from "@/pages/Step4Synthesize";
-import Step5Validate from "@/pages/Step5Validate";
+import Step1Upload from "@/pages/Step1Upload";
+import Step3Validate from "@/pages/Step3Validate";
+import Step4Analyze from "@/pages/Step4Analyze";
+import Step5Finalize from "@/pages/Step5Finalize";
 import Step6Summary from "@/pages/Step6Summary";
 import ReviewValidate from "@/pages/ReviewValidate";
 import ExpandSearch from "@/pages/ExpandSearch";
@@ -43,10 +43,10 @@ function Router() {
           <Switch>
             <Route path="/" component={Dashboard}/>
             <Route path="/domain-home" component={DomainHome}/>
-            <Route path="/step-2" component={Step2Upload}/>
-            <Route path="/step-3" component={Step3Extract}/>
-            <Route path="/step-4" component={Step4Synthesize}/>
-            <Route path="/step-5" component={Step5Validate}/>
+            <Route path="/step-1" component={Step1Upload}/>
+            <Route path="/step-3" component={Step3Validate}/>
+            <Route path="/step-4" component={Step4Analyze}/>
+            <Route path="/step-5" component={Step5Finalize}/>
             <Route path="/step-6" component={Step6Summary}/>
             <Route path="/review-validate" component={ReviewValidate}/>
             <Route path="/expand-search" component={ExpandSearch}/>

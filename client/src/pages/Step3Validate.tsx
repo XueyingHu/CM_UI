@@ -391,7 +391,7 @@ export default function Step3Validate() {
           }}>
             <button
               data-testid="button-back"
-              onClick={() => setLocation("/step-2")}
+              onClick={() => setLocation("/step-1")}
               style={{
                 padding: "10px 14px", borderRadius: 10, border: "1px solid #d6deea",
                 background: "#fff", fontWeight: 900, cursor: "pointer", minWidth: 120, fontSize: 13,

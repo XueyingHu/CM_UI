@@ -13,7 +13,7 @@ const INSIGHTS_DICT: Record<string, string> = {
   "Regulatory Exam, Inquiry, or Requirement Changes": "Upcoming regulatory attention on data privacy was emphasized, with gaps in current compliance readiness highlighted."
 };
 
-export default function Step4Synthesize() {
+export default function Step4Analyze() {
   const [, setLocation] = useLocation();
 
   return (

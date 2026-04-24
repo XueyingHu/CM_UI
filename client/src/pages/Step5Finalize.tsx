@@ -18,7 +18,7 @@ const CHANGE_INITIATIVES = [
   { id: "MCF-300456", source: "Meeting\nPack.pdf", extracted: "Navigator Program Delayed", status: "New Q3 2024 Target", outcome: "Validated & Updated", outcomeType: "success" },
 ];
 
-export default function Step5Validate() {
+export default function Step5Finalize() {
   const [, setLocation] = useLocation();
 
   return (

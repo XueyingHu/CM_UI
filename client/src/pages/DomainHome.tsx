@@ -58,7 +58,7 @@ export default function DomainHome() {
               <div className="flex justify-center">
                 <button
                   data-testid="button-start-document-insights"
-                  onClick={() => setLocation("/step-2")}
+                  onClick={() => setLocation("/step-1")}
                   className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm"
                 >
                   Start
