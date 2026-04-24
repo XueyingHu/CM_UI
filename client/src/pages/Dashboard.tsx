@@ -130,15 +130,6 @@ export default function Dashboard() {
   const [scopeApplied, setScopeApplied] = useState(false);
   const [filteredEntities, setFilteredEntities] = useState(ALL_ENTITIES);
   const [listOpen, setListOpen] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (listRef.current && !listRef.current.contains(e.target as Node)) setListOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   const handleApply = () => {
     let result = ALL_ENTITIES;
@@ -268,16 +259,15 @@ export default function Dashboard() {
           </div>
 
           {/* Card body */}
-          <div style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 14, fontWeight: 900, color: "#0b2a4a" }}>
-              Total Auditable Entities:{" "}
-              <span style={{ color: scopeApplied ? "#1f5ea8" : "#9aa5b4" }}>
-                {scopeApplied ? filteredEntities.length : "—"}
+          <div style={{ padding: "16px 20px 0" }}>
+            {/* Summary row */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, paddingBottom: listOpen && scopeApplied ? 12 : 16, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 14, fontWeight: 900, color: "#0b2a4a" }}>
+                Total Auditable Entities:{" "}
+                <span style={{ color: scopeApplied ? "#1f5ea8" : "#9aa5b4" }}>
+                  {scopeApplied ? filteredEntities.length : "—"}
+                </span>
               </span>
-            </span>
-
-            {/* View full list dropdown */}
-            <div ref={listRef} style={{ position: "relative" }}>
               <button
                 data-testid="button-view-full-list"
                 onClick={() => scopeApplied && setListOpen(v => !v)}
@@ -286,31 +276,37 @@ export default function Dashboard() {
                   display: "inline-flex", alignItems: "center", gap: 6,
                   fontSize: 13, fontWeight: 900,
                   color: scopeApplied ? "#1f5ea8" : "#9aa5b4",
-                  background: "none", border: "none", cursor: scopeApplied ? "pointer" : "not-allowed", padding: "4px 0",
+                  background: "none", border: "none",
+                  cursor: scopeApplied ? "pointer" : "not-allowed", padding: "4px 0",
                 }}
               >
                 View full list
                 {listOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
+            </div>
 
-              {listOpen && scopeApplied && (
+            {/* Inline full-width entity list */}
+            {listOpen && scopeApplied && (
+              <div style={{ borderTop: "1px solid #eef2f7", marginLeft: -20, marginRight: -20 }}>
                 <div style={{
-                  position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 50,
-                  background: "#fff", border: "1px solid #ccd5df", borderRadius: 10,
-                  boxShadow: "0 8px 24px rgba(16,24,40,0.12)", minWidth: 360, maxHeight: 280, overflowY: "auto",
+                  padding: "8px 20px 6px",
+                  background: "#f7f9fd",
+                  borderBottom: "1px solid #eef2f7",
                 }}>
-                  <div style={{ padding: "10px 14px 6px", borderBottom: "1px solid #eef2f7" }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 900, color: "#0b2a4a" }}>
-                      Auditable Entities ({filteredEntities.length})
-                    </span>
-                  </div>
-                  {filteredEntities.map(e => (
+                  <span style={{ fontSize: 12, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.2 }}>
+                    Auditable Entities ({filteredEntities.length})
+                  </span>
+                </div>
+                <div style={{ maxHeight: 260, overflowY: "auto" }}>
+                  {filteredEntities.map((e, i) => (
                     <div
                       key={e.id}
                       style={{
-                        display: "grid", gridTemplateColumns: "80px 1fr auto",
-                        alignItems: "center", padding: "9px 14px", gap: 10,
-                        borderBottom: "1px solid #f5f7fa", fontSize: 12.5,
+                        display: "grid", gridTemplateColumns: "90px 1fr auto",
+                        alignItems: "center", padding: "9px 20px", gap: 12,
+                        borderBottom: i < filteredEntities.length - 1 ? "1px solid #f3f6fb" : "none",
+                        fontSize: 12.5,
+                        background: i % 2 === 0 ? "#fff" : "#fafbfd",
                       }}
                     >
                       <span style={{ color: "#5b6b7a", fontWeight: 700 }}>{e.id}</span>
@@ -319,8 +315,8 @@ export default function Dashboard() {
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
