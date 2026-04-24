@@ -227,14 +227,9 @@ export default function Step3Validate() {
                 <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M15 18 9 12l6-6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
                 () => setPage(p => Math.max(1, p - 1)), page === 1, "pager-prev"
               )}
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 160 }}>
-                <span style={{ fontSize: 12.5, fontWeight: 900, color: "#2b3c50", textAlign: "center", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {data.filename}
-                </span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginTop: 1 }}>
-                  {page} of {totalPages}
-                </span>
-              </div>
+              <span style={{ fontSize: 12.5, fontWeight: 900, color: "#2b3c50", minWidth: 72, textAlign: "center" }}>
+                {page} of {totalPages}
+              </span>
               {pagerBtn(
                 <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
                 () => setPage(p => Math.min(totalPages, p + 1)), page === totalPages, "pager-next"
@@ -246,8 +241,22 @@ export default function Step3Validate() {
             </div>
           </div>
 
+          {/* Source file label */}
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            marginTop: 18, marginBottom: 14,
+            padding: "6px 12px", borderRadius: 8,
+            background: "#f0f4fa", border: "1px solid #d6e0f0",
+          }}>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2Z" stroke="#1f5ea8" strokeWidth="1.5" strokeLinejoin="round"/>
+              <path d="M9 2v4h4" stroke="#1f5ea8" strokeWidth="1.5" strokeLinejoin="round"/>
+            </svg>
+            <span style={{ fontSize: 12.5, fontWeight: 900, color: "#1f5ea8" }}>{data.filename}</span>
+          </div>
+
           {/* ORAC Risk Events */}
-          <div style={{ marginTop: 18 }}>
+          <div style={{ marginTop: 0 }}>
             <div style={{ fontSize: 13.5, fontWeight: 900, color: "#1c2f45", marginBottom: 8 }}>ORAC Risk Events</div>
             {tableWrap(
               <>
