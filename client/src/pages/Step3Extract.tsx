@@ -1,45 +1,47 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 
-const EVENT_TYPES = [
-  "Internal Risk Event",
-  "External Risk Event",
-  "Other Internal Adverse Event",
-  "Known Issue",
-  "Management Risk Tolerance and Governance",
-  "Business Ownership Change",
-  "Significant Organization Change",
-  "Regulatory Exam or Inquiry",
-  "Other",
-];
-
-const MEETINGS = [
+const FILES = [
   {
-    title: "Risk Management Forum, Q1 Meeting",
+    filename: "Ops Risk Summary.docx",
     events: [
-      { label: "Internal Risk Event", source: "Quarterly Notes.docx", found: true },
-      { label: "External Risk Event", source: null, found: false },
-      { label: "Other Internal Adverse Event", source: "Quarterly Notes.docx", found: true },
-      { label: "Known Issue", source: "Quarterly Notes.docx", found: true },
-      { label: "Management Risk Tolerance and Governance", source: null, found: false },
-      { label: "Business Ownership Change", source: null, found: false },
-      { label: "Significant Organization Change", source: null, found: false },
-      { label: "Regulatory Exam or Inquiry", source: "Meeting Pack.pdf", found: true },
-      { label: "Other", source: "Meeting Pack.pdf", found: true },
+      { label: "Internal Risk Event", found: true },
+      { label: "External Risk Event", found: false },
+      { label: "Other Internal Adverse Event", found: true },
+      { label: "Known Issue", found: true },
+      { label: "Management Risk Tolerance and Governance", found: false },
+      { label: "Business Ownership Change", found: false },
+      { label: "Significant Organization Change", found: false },
+      { label: "Regulatory Exam or Inquiry", found: true },
+      { label: "Other", found: true },
     ],
   },
   {
-    title: "Ops Improvement Meeting, March 2025",
+    filename: "Incident Report.pdf",
     events: [
-      { label: "Internal Risk Event", source: "Budget Presentation.pptx", found: true },
-      { label: "External Risk Event", source: "Budget Presentation.pptx", found: true },
-      { label: "Other Internal Adverse Event", source: null, found: false },
-      { label: "Known Issue", source: null, found: false },
-      { label: "Management Risk Tolerance and Governance", source: "Budget Presentation.pptx", found: true },
-      { label: "Business Ownership Change", source: "Ops Notes.docx", found: true },
-      { label: "Significant Organization Change", source: null, found: false },
-      { label: "Regulatory Exam or Inquiry", source: null, found: false },
-      { label: "Other", source: "Ops Notes.docx", found: true },
+      { label: "Internal Risk Event", found: true },
+      { label: "External Risk Event", found: true },
+      { label: "Other Internal Adverse Event", found: false },
+      { label: "Known Issue", found: true },
+      { label: "Management Risk Tolerance and Governance", found: true },
+      { label: "Business Ownership Change", found: false },
+      { label: "Significant Organization Change", found: false },
+      { label: "Regulatory Exam or Inquiry", found: false },
+      { label: "Other", found: false },
+    ],
+  },
+  {
+    filename: "Ops Workflow.vsdx",
+    events: [
+      { label: "Internal Risk Event", found: false },
+      { label: "External Risk Event", found: false },
+      { label: "Other Internal Adverse Event", found: false },
+      { label: "Known Issue", found: false },
+      { label: "Management Risk Tolerance and Governance", found: true },
+      { label: "Business Ownership Change", found: true },
+      { label: "Significant Organization Change", found: true },
+      { label: "Regulatory Exam or Inquiry", found: false },
+      { label: "Other", found: false },
     ],
   },
 ];
@@ -51,8 +53,8 @@ export default function Step3Extract() {
   const [, setLocation] = useLocation();
   const [progress, setProgress] = useState(0);
   const [page, setPage] = useState(1);
-  const totalPages = MEETINGS.length;
-  const meeting = MEETINGS[page - 1];
+  const totalPages = FILES.length;
+  const file = FILES[page - 1];
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
@@ -144,13 +146,17 @@ export default function Step3Extract() {
             }} />
           </div>
 
-          {/* Meeting block */}
+          {/* File block */}
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 13, fontWeight: 900, color: "#122033", marginBottom: 10 }}>
-              {meeting.title}
+            <div style={{
+              fontSize: 13, fontWeight: 900, color: "#fff",
+              background: "#0b2a4a", borderRadius: "10px 10px 0 0",
+              padding: "10px 14px", marginBottom: 0,
+            }}>
+              {file.filename}
             </div>
-            <div style={{ border: "1px solid #e6e9ef", borderRadius: 12, overflow: "hidden" }}>
-              {meeting.events.map((ev, i) => (
+            <div style={{ border: "1px solid #e6e9ef", borderTop: "none", borderRadius: "0 0 12px 12px", overflow: "hidden" }}>
+              {file.events.map((ev, i) => (
                 <div
                   key={i}
                   data-testid={`event-row-${i}`}
@@ -161,7 +167,6 @@ export default function Step3Extract() {
                     background: "#fff",
                   }}
                 >
-                  {/* Icon */}
                   <div style={{ width: 18, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {ev.found ? (
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -173,19 +178,11 @@ export default function Step3Extract() {
                       </svg>
                     )}
                   </div>
-                  {/* Text */}
-                  <div style={{ fontSize: 12.8, color: "#1a2e44" }}>
+                  <div style={{ fontSize: 12.8 }}>
                     {ev.found ? (
-                      <>
-                        {ev.label}
-                        <span style={{ color: "#1f5ea8", fontWeight: 700, marginLeft: 6 }}>
-                          ({ev.source})
-                        </span>
-                      </>
+                      <span style={{ color: "#1a2e44", fontWeight: 600 }}>{ev.label}</span>
                     ) : (
-                      <span style={{ color: NOT_FOUND_COLOR, fontWeight: 900 }}>
-                        {ev.label} — Not Found
-                      </span>
+                      <span style={{ color: NOT_FOUND_COLOR, fontWeight: 900 }}>{ev.label} — Not Found</span>
                     )}
                   </div>
                 </div>
