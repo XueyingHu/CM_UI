@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Documents to Insights | Step 4 Analyze Events and Impact</title>
+ 
+<style>
+:root{
+  --navy:#0b2a4a;
+  --bg:#f6f8fb;
+  --panel:#ffffff;
+  --border:#e6e9ef;
+  --muted:#5b6b7a;
+  --text:#122033;
+ 
+  /* Event type accents */
+  --risk:#e8f1fb;
+  --issue:#fef3c7;
+  --reg:#f3e8ff;
+ 
+  --blue:#1f5ea8;
+  --critical:#b42318;
+  --major:#b54708;
+  --limited:#1f5ea8;
+ 
+  --shadow:0 6px 18px rgba(16,24,40,0.08);
+  --radius:12px;
+ 
+  --font:"Segoe UI", system-ui, Arial, sans-serif;
+}
+ 
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+}
+ 
+/* ===== Frame ===== */
+.appHeader{
+  height:56px;
+  background:var(--navy);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  padding:0 18px;
+}
+.brandDot{width:10px;height:10px;border-radius:50%;background:#ffcc33;margin-right:10px;}
+.appTitle{font-weight:900;font-size:14px;}
+.headerSpacer{flex:1;}
+ 
+.frameBanner{
+  background:#fff;
+  border-bottom:1px solid var(--border);
+}
+.bannerInner{
+  max-width:1200px;
+  margin:0 auto;
+  padding:10px 18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.crumbs{font-size:12.5px;color:var(--muted);}
+.crumbs strong{color:var(--text);}
+ 
+.shell{display:grid;grid-template-columns:260px 1fr;}
+.rail{
+  background:#fff;
+  border-right:1px solid var(--border);
+  padding:16px 14px;
+}
+.railTitle{font-size:13px;font-weight:900;margin-bottom:10px;}
+.progressList{padding-left:22px;}
+.progressItem{
+  margin:6px 0;
+  padding:8px 10px;
+  font-size:13px;
+  font-weight:800;
+  color:#6b7a8a;
+  border-radius:8px;
+}
+.progressItem.active{color:var(--blue);font-weight:900;}
+ 
+.main{padding:18px;}
+.card{
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px;
+  max-width:1100px;
+}
+ 
+/* ===== Page ===== */
+.pageTitle{font-size:16px;font-weight:900;margin:0;}
+.pageHelp{font-size:12.8px;color:var(--muted);margin:6px 0 20px;}
+ 
+/* ===== Event Type Block ===== */
+.eventTypeBlock{
+  border-radius:12px;
+  padding:14px;
+  margin-bottom:26px;
+}
+.eventTypeBlock.risk{background:var(--risk);}
+.eventTypeBlock.issue{background:var(--issue);}
+.eventTypeBlock.reg{background:var(--reg);}
+ 
+.eventTypeTitle{
+  font-size:14px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.eventTypeSummary{
+  font-size:13px;
+  line-height:1.5;
+  margin-bottom:10px;
+}
+ 
+/* ===== Table ===== */
+.eventTable{
+  background:#fff;
+  border-radius:10px;
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+.eventTable table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12.5px;
+}
+.eventTable th{
+  background:#f7f9fd;
+  padding:10px;
+  font-weight:900;
+  color:#334155;
+  text-align:left;
+}
+.eventTable td{
+  padding:10px;
+  border-top:1px solid #eef2f7;
+  vertical-align:top;
+}
+ 
+/* Editable fields */
+.editable{
+  padding:4px 6px;
+  border-radius:6px;
+}
+.editable[contenteditable="true"]:focus{
+  outline:2px solid #bfdbfe;
+  background:#eff6ff;
+}
+ 
+/* Rating */
+.rating{
+  font-weight:900;
+}
+.rating.critical{color:var(--critical);}
+.rating.major{color:var(--major);}
+.rating.limited{color:var(--limited);}
+ 
+/* AE lists */
+.aeItem{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:260px;
+}
+ 
+/* ===== Footer ===== */
+.footer{
+  display:flex;
+  justify-content:space-between;
+  margin-top:20px;
+}
+.btn{
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #d6deea;
+  background:#fff;
+  font-weight:900;
+}
+.btn.primary{
+  background:var(--navy);
+  color:#fff;
+}
+</style>
+</head>
+ 
+<body>
+ 
+<header class="appHeader">
+  <div class="brandDot"></div>
+  <div class="appTitle">Next Level Continuous Monitoring</div>
+  <div class="headerSpacer"></div>
+</header>
+ 
+<div class="frameBanner">
+  <div class="bannerInner">
+    <div class="crumbs">
+      <strong>Home</strong> › <strong>Documents to Insights</strong> › <strong>Step 4</strong>. Analyze Events and Impact
+    </div>
+  </div>
+</div>
+ 
+<div class="shell">
+  <aside class="rail">
+    <div class="railTitle">Your Progress</div>
+    <ol class="progressList">
+      <li class="progressItem">Upload Documents</li>
+      <li class="progressItem">Extract Key Events</li>
+      <li class="progressItem">Validate with Source Systems</li>
+      <li class="progressItem active">Analyze Events and Impact</li>
+      <li class="progressItem">Finalize Outcome</li>
+    </ol>
+  </aside>
+ 
+  <main class="main">
+    <section class="card">
+      <h1 class="pageTitle">Analyze Events and Impact</h1>
+      <div class="pageHelp">
+        Review and refine events organized by event type. All content below is editable.
+      </div>
+ 
+      <!-- Internal Risk Event -->
+      <div class="eventTypeBlock risk">
+        <div class="eventTypeTitle">Internal Risk Event</div>
+        <div class="eventTypeSummary editable" contenteditable="true">
+          A major system outage and fraud incident exposed weaknesses in technology resilience
+          and regional controls during peak processing periods.
+        </div>
+ 
+        <div class="eventTable">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Rating</th>
+                <th>Source (Meeting / Document)</th>
+                <th>Auditable Entities Tagged in Assure</th>
+                <th>Additional Impacted Auditable Entities</th>
+                <th>Impact Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ISSUE 778901</td>
+                <td><span class="rating critical">Critical</span></td>
+                <td>Risk Management Forum, Q1<br>Quarterly Notes.docx</td>
+                <td class="editable" contenteditable="true">
+                  <div class="aeItem">AE‑1023 Payments Processing Platform</div>
+                  <div class="aeItem">AE‑2044 Identity and Access Management</div>
+                </td>
+                <td class="editable" contenteditable="true">
+                  <div class="aeItem">AE‑3301 Financial Controls Oversight</div>
+                </td>
+                <td class="editable" contenteditable="true">
+                  Weaknesses in access provisioning may impact downstream financial controls
+                  and oversight processes beyond the primary application.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+ 
+      <!-- ORAC Issue -->
+      <div class="eventTypeBlock issue">
+        <div class="eventTypeTitle">Known Issue</div>
+        <div class="eventTypeSummary editable" contenteditable="true">
+          Multiple ORAC issues remain unresolved with extended remediation timelines,
+          reflecting weak ownership and reliance on manual processes.
+        </div>
+ 
+        <div class="eventTable">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Rating</th>
+                <th>Source (Meeting / Document)</th>
+                <th>Auditable Entities Tagged in Assure</th>
+                <th>Additional Impacted Auditable Entities</th>
+                <th>Impact Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ISSUE 781220</td>
+                <td><span class="rating major">Major</span></td>
+                <td>Ops Risk Committee<br>Meeting Pack.pdf</td>
+                <td class="editable" contenteditable="true">
+                  <div class="aeItem">AE‑2210 Issue Management</div>
+                </td>
+                <td class="editable" contenteditable="true">
+                  <div class="aeItem">AE‑3301 Financial Controls Oversight</div>
+                </td>
+                <td class="editable" contenteditable="true">
+                  Delayed remediation increases the likelihood of control failures
+                  and audit findings across dependent processes.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+ 
+      <!-- Regulatory Exam -->
+      <div class="eventTypeBlock reg">
+        <div class="eventTypeTitle">Regulatory Exam or Inquiry</div>
+        <div class="eventTypeSummary editable" contenteditable="true">
+          Regulatory attention on data retention and evidence management highlighted
+          gaps in current compliance readiness.
+        </div>
+ 
+        <div class="eventTable">
+          <table>
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Rating</th>
+                <th>Source (Meeting / Document)</th>
+                <th>Auditable Entities Tagged in Assure</th>
+                <th>Additional Impacted Auditable Entities</th>
+                <th>Impact Rationale</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>ILS 5678</td>
+                <td><span class="rating limited">Limited</span></td>
+                <td>Risk Management Forum, Q1<br>Meeting Pack.pdf</td>
+                <td class="editable" contenteditable="true">
+                  <div class="aeItem">AE‑4102 Regulatory Reporting</div>
+                </td>
+                <td class="editable" contenteditable="true">
+                  <div class="aeItem">AE‑5099 Records Management</div>
+                </td>
+                <td class="editable" contenteditable="true">
+                  Evidence retention controls are shared across multiple compliance
+                  and reporting processes.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+ 
+      <div class="footer">
+        <button class="btn">Back</button>
+        <button class="btn primary">Next</button>
+      </div>
+    </section>
+  </main>
+</div>
+ 
+</body>
+</html>
