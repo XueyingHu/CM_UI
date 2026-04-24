@@ -37,7 +37,8 @@ export default function Step2Upload() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [documents, setDocuments] = useState<DocItem[]>(DEFAULT_DOCS);
 
-  const selectedDomain = sessionStorage.getItem("selectedDomain") || "Market Tech – Ops Risk";
+  const selectedPm = sessionStorage.getItem("selectedDomain") || "";
+  const selectedBml = sessionStorage.getItem("selectedBml") || "";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -97,10 +98,9 @@ export default function Step2Upload() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {[
-            { k: "Domain:", v: selectedDomain },
-            { k: "PM:", v: "Alice Wang" },
-            { k: "BML:", v: "Michael Smith" },
-          ].map(({ k, v }) => (
+            selectedPm ? { k: "PM:", v: selectedPm } : null,
+            selectedBml ? { k: "BML:", v: selectedBml } : null,
+          ].filter(Boolean).map(({ k, v }) => (
             <div key={k} style={{
               display: "flex", gap: 8, alignItems: "baseline",
               padding: "6px 10px", borderRadius: 10,
