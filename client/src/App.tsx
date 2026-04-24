@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import Sidebar from "@/components/Sidebar";
-import Welcome from "@/pages/Welcome";
 import Dashboard from "@/pages/Dashboard";
 import Step2Upload from "@/pages/Step2Upload";
 import Step3Extract from "@/pages/Step3Extract";
@@ -20,7 +19,7 @@ import StructuredData from "@/pages/StructuredData";
 import DomainHome from "@/pages/DomainHome";
 import { Bell, Mail, Menu } from "lucide-react";
 
-const NO_SIDEBAR_ROUTES = ["/", "/domain-home", "/step-1"];
+const NO_SIDEBAR_ROUTES = ["/", "/domain-home"];
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -50,10 +49,10 @@ function Router() {
           <span className="text-white font-black text-sm tracking-wide whitespace-nowrap">Next Level Continuous Monitoring</span>
         </div>
         <div className="flex items-center gap-3 text-white">
-          {selectedDomain && location !== "/" && location !== "/step-1" && (
+          {selectedDomain && location !== "/" && (
             <button
               data-testid="text-selected-domain"
-              onClick={() => setLocation("/step-1")}
+              onClick={() => setLocation("/")}
               className="text-xs font-bold text-white hover:underline cursor-pointer bg-transparent border-none p-0 mr-1 opacity-90"
             >
               Domain: {selectedDomain}
@@ -70,9 +69,8 @@ function Router() {
         {!NO_SIDEBAR_ROUTES.includes(location) && <Sidebar />}
         <main className="flex-1 overflow-y-auto w-full" style={{ background: "#f6f8fb" }}>
           <Switch>
-            <Route path="/" component={Welcome}/>
+            <Route path="/" component={Dashboard}/>
             <Route path="/domain-home" component={DomainHome}/>
-            <Route path="/step-1" component={Dashboard}/>
             <Route path="/step-2" component={Step2Upload}/>
             <Route path="/step-3" component={Step3Extract}/>
             <Route path="/step-4" component={Step4Synthesize}/>
