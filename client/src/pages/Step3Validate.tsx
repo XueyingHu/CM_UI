@@ -24,12 +24,14 @@ interface NotFoundItem {
 }
 
 const PAGES: Array<{
+  filename: string;
   riskEvents: RiskEvent[];
   issues: Issue[];
   changes: Change[];
   notFound: NotFoundItem[];
 }> = [
   {
+    filename: "Ops Risk Summary.docx",
     riskEvents: [
       { id: "RE-102345", name: "System outage impacting payments", rating: "Critical", status: "Open", lastUpdated: "2026-03-18", source: "ORAC Risk Events" },
       { id: "RE-104118", name: "Processing delays due to vendor capacity", rating: "Major", status: "Monitoring", lastUpdated: "2026-03-22", source: "ORAC Risk Events" },
@@ -43,12 +45,12 @@ const PAGES: Array<{
       { id: "CHG-447908", description: "Risk controls monitoring automation rollout", rating: "Limited", phase: "Design", goLive: "2026-07-30", source: "Navigator" },
     ],
     notFound: [
-      { item: "Internal Risk Event, third party processing delay", expectedSystem: "ORAC Risk Events", rating: "Major", docSource: "Quarterly Notes.docx" },
-      { item: "Known Issue, legacy reconciliation workaround", expectedSystem: "ORAC Issues", rating: "Limited", docSource: "Meeting Pack.pdf" },
-      { item: "Change, minor release referenced as CHG 44 5612", expectedSystem: "Navigator", rating: "Limited", docSource: "Meeting Minutes.docx" },
+      { item: "Internal Risk Event, third party processing delay", expectedSystem: "ORAC Risk Events", rating: "Major", docSource: "Ops Risk Summary.docx" },
+      { item: "Known Issue, legacy reconciliation workaround", expectedSystem: "ORAC Issues", rating: "Limited", docSource: "Ops Risk Summary.docx" },
     ],
   },
   {
+    filename: "Incident Report.pdf",
     riskEvents: [
       { id: "RE-109022", name: "Data integrity failure in reporting pipeline", rating: "Critical", status: "Open", lastUpdated: "2026-04-01", source: "ORAC Risk Events" },
     ],
@@ -59,7 +61,19 @@ const PAGES: Array<{
       { id: "CHG-451100", description: "Core banking system refresh", rating: "Major", phase: "Planning", goLive: "2026-12-01", source: "Navigator" },
     ],
     notFound: [
-      { item: "Regulatory Exam, Q4 review findings", expectedSystem: "ORAC Issues", rating: "Major", docSource: "Ops Risk Summary.docx" },
+      { item: "Regulatory Exam, Q4 review findings", expectedSystem: "ORAC Issues", rating: "Major", docSource: "Incident Report.pdf" },
+    ],
+  },
+  {
+    filename: "Ops Workflow.vsdx",
+    riskEvents: [],
+    issues: [],
+    changes: [
+      { id: "CHG-460012", description: "Workflow automation for ops reconciliation", rating: "Limited", phase: "Discovery", goLive: "2027-01-15", source: "Navigator" },
+    ],
+    notFound: [
+      { item: "Significant Organization Change, team restructure Q1", expectedSystem: "ORAC Risk Events", rating: "Major", docSource: "Ops Workflow.vsdx" },
+      { item: "Business Ownership Change, new ops lead", expectedSystem: "ORAC Risk Events", rating: "Limited", docSource: "Ops Workflow.vsdx" },
     ],
   },
 ];
@@ -213,9 +227,14 @@ export default function Step3Validate() {
                 <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M15 18 9 12l6-6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
                 () => setPage(p => Math.max(1, p - 1)), page === 1, "pager-prev"
               )}
-              <span style={{ fontSize: 12.5, fontWeight: 900, color: "#2b3c50", minWidth: 92, textAlign: "center" }}>
-                Page {page} of {totalPages}
-              </span>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minWidth: 160 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 900, color: "#2b3c50", textAlign: "center", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {data.filename}
+                </span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: MUTED, marginTop: 1 }}>
+                  {page} of {totalPages}
+                </span>
+              </div>
               {pagerBtn(
                 <svg viewBox="0 0 24 24" fill="none" width="16" height="16" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke="#2b3c50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
                 () => setPage(p => Math.min(totalPages, p + 1)), page === totalPages, "pager-next"
@@ -240,7 +259,9 @@ export default function Step3Validate() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.riskEvents.map((r, i) => {
+                  {data.riskEvents.length === 0 ? (
+                    <tr><td colSpan={6} style={{ ...TD_LAST, color: MUTED, fontStyle: "italic", textAlign: "center" }}>No risk events identified in this document</td></tr>
+                  ) : data.riskEvents.map((r, i) => {
                     const isLast = i === data.riskEvents.length - 1;
                     const td = isLast ? TD_LAST : TD_STYLE;
                     return (
@@ -272,7 +293,9 @@ export default function Step3Validate() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.issues.map((iss, i) => {
+                  {data.issues.length === 0 ? (
+                    <tr><td colSpan={6} style={{ ...TD_LAST, color: MUTED, fontStyle: "italic", textAlign: "center" }}>No issues identified in this document</td></tr>
+                  ) : data.issues.map((iss, i) => {
                     const isLast = i === data.issues.length - 1;
                     const td = isLast ? TD_LAST : TD_STYLE;
                     return (
