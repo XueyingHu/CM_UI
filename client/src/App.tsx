@@ -55,7 +55,7 @@ function Router() {
               onClick={() => setLocation("/")}
               className="text-xs font-bold text-white hover:underline cursor-pointer bg-transparent border-none p-0 mr-1 opacity-90"
             >
-              Domain: {selectedDomain}
+              PM: {selectedDomain}
             </button>
           )}
           <Mail className="w-4 h-4 opacity-80" />
