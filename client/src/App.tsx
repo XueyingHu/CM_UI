@@ -7,7 +7,6 @@ import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/Sidebar";
 import Welcome from "@/pages/Welcome";
 import Dashboard from "@/pages/Dashboard";
-
 import Step2Upload from "@/pages/Step2Upload";
 import Step3Extract from "@/pages/Step3Extract";
 import Step4Synthesize from "@/pages/Step4Synthesize";
@@ -19,12 +18,9 @@ import InsightsSummary from "@/pages/InsightsSummary";
 import DocumentAnalysis from "@/pages/DocumentAnalysis";
 import StructuredData from "@/pages/StructuredData";
 import DomainHome from "@/pages/DomainHome";
-import CreateDomain from "@/pages/CreateDomain";
-import BuildDomain from "@/pages/BuildDomain";
-import ReviewDefineDomains from "@/pages/ReviewDefineDomains";
-import DefineDomainDetails from "@/pages/DefineDomainDetails";
-import ReviewPublish from "@/pages/ReviewPublish";
 import { Bell, Mail, Menu } from "lucide-react";
+
+const NO_SIDEBAR_ROUTES = ["/", "/domain-home", "/step-1"];
 
 function Router() {
   const [location, setLocation] = useLocation();
@@ -66,22 +62,17 @@ function Router() {
           <Mail className="w-4 h-4 opacity-80" />
           <Bell className="w-4 h-4 opacity-80" />
           <Menu className="w-5 h-5 opacity-80" />
-          <a href="#" className="text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-white/20 bg-white/6 opacity-95 whitespace-nowrap hidden sm:inline-flex items-center" style={{ background: "rgba(255,255,255,0.06)" }}>Next Level Lab</a>
+          <a href="#" className="text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-white/20 opacity-95 whitespace-nowrap hidden sm:inline-flex items-center" style={{ background: "rgba(255,255,255,0.06)" }}>Next Level Lab</a>
         </div>
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        {location !== "/" && location !== "/domain-home" && location !== "/step-1" && location !== "/create-domain" && location !== "/build-domain" && location !== "/review-define-domains" && location !== "/define-domain" && location !== "/review-publish" && <Sidebar />}
+        {!NO_SIDEBAR_ROUTES.includes(location) && <Sidebar />}
         <main className="flex-1 overflow-y-auto w-full" style={{ background: "#f6f8fb" }}>
           <Switch>
             <Route path="/" component={Welcome}/>
             <Route path="/domain-home" component={DomainHome}/>
             <Route path="/step-1" component={Dashboard}/>
-            <Route path="/create-domain" component={CreateDomain}/>
-            <Route path="/build-domain" component={BuildDomain}/>
-            <Route path="/review-define-domains" component={ReviewDefineDomains}/>
-            <Route path="/define-domain" component={DefineDomainDetails}/>
-            <Route path="/review-publish" component={ReviewPublish}/>
             <Route path="/step-2" component={Step2Upload}/>
             <Route path="/step-3" component={Step3Extract}/>
             <Route path="/step-4" component={Step4Synthesize}/>

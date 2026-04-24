@@ -5,57 +5,40 @@ export default function Welcome() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-full px-10 py-16">
-      <h1 className="text-3xl font-bold text-[#1e3a6a] mb-6">Welcome!</h1>
+      <h1 className="text-3xl font-bold text-[#0b2a4a] mb-6">Welcome!</h1>
 
-      <p className="text-sm text-[#444] text-center max-w-[700px] mb-12 leading-relaxed">
+      <p className="text-sm text-[#5b6b7a] text-center max-w-[600px] mb-12 leading-relaxed">
         This AI solution supports continuous monitoring by processing documents, generating actionable insights,
         and suggesting essential data points to enrich and maintain the audit universe.
       </p>
 
-      <div className="flex gap-6 w-full max-w-[750px]">
-        <div className="flex-1 border border-[#c5cdd4] rounded-sm bg-white shadow-sm p-6 flex flex-col">
-          <h2 className="text-base font-bold text-white bg-[#1e3a6a] px-4 py-2.5 -mx-6 -mt-6 mb-5 rounded-t-sm">
+      <div className="w-full max-w-[360px]">
+        <div className="border border-[#e6e9ef] rounded-xl bg-white shadow-sm p-6 flex flex-col" style={{ boxShadow: "0 6px 18px rgba(16,24,40,0.08)" }}>
+          <h2 className="text-base font-black text-white bg-[#0b2a4a] px-4 py-3 -mx-6 -mt-6 mb-5 rounded-t-xl">
             Select a Business Domain
           </h2>
-          <p className="text-sm text-[#444] mb-6 flex-1">
+          <p className="text-sm text-[#5b6b7a] mb-6 flex-1">
             Choose from existing business domains to get started.
           </p>
           <div>
             <button
               data-testid="button-select-domain"
               onClick={() => setLocation("/step-1")}
-              className="bg-[#1e3a6a] hover:bg-[#152a4d] text-white text-sm font-medium px-8 py-2.5 rounded-sm shadow-sm transition-colors"
+              style={{ background: "#0b2a4a", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)" }}
+              className="text-white text-sm font-bold px-8 py-2.5 shadow-sm transition-colors hover:opacity-90 w-full"
             >
               Select Business Domain
             </button>
           </div>
         </div>
-
-        <div className="flex-1 border border-[#c5cdd4] rounded-sm bg-white shadow-sm p-6 flex flex-col">
-          <h2 className="text-base font-bold text-[#333] bg-[#f5e6a3] px-4 py-2.5 -mx-6 -mt-6 mb-5 rounded-t-sm">
-            Create a New Domain
-          </h2>
-          <p className="text-sm text-[#444] mb-6 flex-1">
-            Set up a new business domain for the first time.
-          </p>
-          <div>
-            <button
-              data-testid="button-create-domain"
-              onClick={() => setLocation("/create-domain")}
-              className="bg-white hover:bg-slate-50 text-[#333] text-sm font-medium px-8 py-2.5 rounded-sm border border-[#c5cdd4] shadow-sm transition-colors"
-            >
-              Create New Domain
-            </button>
-          </div>
-        </div>
       </div>
 
-      <div className="mt-16 flex items-center gap-4 text-[13px] text-[#1e3a6a]">
-        <button className="hover:underline font-medium">Data Retention Policy</button>
-        <span className="text-[#c5cdd4]">|</span>
-        <button className="hover:underline font-medium">User Guide</button>
-        <span className="text-[#c5cdd4]">|</span>
-        <button className="hover:underline font-medium">Support</button>
+      <div className="mt-16 flex items-center gap-4 text-[13px] text-[#0b2a4a]">
+        <button className="hover:underline font-bold">Data Retention Policy</button>
+        <span className="text-[#e6e9ef]">|</span>
+        <button className="hover:underline font-bold">User Guide</button>
+        <span className="text-[#e6e9ef]">|</span>
+        <button className="hover:underline font-bold">Support</button>
       </div>
     </div>
   );
