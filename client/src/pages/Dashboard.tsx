@@ -289,13 +289,14 @@ export default function Dashboard() {
             {listOpen && scopeApplied && (
               <div style={{ borderTop: "1px solid #eef2f7", marginLeft: -20, marginRight: -20 }}>
                 <div style={{
-                  padding: "8px 20px 6px",
-                  background: "#f7f9fd",
+                  display: "grid", gridTemplateColumns: "90px 1fr auto",
+                  alignItems: "center", padding: "8px 20px",
+                  gap: 12, background: "#f7f9fd",
                   borderBottom: "1px solid #eef2f7",
                 }}>
-                  <span style={{ fontSize: 12, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.2 }}>
-                    Auditable Entities ({filteredEntities.length})
-                  </span>
+                  <span style={{ fontSize: 11.5, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.3, textTransform: "uppercase" }}>AE ID</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.3, textTransform: "uppercase" }}>AE Title</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.3, textTransform: "uppercase", whiteSpace: "nowrap" }}>Responsible Vertical</span>
                 </div>
                 <div style={{ maxHeight: 260, overflowY: "auto" }}>
                   {filteredEntities.map((e, i) => (
