@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,25 +21,7 @@ import { Bell, Mail, Menu } from "lucide-react";
 const NO_SIDEBAR_ROUTES = ["/", "/domain-home"];
 
 function Router() {
-  const [location, setLocation] = useLocation();
-  const [selectedDomain, setSelectedDomain] = useState<string | null>(
-    sessionStorage.getItem("selectedDomain")
-  );
-
-  useEffect(() => {
-    const checkDomain = () => {
-      const domain = sessionStorage.getItem("selectedDomain");
-      setSelectedDomain(domain);
-    };
-    checkDomain();
-    window.addEventListener("storage", checkDomain);
-    const interval = setInterval(checkDomain, 500);
-    return () => {
-      window.removeEventListener("storage", checkDomain);
-      clearInterval(interval);
-    };
-  }, [location]);
-
+  const [location] = useLocation();
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: "#f6f8fb" }}>
       <header className="h-14 flex items-center justify-between px-4 shrink-0 gap-3" style={{ background: "linear-gradient(0deg, #0b2a4a 0%, #103a66 100%)", boxShadow: "0 2px 10px rgba(0,0,0,0.12)" }}>
@@ -49,15 +30,6 @@ function Router() {
           <span className="text-white font-black text-sm tracking-wide whitespace-nowrap">Next Level Continuous Monitoring</span>
         </div>
         <div className="flex items-center gap-3 text-white">
-          {selectedDomain && location !== "/" && (
-            <button
-              data-testid="text-selected-domain"
-              onClick={() => setLocation("/")}
-              className="text-xs font-bold text-white hover:underline cursor-pointer bg-transparent border-none p-0 mr-1 opacity-90"
-            >
-              PM: {selectedDomain}
-            </button>
-          )}
           <Mail className="w-4 h-4 opacity-80" />
           <Bell className="w-4 h-4 opacity-80" />
           <Menu className="w-5 h-5 opacity-80" />

@@ -21,23 +21,25 @@ export default function DomainHome() {
           <span className="mx-1">›</span>
           <span className="font-semibold text-[#333]">Select Module</span>
         </div>
-        {pm && (
-          <div className="flex items-center gap-4">
-            <div style={{ display: "flex", gap: 6, alignItems: "baseline", fontSize: 12.5 }}>
+        <div className="flex items-center gap-4">
+          {pm && (
+            <button
+              data-testid="text-selected-domain"
+              onClick={() => setLocation("/")}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", gap: 6, alignItems: "baseline", fontSize: 12.5 }}
+            >
               <span style={{ color: "#5b6b7a", fontWeight: 700 }}>PM:</span>
-              <span style={{ color: "#122033", fontWeight: 900 }}>{pm}</span>
+              <span style={{ color: "#1e3a6a", fontWeight: 900, textDecoration: "underline" }}>{pm}</span>
+            </button>
+          )}
+          {pm && bml && <span style={{ color: "#d0d5dd" }}>|</span>}
+          {bml && (
+            <div style={{ display: "flex", gap: 6, alignItems: "baseline", fontSize: 12.5 }}>
+              <span style={{ color: "#5b6b7a", fontWeight: 700 }}>BML:</span>
+              <span style={{ color: "#122033", fontWeight: 900 }}>{bml}</span>
             </div>
-            {bml && (
-              <>
-                <span style={{ color: "#d0d5dd" }}>|</span>
-                <div style={{ display: "flex", gap: 6, alignItems: "baseline", fontSize: 12.5 }}>
-                  <span style={{ color: "#5b6b7a", fontWeight: 700 }}>BML:</span>
-                  <span style={{ color: "#122033", fontWeight: 900 }}>{bml}</span>
-                </div>
-              </>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-10 pb-16">
