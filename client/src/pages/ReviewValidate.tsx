@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Check, ChevronRight, ChevronDown, RotateCcw, Download, X, Pencil } from "lucide-react";
+import { Check, ChevronRight, ChevronDown, RotateCcw, Download, X, Pencil, Plus, ChevronDown as DropIcon } from "lucide-react";
 
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
@@ -88,6 +88,7 @@ export default function ReviewValidate() {
   const [activeTab, setActiveTab] = useState("events");
   const [items, setItems] = useState(INITIAL);
   const [editingRationale, setEditingRationale] = useState<string | null>(null);
+  const [openAEDropdown, setOpenAEDropdown] = useState<string | null>(null);
 
   const current = items[activeTab] || [];
 
@@ -101,6 +102,28 @@ export default function ReviewValidate() {
     const row = current.find(r => r.id === id)!;
     updateRow(id, { detail: { ...row.detail, aeRows: row.detail.aeRows.filter((_, i) => i !== idx) } });
   };
+
+  const addAE = (id: string, label: string) => {
+    const row = current.find(r => r.id === id)!;
+    if (row.detail.aeRows.some(ae => ae.label === label)) return;
+    updateRow(id, { detail: { ...row.detail, aeRows: [...row.detail.aeRows, { label, relevancy: "High" }] } });
+    setOpenAEDropdown(null);
+  };
+
+  const AE_OPTIONS = [
+    "AE‑1010 Trade Execution Platform",
+    "AE‑1101 Client Onboarding",
+    "AE‑1205 Reconciliation Engine",
+    "AE‑2001 Treasury Management",
+    "AE‑2110 AML Monitoring",
+    "AE‑2340 Fraud Detection",
+    "AE‑3001 Enterprise Risk Platform",
+    "AE‑3301 Financial Controls Oversight",
+    "AE‑4001 Regulatory Reporting",
+    "AE‑4210 Data Governance",
+    "AE‑5099 Records Management",
+    "AE‑5200 IT Security Operations",
+  ];
 
   const acceptAll = () => setItems(prev => ({ ...prev, [activeTab]: prev[activeTab].map(r => ({ ...r, action: "accepted" as Action })) }));
   const resetAll = () => setItems(prev => ({ ...prev, [activeTab]: prev[activeTab].map(r => ({ ...r, action: null, expanded: false })) }));
@@ -247,6 +270,55 @@ export default function ReviewValidate() {
                               </div>
                             </div>
                           ))}
+
+                          {/* Tag Additional AE button + dropdown */}
+                          <div style={{ position: "relative", marginTop: 4 }}>
+                            <button
+                              data-testid={`button-tag-ae-${row.id}`}
+                              onClick={() => setOpenAEDropdown(openAEDropdown === row.id ? null : row.id)}
+                              style={{
+                                display: "inline-flex", alignItems: "center", gap: 6,
+                                padding: "6px 12px", borderRadius: 8, cursor: "pointer",
+                                border: "1px dashed #94a3b8", background: "#f8fafc",
+                                color: NAVY, fontSize: 12.5, fontWeight: 900,
+                              }}
+                            >
+                              <Plus size={13} /> Tag Additional AE
+                              <DropIcon size={12} style={{ marginLeft: 2, opacity: 0.6 }} />
+                            </button>
+
+                            {openAEDropdown === row.id && (
+                              <div style={{
+                                position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 100,
+                                background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 10,
+                                boxShadow: "0 8px 24px rgba(16,24,40,0.12)",
+                                minWidth: 280, maxHeight: 240, overflowY: "auto",
+                              }}>
+                                <div style={{ padding: "8px 10px 4px", fontSize: 11, fontWeight: 900, color: MUTED, letterSpacing: "0.04em" }}>
+                                  SELECT AUDITABLE ENTITY
+                                </div>
+                                {AE_OPTIONS.filter(opt => !row.detail.aeRows.some(ae => ae.label === opt)).map(opt => (
+                                  <button
+                                    key={opt}
+                                    onClick={() => addAE(row.id, opt)}
+                                    style={{
+                                      display: "block", width: "100%", textAlign: "left",
+                                      padding: "8px 12px", border: "none", background: "none",
+                                      cursor: "pointer", fontSize: 12.5, color: TEXT, fontWeight: 600,
+                                      borderBottom: `1px solid ${BORDER}`,
+                                    }}
+                                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#f1f5f9"; }}
+                                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "none"; }}
+                                  >
+                                    {opt}
+                                  </button>
+                                ))}
+                                {AE_OPTIONS.filter(opt => !row.detail.aeRows.some(ae => ae.label === opt)).length === 0 && (
+                                  <div style={{ padding: "10px 12px", fontSize: 12.5, color: MUTED }}>All AEs already tagged.</div>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
 
                         {/* Right: Rationale */}
