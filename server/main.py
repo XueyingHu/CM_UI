@@ -981,6 +981,165 @@ def publish_cm_report(req: PublishReportRequest):
     })
 
 
+# ---------------------------------------------------------------------------
+# Expanded Search — filtered search across ORAC risk events, issues, Navigator
+# ---------------------------------------------------------------------------
+
+class ExpandedSearchFilters(BaseModel):
+    date_from: str = ""
+    date_to: str = ""
+    rating: str = "Any"
+    status: str = "Any"
+    region: str = "Any"
+    business_unit: str = "Any"
+    ai_text: str = ""
+
+class ExpandedSearchRequest(BaseModel):
+    session_id: str
+    filters: ExpandedSearchFilters = ExpandedSearchFilters()
+
+_EXPANDED_RISK_EVENTS = [
+    {"id": "EVT-117502", "title": "EVENT 117502 System Failure Causing Delayed Payment Processing",
+     "rating": "Major", "status": "Open", "date": "08/10/2024",
+     "description": "Critical payment processing system experienced a 4-hour outage affecting settlement workflows and downstream reconciliation.",
+     "root_cause": "Database deadlock during peak transaction window caused by insufficient connection pool configuration.",
+     "impact": "Delayed settlement of approximately $2.4M in transactions; regulatory reporting window breached.",
+     "business_unit": "Technology", "region": "North America",
+     "tagged_ae": "AE-1023 Payments Processing Platform"},
+    {"id": "EVT-118643", "title": "EVENT 118643 Recurring ACH Fraud Incidents Detected",
+     "rating": "Critical", "status": "Open", "date": "07/25/2024",
+     "description": "Automated clearing house fraud detection flagged 47 suspicious transactions over a 2-week period.",
+     "root_cause": "Threshold-based fraud rules not updated to reflect new transaction velocity patterns.",
+     "impact": "Potential financial exposure of $680K; customer trust risk and regulatory scrutiny.",
+     "business_unit": "Operations", "region": "North America",
+     "tagged_ae": "AE-2044 Identity and Access Management"},
+    {"id": "EVT-119205", "title": "EVENT 119205 Third-party Outage Impacting Reconciliations",
+     "rating": "Major", "status": "Open", "date": "08/02/2024",
+     "description": "A key third-party data vendor experienced a 6-hour outage, preventing automated reconciliation runs.",
+     "root_cause": "Vendor SLA breach; no secondary data feed configured for failover.",
+     "impact": "Manual reconciliation required for 3 business days; increased operational risk and staff overtime.",
+     "business_unit": "Finance", "region": "EMEA",
+     "tagged_ae": "AE-3301 Financial Controls Oversight"},
+    {"id": "EVT-120440", "title": "EVENT 120440 Unauthorised Data Access in Customer Portal",
+     "rating": "Critical", "status": "Open", "date": "09/05/2024",
+     "description": "Internal audit detected an access control gap allowing elevated read permissions on customer PII fields.",
+     "root_cause": "Role-based access policy not enforced following a platform migration in Q1.",
+     "impact": "Potential data privacy breach; notifiable under GDPR; legal and regulatory review initiated.",
+     "business_unit": "Technology", "region": "EMEA",
+     "tagged_ae": "AE-2044 Identity and Access Management"},
+    {"id": "EVT-121008", "title": "EVENT 121008 IT Change Implemented Without Proper Approval",
+     "rating": "Major", "status": "Open", "date": "09/18/2024",
+     "description": "A production configuration change was deployed outside the approved change window without CAB sign-off.",
+     "root_cause": "Developer bypassed change management controls using a break-glass account.",
+     "impact": "Service degradation for 90 minutes; change management policy breach; disciplinary review in progress.",
+     "business_unit": "Technology", "region": "Global",
+     "tagged_ae": "AE-4102 Regulatory Reporting"},
+]
+
+_EXPANDED_ORAC_ISSUES = [
+    {"id": "ISS-410293", "title": "ISSUE 410293 Data Privacy Compliance Gap in Customer Onboarding",
+     "rating": "High", "status": "Open", "date": "08/15/2024",
+     "description": "Customer onboarding workflow collects consent data without explicit opt-in for secondary processing, violating GDPR Article 7.",
+     "root_cause": "Legacy onboarding form template not updated following 2023 data protection policy revision.",
+     "impact": "Regulatory fine risk; potential customer complaints; remediation requires form redesign and data cleanse.",
+     "business_unit": "Compliance", "region": "EMEA",
+     "tagged_ae": "AE-5099 Records Management"},
+    {"id": "ISS-412558", "title": "ISSUE 412558 Missing Sign-off on Q2 Financial Reconciliation",
+     "rating": "Medium", "status": "Open", "date": "07/10/2024",
+     "description": "End-of-quarter financial reconciliation sign-off was not completed within the required 5-day window.",
+     "root_cause": "Process owner on extended leave; no documented backup approval authority assigned.",
+     "impact": "Delayed financial close; audit finding raised; process documentation requires updating.",
+     "business_unit": "Finance", "region": "North America",
+     "tagged_ae": "AE-3301 Financial Controls Oversight"},
+    {"id": "ISS-415002", "title": "ISSUE 415002 Segregation of Duties Violation in Payments Approvals",
+     "rating": "High", "status": "Open", "date": "09/01/2024",
+     "description": "Single individual has both initiation and approval rights on payment transactions exceeding the $50K threshold.",
+     "root_cause": "Entitlement review did not flag combined role conflict; approval workflow misconfigured in the upgrade.",
+     "impact": "Fraud risk; control effectiveness rated inadequate; immediate entitlement remediation required.",
+     "business_unit": "Operations", "region": "North America",
+     "tagged_ae": "AE-1023 Payments Processing Platform"},
+    {"id": "ISS-416780", "title": "ISSUE 416780 Incomplete Vendor Risk Assessment for Critical Supplier",
+     "rating": "Medium", "status": "Overdue", "date": "06/20/2024",
+     "description": "Annual risk assessment for a Tier-1 technology vendor was not completed within the required assessment cycle.",
+     "root_cause": "Vendor Risk team capacity constraints; assessment ownership gap following team restructure.",
+     "impact": "Unvalidated third-party risk exposure; regulatory expectation breach; escalated to CPO.",
+     "business_unit": "Security", "region": "Global",
+     "tagged_ae": "AE-4102 Regulatory Reporting"},
+]
+
+_EXPANDED_NAVIGATOR_CHANGES = [
+    {"id": "CHG-90221", "title": "CHG 90221 Migration to New Cloud Infrastructure Provider",
+     "rating": "High", "status": "Scheduled", "date": "09/20/2024",
+     "description": "Full lift-and-shift migration of on-premise batch processing workloads to a new cloud provider.",
+     "root_cause": "Strategic decision to exit legacy data centre contract.",
+     "impact": "Significant execution risk during migration window; 72-hour rollback plan required.",
+     "business_unit": "Technology", "region": "Global",
+     "tagged_ae": "AE-1023 Payments Processing Platform"},
+    {"id": "CHG-91450", "title": "CHG 91450 Core Payments Engine Version Upgrade",
+     "rating": "High", "status": "Scheduled", "date": "10/15/2024",
+     "description": "Major version upgrade to the payments engine to support ISO 20022 message format.",
+     "root_cause": "Regulatory mandate requiring ISO 20022 compliance by Q1 2025.",
+     "impact": "Downstream system integration testing required; potential processing delays during cutover.",
+     "business_unit": "Technology", "region": "North America",
+     "tagged_ae": "AE-1023 Payments Processing Platform"},
+    {"id": "CHG-92018", "title": "CHG 92018 Identity Provider Replacement Programme",
+     "rating": "Major", "status": "Scheduled", "date": "11/01/2024",
+     "description": "Replacement of legacy SSO identity provider with a modern cloud-native IAM platform.",
+     "root_cause": "End-of-life announcement from current vendor; security vulnerability in legacy platform.",
+     "impact": "User access disruption risk; MFA re-enrolment required for all 12,000 staff.",
+     "business_unit": "Security", "region": "Global",
+     "tagged_ae": "AE-2044 Identity and Access Management"},
+    {"id": "CHG-93104", "title": "CHG 93104 Automated Reconciliation Workflow Deployment",
+     "rating": "Medium", "status": "Completed", "date": "08/30/2024",
+     "description": "RPA-based automated reconciliation deployed across 8 operational processes.",
+     "root_cause": "Efficiency initiative to reduce manual reconciliation touch-points by 60%.",
+     "impact": "Successfully completed; 2 minor defects resolved in UAT; post-implementation review pending.",
+     "business_unit": "Operations", "region": "North America",
+     "tagged_ae": "AE-3301 Financial Controls Oversight"},
+]
+
+def _matches_filters(record: dict, f: ExpandedSearchFilters) -> bool:
+    if f.rating != "Any" and record.get("rating", "").lower() != f.rating.lower():
+        return False
+    if f.status != "Any" and record.get("status", "").lower() != f.status.lower():
+        return False
+    if f.region != "Any" and record.get("region", "").lower() != f.region.lower():
+        return False
+    if f.business_unit != "Any" and record.get("business_unit", "").lower() != f.business_unit.lower():
+        return False
+    if f.ai_text:
+        needle = f.ai_text.lower()
+        haystack = " ".join([
+            record.get("title", ""), record.get("description", ""),
+            record.get("root_cause", ""), record.get("impact", ""),
+        ]).lower()
+        if needle not in haystack:
+            # Loose keyword match: check any word
+            keywords = [w for w in needle.split() if len(w) > 3]
+            if not any(kw in haystack for kw in keywords):
+                return False
+    return True
+
+@app.post("/api/v1/database/fetch-expanded-search")
+def fetch_expanded_search(req: ExpandedSearchRequest):
+    if req.session_id not in active_sessions:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    f = req.filters
+    risk_events      = [r for r in _EXPANDED_RISK_EVENTS      if _matches_filters(r, f)]
+    orac_issues      = [r for r in _EXPANDED_ORAC_ISSUES      if _matches_filters(r, f)]
+    navigator_changes= [r for r in _EXPANDED_NAVIGATOR_CHANGES if _matches_filters(r, f)]
+
+    return {
+        "search_id": str(uuid.uuid4()),
+        "filters_applied": f.model_dump(),
+        "total_count": len(risk_events) + len(orac_issues) + len(navigator_changes),
+        "risk_events": risk_events,
+        "orac_issues": orac_issues,
+        "navigator_changes": navigator_changes,
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

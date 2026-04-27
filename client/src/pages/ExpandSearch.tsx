@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Check, ChevronRight, ChevronDown, Download, X, MoreHorizontal, Plus } from "lucide-react";
 
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
 const MUTED = "#5b6b7a";
@@ -18,6 +20,12 @@ interface ResultRow {
   date: string;
   action: Action;
   expanded: boolean;
+  description?: string;
+  rootCause?: string;
+  impact?: string;
+  businessUnit?: string;
+  region?: string;
+  taggedAE?: string;
 }
 
 const STATUS_COLOR: Record<string, string> = { Overdue: "#b42318", Open: "#1f5ea8", Scheduled: "#6d28d9", Completed: "#1f7a3f" };
@@ -65,12 +73,68 @@ export default function ExpandSearch() {
   const [businessUnit, setBusinessUnit] = useState("Any");
   const [aiText, setAiText] = useState("");
   const [searched, setSearched] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [results, setResults] = useState(MOCK_RESULTS);
   const [allCollapsed, setAllCollapsed] = useState(false);
 
   const currentResults = results[activeTab] || [];
 
-  const handleSearch = () => setSearched(true);
+  const toRow = (rec: Record<string, string>, prefix: string): ResultRow => ({
+    id: rec.id ?? `${prefix}-${Math.random()}`,
+    title: rec.title ?? "",
+    rating: rec.rating ?? "Medium",
+    status: rec.status ?? "Open",
+    date: rec.date ?? "",
+    action: null,
+    expanded: false,
+    description: rec.description,
+    rootCause: rec.root_cause,
+    impact: rec.impact,
+    businessUnit: rec.business_unit,
+    region: rec.region,
+    taggedAE: rec.tagged_ae,
+  });
+
+  const handleSearch = async () => {
+    if (searching) return;
+    setSearching(true);
+    try {
+      const sessionId = sessionStorage.getItem("session_id") || "";
+      const res = await fetch(`${API_BASE}/api/v1/database/fetch-expanded-search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          filters: {
+            date_from: dateFrom,
+            date_to: dateTo,
+            rating,
+            status,
+            region,
+            business_unit: businessUnit,
+            ai_text: aiText,
+          },
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setResults({
+          events:  (data.risk_events       ?? []).map((r: Record<string,string>) => toRow(r, "evt")),
+          issues:  (data.orac_issues       ?? []).map((r: Record<string,string>) => toRow(r, "iss")),
+          changes: (data.navigator_changes ?? []).map((r: Record<string,string>) => toRow(r, "chg")),
+        });
+      } else {
+        // Fallback to mock data on error
+        setResults(MOCK_RESULTS);
+      }
+    } catch {
+      setResults(MOCK_RESULTS);
+    } finally {
+      setSearching(false);
+      setSearched(true);
+    }
+  };
+
   const handleClear = () => {
     setDateFrom(""); setDateTo(""); setRating("Any");
     setStatus("Any"); setRegion("Any"); setBusinessUnit("Any");
@@ -222,10 +286,28 @@ export default function ExpandSearch() {
             </button>
             <button
               onClick={handleSearch}
-              style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: NAVY, color: "#fff", cursor: "pointer", fontSize: 12.5, fontWeight: 900 }}
+              disabled={searching}
+              style={{
+                padding: "8px 20px", borderRadius: 8, border: "none",
+                background: searching ? "#3a5a78" : NAVY,
+                color: "#fff", cursor: searching ? "not-allowed" : "pointer",
+                fontSize: 12.5, fontWeight: 900,
+                display: "inline-flex", alignItems: "center", gap: 6,
+                transition: "background 0.2s",
+              }}
             >
-              Search
+              {searching ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    style={{ animation: "spin 0.9s linear infinite", flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Searching…
+                </>
+              ) : "Search"}
             </button>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         </div>
 
@@ -300,14 +382,14 @@ export default function ExpandSearch() {
                     {row.expanded && (
                       <div style={{ borderTop: `1px solid ${DIVIDER}`, background: "#fafbfd", padding: "14px 18px 16px" }}>
                         <div style={{ display: "grid", gridTemplateColumns: "160px 1fr", gap: 8, marginBottom: 14 }}>
-                          {[
-                            ["Description", "Unauthorized access to customer data."],
-                            ["Root Cause", "Weak access controls."],
-                            ["Impact", "Potential financial loss and regulatory fines."],
-                            ["Business Unit", "Technology"],
-                            ["Region", "North America"],
-                            ["Tagged AE(s)", "AE‑1023 Payments Processing Platform"],
-                          ].map(([k, v]) => (
+                          {([
+                            ["Description",  row.description  || "—"],
+                            ["Root Cause",   row.rootCause    || "—"],
+                            ["Impact",       row.impact       || "—"],
+                            ["Business Unit",row.businessUnit || "—"],
+                            ["Region",       row.region       || "—"],
+                            ["Tagged AE(s)", row.taggedAE     || "—"],
+                          ] as [string, string][]).map(([k, v]) => (
                             <>
                               <span key={`k-${k}`} style={{ fontSize: 12.5, fontWeight: 900, color: MUTED }}>{k}</span>
                               <span key={`v-${k}`} style={{ fontSize: 12.5, color: TEXT, lineHeight: 1.5 }}>{v}</span>
