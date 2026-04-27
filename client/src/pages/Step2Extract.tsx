@@ -190,14 +190,104 @@ function CategoryRow({ label, items, filename }: {
   );
 }
 
+// ── Dummy fallback data (shown when no API result is stored yet) ─────────────
+const DUMMY_RESULT: ExtractResult = {
+  job_id: "demo-job",
+  documents_processed: 3,
+  total_documents: 3,
+  overall_confidence: 0.92,
+  progress: 75,
+  results: [
+    {
+      filename: "Ops Risk Summary.docx",
+      status: "success",
+      confidence: 0.91,
+      items_found: 4,
+      categories: {
+        risk_events: [
+          { id: "RE-102345", title: "System outage impacting payments", description: "Critical payment processing failure affecting settlement workflows across retail channels.", rating: "Critical" },
+          { id: "RE-104118", title: "Processing delays due to vendor capacity", description: "Third-party vendor unable to meet SLA commitments, causing batch processing backlogs.", rating: "Major" },
+        ],
+        orac_issues: [
+          { id: "ISS-778901", title: "Access control gaps in core platform", description: "Privileged access review identified unreconciled entitlements in the payment gateway admin console.", rating: "Major" },
+          { id: "ISS-781220", title: "Incomplete evidence retention for reconciliations", description: "Daily reconciliation logs not archived beyond 30 days, falling short of 90-day policy requirement.", rating: "Limited" },
+        ],
+        key_risk_indicators: null,
+        key_staff_org_change: null,
+        business_process_change: null,
+        critical_change_program: [
+          { id: "CHG-445612", title: "Payments platform upgrade", description: "Major version upgrade to the core payments engine to support ISO 20022 messaging standards.", phase: "Execution", go_live: "2026-09-15" },
+          { id: "CHG-447908", title: "Risk controls monitoring automation rollout", description: "Automated continuous monitoring controls deployed across Tier-1 risk processes.", phase: "Design", go_live: "2026-07-30" },
+        ],
+        macro_external_event: null,
+        regulatory_exam_inquiry: null,
+        other_notable_items: null,
+      },
+    },
+    {
+      filename: "Incident Report.pdf",
+      status: "success",
+      confidence: 0.97,
+      items_found: 5,
+      categories: {
+        risk_events: [
+          { id: "RE-109022", title: "Data integrity failure in reporting pipeline", description: "Downstream regulatory reports contained stale data due to an ETL pipeline failure over a 48-hour window.", rating: "Critical" },
+        ],
+        orac_issues: [
+          { id: "ISS-790034", title: "Manual override procedure not documented", description: "Operations team applied an undocumented manual override during the incident; no formal runbook exists.", rating: "Major" },
+        ],
+        key_risk_indicators: [
+          { id: "KRI-3301", title: "Data pipeline failure rate", description: "Percentage of nightly ETL jobs failing to complete within the SLA window — breached threshold of 5%.", threshold: "5%", current: "18%" },
+        ],
+        key_staff_org_change: null,
+        business_process_change: null,
+        critical_change_program: [
+          { id: "CHG-451100", title: "Core banking system refresh", description: "Full replacement of the legacy core banking ledger to support real-time settlement and reporting.", phase: "Planning", go_live: "2026-12-01" },
+        ],
+        macro_external_event: null,
+        regulatory_exam_inquiry: [
+          { id: "REG-2026-04", title: "Q1 Regulatory data quality review", description: "Regulator requested evidence of data lineage and reconciliation controls following the reporting discrepancy." },
+        ],
+        other_notable_items: null,
+      },
+    },
+    {
+      filename: "Ops Workflow.vsdx",
+      status: "success",
+      confidence: 0.88,
+      items_found: 2,
+      categories: {
+        risk_events: null,
+        orac_issues: null,
+        key_risk_indicators: null,
+        key_staff_org_change: [
+          { id: "ORG-2026-01", title: "New Operations Lead appointed", description: "Business ownership of the reconciliation workflow transferred to a newly onboarded Ops Lead effective Q1 2026." },
+          { id: "ORG-2026-02", title: "Ops team restructure Q1", description: "Reconciliation team split into two squads; reporting lines updated in org chart v3.2." },
+        ],
+        business_process_change: [
+          { id: "BPC-887", title: "Workflow automation for ops reconciliation", description: "End-to-end reconciliation workflow redesigned to incorporate RPA tooling, reducing manual touch-points by 60%.", phase: "Discovery", go_live: "2027-01-15" },
+        ],
+        critical_change_program: null,
+        macro_external_event: null,
+        regulatory_exam_inquiry: null,
+        other_notable_items: null,
+      },
+    },
+  ],
+};
+
 // ── Main page ────────────────────────────────────────────────────────────────
 export default function Step2Extract() {
   const [, setLocation] = useLocation();
   const [displayProgress, setDisplayProgress] = useState(0);
 
-  const extractResult: ExtractResult | null = (() => {
+  const stored: ExtractResult | null = (() => {
     try { return JSON.parse(sessionStorage.getItem("extract_result") || "null"); } catch { return null; }
   })();
+
+  // Use stored API result if it has categories; otherwise show dummy data
+  const extractResult: ExtractResult =
+    stored?.results?.[0]?.categories ? stored : DUMMY_RESULT;
 
   const targetProgress = extractResult?.progress ?? 75;
 
@@ -293,7 +383,7 @@ export default function Step2Extract() {
           </div>
 
           {/* Per-document sections */}
-          {extractResult?.results?.length && extractResult.results[0].categories ? (
+          {extractResult.results.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               {extractResult.results.map((doc) => (
                 <div key={doc.filename}>
