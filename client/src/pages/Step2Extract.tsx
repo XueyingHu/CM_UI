@@ -276,10 +276,13 @@ const DUMMY_RESULT: ExtractResult = {
   ],
 };
 
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 // ── Main page ────────────────────────────────────────────────────────────────
 export default function Step2Extract() {
   const [, setLocation] = useLocation();
   const [displayProgress, setDisplayProgress] = useState(0);
+  const [fetching, setFetching] = useState(false);
 
   const stored: ExtractResult | null = (() => {
     try { return JSON.parse(sessionStorage.getItem("extract_result") || "null"); } catch { return null; }
@@ -288,6 +291,47 @@ export default function Step2Extract() {
   // Use stored API result if it has categories; otherwise show dummy data
   const extractResult: ExtractResult =
     stored?.results?.[0]?.categories ? stored : DUMMY_RESULT;
+
+  const handleNext = async () => {
+    if (fetching) return;
+    setFetching(true);
+    try {
+      // Collect IDs for the three categories that go to the database fetch
+      const riskIds: string[] = [];
+      const issueIds: string[] = [];
+      const changeIds: string[] = [];
+
+      for (const doc of extractResult.results) {
+        for (const item of doc.categories["risk_events"] ?? [])
+          riskIds.push(item.id);
+        for (const item of doc.categories["orac_issues"] ?? [])
+          issueIds.push(item.id);
+        for (const item of doc.categories["critical_change_program"] ?? [])
+          changeIds.push(item.id);
+      }
+
+      const sessionId = sessionStorage.getItem("session_id") || "";
+      const res = await fetch(`${API_BASE}/api/v1/database/fetch-data`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          risk_event_ids: riskIds,
+          orac_issue_ids: issueIds,
+          change_program_ids: changeIds,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem("fetch_data_result", JSON.stringify(data));
+      }
+    } catch {
+      // Navigate regardless — Step 3 has its own static data as fallback
+    } finally {
+      setFetching(false);
+      setLocation("/step-3");
+    }
+  };
 
   const targetProgress = extractResult?.progress ?? 75;
 
@@ -437,18 +481,34 @@ export default function Step2Extract() {
             </button>
             <button
               data-testid="button-continue"
-              onClick={() => setLocation("/step-3")}
+              onClick={handleNext}
+              disabled={fetching}
               style={{
-                background: "#1e3a6a", color: "#fff",
+                background: fetching ? "#3a5a78" : "#1e3a6a", color: "#fff",
                 border: "none", borderRadius: 6,
                 padding: "9px 24px", fontWeight: 700, fontSize: 13,
-                cursor: "pointer",
+                cursor: fetching ? "not-allowed" : "pointer",
                 display: "inline-flex", alignItems: "center", gap: 6,
+                transition: "background 0.2s",
               }}
             >
-              Next
-              <ChevronRight size={15} />
+              {fetching ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    style={{ animation: "spin 0.9s linear infinite", flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Fetching…
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight size={15} />
+                </>
+              )}
             </button>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
 
         </div>

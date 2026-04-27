@@ -558,6 +558,95 @@ def extract_documents(req: ExtractRequest):
     }
 
 
+# ---------------------------------------------------------------------------
+# Database Fetch — enriches extracted IDs with authoritative source records
+# ---------------------------------------------------------------------------
+
+class FetchDataRequest(BaseModel):
+    session_id: str
+    risk_event_ids: list[str] = []
+    orac_issue_ids: list[str] = []
+    change_program_ids: list[str] = []
+
+# Dummy authoritative database records
+_DB_RISK_EVENTS: dict[str, dict] = {
+    "RE-102345": {"id": "RE-102345", "title": "System outage impacting payments",
+                  "description": "Critical payment processing failure affecting settlement workflows across retail channels.",
+                  "rating": "Critical", "status": "Open", "last_updated": "2026-03-18", "source": "ORAC Risk Events"},
+    "RE-104118": {"id": "RE-104118", "title": "Processing delays due to vendor capacity",
+                  "description": "Third-party vendor unable to meet SLA commitments, causing batch processing backlogs.",
+                  "rating": "Major", "status": "Monitoring", "last_updated": "2026-03-22", "source": "ORAC Risk Events"},
+    "RE-109022": {"id": "RE-109022", "title": "Data integrity failure in reporting pipeline",
+                  "description": "Downstream regulatory reports contained stale data due to ETL pipeline failure over a 48-hour window.",
+                  "rating": "Critical", "status": "Open", "last_updated": "2026-04-01", "source": "ORAC Risk Events"},
+}
+
+_DB_ORAC_ISSUES: dict[str, dict] = {
+    "ISS-778901": {"id": "ISS-778901", "title": "Access control gaps in core platform",
+                   "description": "Privileged access review identified unreconciled entitlements in the payment gateway admin console.",
+                   "rating": "Major", "status": "In Progress", "remediation_date": "2026-06-30", "source": "ORAC Issues"},
+    "ISS-781220": {"id": "ISS-781220", "title": "Incomplete evidence retention for reconciliations",
+                   "description": "Daily reconciliation logs not archived beyond 30 days, falling short of 90-day policy requirement.",
+                   "rating": "Limited", "status": "Open", "remediation_date": "2026-05-15", "source": "ORAC Issues"},
+    "ISS-790034": {"id": "ISS-790034", "title": "Manual override procedure not documented",
+                   "description": "Operations team applied undocumented manual override during the incident; no formal runbook exists.",
+                   "rating": "Major", "status": "Open", "remediation_date": "2026-07-01", "source": "ORAC Issues"},
+}
+
+_DB_CHANGE_PROGRAMS: dict[str, dict] = {
+    "CHG-445612": {"id": "CHG-445612", "title": "Payments platform upgrade",
+                   "description": "Major version upgrade to the core payments engine to support ISO 20022 messaging standards.",
+                   "rating": "Major", "phase": "Execution", "go_live": "2026-09-15", "source": "Navigator"},
+    "CHG-447908": {"id": "CHG-447908", "title": "Risk controls monitoring automation rollout",
+                   "description": "Automated continuous monitoring controls deployed across Tier-1 risk processes.",
+                   "rating": "Limited", "phase": "Design", "go_live": "2026-07-30", "source": "Navigator"},
+    "CHG-451100": {"id": "CHG-451100", "title": "Core banking system refresh",
+                   "description": "Full replacement of the legacy core banking ledger to support real-time settlement and reporting.",
+                   "rating": "Major", "phase": "Planning", "go_live": "2026-12-01", "source": "Navigator"},
+    "CHG-460012": {"id": "CHG-460012", "title": "Workflow automation for ops reconciliation",
+                   "description": "End-to-end reconciliation workflow redesigned to incorporate RPA tooling, reducing manual touch-points by 60%.",
+                   "rating": "Limited", "phase": "Discovery", "go_live": "2027-01-15", "source": "Navigator"},
+}
+
+@app.post("/api/v1/database/fetch-data")
+def fetch_data(req: FetchDataRequest):
+    if req.session_id not in active_sessions:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    risk_events, orac_issues, change_programs, not_found = [], [], [], []
+
+    for rid in req.risk_event_ids:
+        rec = _DB_RISK_EVENTS.get(rid)
+        if rec:
+            risk_events.append(rec)
+        else:
+            not_found.append({"id": rid, "category": "risk_events", "reason": "ID not found in ORAC Risk Events"})
+
+    for iid in req.orac_issue_ids:
+        rec = _DB_ORAC_ISSUES.get(iid)
+        if rec:
+            orac_issues.append(rec)
+        else:
+            not_found.append({"id": iid, "category": "orac_issues", "reason": "ID not found in ORAC Issues"})
+
+    for cid in req.change_program_ids:
+        rec = _DB_CHANGE_PROGRAMS.get(cid)
+        if rec:
+            change_programs.append(rec)
+        else:
+            not_found.append({"id": cid, "category": "change_programs", "reason": "ID not found in Navigator"})
+
+    return {
+        "fetch_id": str(uuid.uuid4()),
+        "session_id": req.session_id,
+        "risk_events": risk_events,
+        "orac_issues": orac_issues,
+        "change_programs": change_programs,
+        "not_found": not_found,
+        "fetched_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
