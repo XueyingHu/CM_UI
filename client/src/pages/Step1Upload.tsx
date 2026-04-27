@@ -1,6 +1,8 @@
 import { useState, useRef } from "react";
 import { useLocation } from "wouter";
 
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 interface DocItem {
   id: string;
   name: string;
@@ -36,6 +38,32 @@ export default function Step1Upload() {
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [documents, setDocuments] = useState<DocItem[]>(DEFAULT_DOCS);
+  const [extracting, setExtracting] = useState(false);
+
+  const handleConfirm = async () => {
+    if (extracting) return;
+    setExtracting(true);
+    try {
+      const sessionId = sessionStorage.getItem("session_id") || "";
+      const res = await fetch(`${API_BASE}/api/v1/documents/extract`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          documents: documents.map(d => ({ name: d.name, type: d.type, size: d.size })),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem("extract_result", JSON.stringify(data));
+      }
+    } catch {
+      // Navigate regardless — Step3 degrades gracefully with no extract data
+    } finally {
+      setExtracting(false);
+      setLocation("/step-3");
+    }
+  };
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
@@ -242,16 +270,31 @@ export default function Step1Upload() {
             </button>
             <button
               data-testid="button-confirm"
-              onClick={() => setLocation("/step-3")}
+              onClick={handleConfirm}
+              disabled={extracting}
               style={{
-                background: "#0b2a4a", color: "#fff",
+                background: extracting ? "#3a5a78" : "#0b2a4a", color: "#fff",
                 border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10,
                 padding: "10px 18px", fontWeight: 900, fontSize: 13,
-                cursor: "pointer", minWidth: 160,
+                cursor: extracting ? "not-allowed" : "pointer", minWidth: 180,
+                display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center",
+                transition: "background 0.2s",
               }}
             >
-              Confirm and Continue
+              {extracting ? (
+                <>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                    style={{ animation: "spin 0.9s linear infinite" }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Extracting…
+                </>
+              ) : (
+                "Confirm and Continue"
+              )}
             </button>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         </div>
       </div>

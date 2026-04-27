@@ -413,6 +413,66 @@ def get_scope(session_id: str):
     return scope
 
 
+# ---------------------------------------------------------------------------
+# Document Extraction
+# ---------------------------------------------------------------------------
+
+class ExtractDocumentItem(BaseModel):
+    name: str
+    type: str
+    size: str
+
+class ExtractRequest(BaseModel):
+    session_id: str
+    documents: list[ExtractDocumentItem]
+
+class ExtractDocumentResult(BaseModel):
+    filename: str
+    status: str
+    confidence: float
+    items_found: int
+
+class ExtractResponse(BaseModel):
+    job_id: str
+    documents_processed: int
+    total_documents: int
+    overall_confidence: float
+    results: list[ExtractDocumentResult]
+
+# Per-document confidence/items for the three default documents
+_DOC_PROFILES: dict[str, dict] = {
+    "ops risk summary.docx": {"confidence": 0.91, "items_found": 7},
+    "incident report.pdf":   {"confidence": 0.97, "items_found": 4},
+    "ops workflow.vsdx":     {"confidence": 0.88, "items_found": 3},
+}
+
+@app.post("/api/v1/documents/extract", response_model=ExtractResponse)
+def extract_documents(req: ExtractRequest):
+    if req.session_id not in active_sessions:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    results: list[ExtractDocumentResult] = []
+    for doc in req.documents:
+        profile = _DOC_PROFILES.get(doc.name.lower(), {"confidence": 0.85, "items_found": 2})
+        results.append(ExtractDocumentResult(
+            filename=doc.name,
+            status="success",
+            confidence=profile["confidence"],
+            items_found=profile["items_found"],
+        ))
+
+    total = len(results)
+    overall = round(sum(r.confidence for r in results) / total, 4) if total else 0.0
+
+    return ExtractResponse(
+        job_id=str(uuid.uuid4()),
+        documents_processed=total,
+        total_documents=total,
+        overall_confidence=overall,
+        results=results,
+    )
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

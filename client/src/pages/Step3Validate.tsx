@@ -116,11 +116,97 @@ function tableWrap(children: React.ReactNode) {
   );
 }
 
+interface ExtractResult {
+  documents_processed: number;
+  total_documents: number;
+  overall_confidence: number;
+  results: { filename: string; status: string; confidence: number; items_found: number }[];
+}
+
+function ExtractionProgressBar({ extract }: { extract: ExtractResult | null }) {
+  if (!extract) return null;
+  const pct = extract.total_documents > 0
+    ? Math.round((extract.documents_processed / extract.total_documents) * 100)
+    : 0;
+  const confPct = Math.round(extract.overall_confidence * 100);
+
+  const barColor = confPct >= 90 ? "#1f7a3f" : confPct >= 75 ? "#b54708" : "#b42318";
+  const barBg   = confPct >= 90 ? "rgba(31,122,63,0.10)" : confPct >= 75 ? "rgba(181,71,8,0.10)" : "rgba(180,35,24,0.10)";
+
+  return (
+    <div style={{
+      margin: "0 0 16px",
+      padding: "14px 16px",
+      borderRadius: 12,
+      border: "1px solid #dbe8f5",
+      background: "linear-gradient(180deg,#f5f9ff 0%,#eef4fd 100%)",
+    }}>
+      {/* Top row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 12l2 2 4-4" stroke="#1f5ea8" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="12" cy="12" r="10" stroke="#1f5ea8" strokeWidth="1.8"/>
+          </svg>
+          <span style={{ fontWeight: 900, fontSize: 13, color: "#122033" }}>
+            Extraction complete —&nbsp;
+            <span style={{ color: "#1f5ea8" }}>
+              {extract.documents_processed} of {extract.total_documents} document{extract.total_documents !== 1 ? "s" : ""} processed
+            </span>
+          </span>
+        </div>
+        <span style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          padding: "4px 10px", borderRadius: 999, fontSize: 12, fontWeight: 900,
+          border: `1px solid ${barColor}30`, background: barBg, color: barColor,
+        }}>
+          {confPct}% overall confidence
+        </span>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 7, borderRadius: 999, background: "#d9e5f3", overflow: "hidden" }}>
+        <div style={{
+          height: "100%", borderRadius: 999,
+          width: `${pct}%`, background: barColor,
+          transition: "width 0.6s ease",
+        }} />
+      </div>
+
+      {/* Per-document chips */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+        {extract.results.map((r) => (
+          <div key={r.filename} style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "4px 10px", borderRadius: 8,
+            background: "#fff", border: "1px solid #dbe3ee",
+            fontSize: 12, fontWeight: 700, color: "#334155",
+          }}>
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 2H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5L10 2Z" stroke="#1f5ea8" strokeWidth="1.4" strokeLinejoin="round"/>
+              <path d="M10 2v3h3" stroke="#1f5ea8" strokeWidth="1.4" strokeLinejoin="round"/>
+            </svg>
+            {r.filename}
+            <span style={{ color: "#5b6b7a", fontWeight: 600 }}>·</span>
+            <span style={{ color: r.confidence >= 0.9 ? "#1f7a3f" : "#b54708", fontWeight: 900 }}>
+              {Math.round(r.confidence * 100)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Step3Validate() {
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
   const totalPages = PAGES.length;
   const data = PAGES[page - 1];
+
+  const extractResult: ExtractResult | null = (() => {
+    try { return JSON.parse(sessionStorage.getItem("extract_result") || "null"); } catch { return null; }
+  })();
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
@@ -203,6 +289,8 @@ export default function Step3Validate() {
           background: "#fff", border: `1px solid ${BORDER}`, borderRadius: 12,
           boxShadow: "0 6px 18px rgba(16,24,40,0.08)", padding: 16, maxWidth: 1100,
         }}>
+
+          <ExtractionProgressBar extract={extractResult} />
 
           {/* Card header row */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14 }}>
