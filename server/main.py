@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime, timedelta, timezone
 import uuid
-import secrets
 
 app = FastAPI(title="CM AI Solution - BAM Authentication API", version="1.0.0")
 
@@ -15,45 +14,90 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory session store (replace with DB in production)
+# In-memory session store — replace with Redis/DB in production
 active_sessions: dict[str, dict] = {}
 
-# Mock user store (replace with BAM LDAP/AD integration in production)
+# Stub user registry — replace with BAM LDAP/AD directory lookup in production
+# Username convention: firstname.lastname (derived from display name)
 MOCK_USERS = {
+    # Portfolio Managers
     "sarah.johnson": {
-        "password": "password123",
         "full_name": "Sarah Johnson",
         "role": "Portfolio Manager",
         "email": "sarah.johnson@bank.com",
         "department": "Markets & Technology",
     },
     "david.lee": {
-        "password": "password123",
         "full_name": "David Lee",
         "role": "Portfolio Manager",
         "email": "david.lee@bank.com",
         "department": "Retail Banking",
     },
+    "maria.garcia": {
+        "full_name": "Maria Garcia",
+        "role": "Portfolio Manager",
+        "email": "maria.garcia@bank.com",
+        "department": "Global Risk",
+    },
+    "james.okafor": {
+        "full_name": "James Okafor",
+        "role": "Portfolio Manager",
+        "email": "james.okafor@bank.com",
+        "department": "Markets & Technology",
+    },
+    "linda.park": {
+        "full_name": "Linda Park",
+        "role": "Portfolio Manager",
+        "email": "linda.park@bank.com",
+        "department": "Retail Banking",
+    },
+    # Business Monitoring Leads
     "john.smith": {
-        "password": "password123",
         "full_name": "John Smith",
         "role": "Business Monitoring Lead",
         "email": "john.smith@bank.com",
         "department": "Markets & Technology",
     },
-    "admin": {
-        "password": "admin",
-        "full_name": "System Administrator",
-        "role": "Admin",
-        "email": "admin@bank.com",
-        "department": "IT",
+    "emily.chen": {
+        "full_name": "Emily Chen",
+        "role": "Business Monitoring Lead",
+        "email": "emily.chen@bank.com",
+        "department": "Retail Banking",
+    },
+    "robert.taylor": {
+        "full_name": "Robert Taylor",
+        "role": "Business Monitoring Lead",
+        "email": "robert.taylor@bank.com",
+        "department": "Global Risk",
+    },
+    "priya.nair": {
+        "full_name": "Priya Nair",
+        "role": "Business Monitoring Lead",
+        "email": "priya.nair@bank.com",
+        "department": "Compliance & Legal",
+    },
+    "carlos.mendez": {
+        "full_name": "Carlos Mendez",
+        "role": "Business Monitoring Lead",
+        "email": "carlos.mendez@bank.com",
+        "department": "Corporate Audit",
     },
 }
 
 
+def name_to_username(display_name: str) -> str:
+    """Convert 'First Last' → 'first.last' for BAM username lookup."""
+    parts = display_name.strip().lower().split()
+    return f"{parts[0]}.{parts[-1]}" if len(parts) >= 2 else display_name.lower()
+
+
 class LoginRequest(BaseModel):
     username: str
-    password: str
+    # In the stub, password is not validated — BAM SSO handles real auth.
+    # Kept in the schema for future integration parity.
+    password: str = "bam-sso-token"
+    # Optional: caller can pass the raw display name and we derive the username
+    display_name: str = ""
 
 
 class LoginResponse(BaseModel):
@@ -73,24 +117,43 @@ class LogoutRequest(BaseModel):
 
 @app.get("/health")
 def health_check():
-    return {"status": "ok", "service": "CM AI Solution Auth API", "timestamp": datetime.now(timezone.utc).isoformat()}
+    return {
+        "status": "ok",
+        "service": "CM AI Solution Auth API",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
 
 
 @app.post("/api/v1/auth/login", response_model=LoginResponse)
 def login(req: LoginRequest):
-    user = MOCK_USERS.get(req.username.lower().strip())
+    # Resolve username — prefer explicit username, fall back to display_name conversion
+    username = req.username.strip().lower()
+    if not username and req.display_name:
+        username = name_to_username(req.display_name)
 
-    if not user or user["password"] != req.password:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password. Please check your BAM credentials.",
-        )
+    user = MOCK_USERS.get(username)
+
+    # Stub behaviour: if user not found in registry, create an ad-hoc session
+    # using whatever info was provided (graceful degradation for unknown users).
+    if not user:
+        if req.display_name:
+            user = {
+                "full_name": req.display_name,
+                "role": "Authenticated User",
+                "email": f"{username}@bank.com",
+                "department": "Unknown",
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found in BAM directory.",
+            )
 
     session_id = str(uuid.uuid4())
     expires_at = datetime.now(timezone.utc) + timedelta(hours=8)
 
     active_sessions[session_id] = {
-        "username": req.username,
+        "username": username,
         "full_name": user["full_name"],
         "role": user["role"],
         "email": user["email"],
@@ -101,7 +164,7 @@ def login(req: LoginRequest):
 
     return LoginResponse(
         session_id=session_id,
-        username=req.username,
+        username=username,
         full_name=user["full_name"],
         role=user["role"],
         email=user["email"],
@@ -125,17 +188,15 @@ def validate_session(session_id: str):
     if not session:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session not found or expired",
+            detail="Session not found or expired.",
         )
-
     expires_at = datetime.fromisoformat(session["expires_at"])
     if datetime.now(timezone.utc) > expires_at:
         del active_sessions[session_id]
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Session has expired. Please log in again.",
+            detail="Session expired. Please refresh your scope selection.",
         )
-
     return {"valid": True, **session}
 
 
