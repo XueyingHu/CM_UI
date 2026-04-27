@@ -4,21 +4,19 @@ import { Search, ChevronDown, ChevronUp, X, Check } from "lucide-react";
 
 const BAM_AUTH_URL = "http://localhost:8000/api/v1/auth/login";
 
-/** Convert "First Last" → "first.last" to match BAM username convention */
-function toUsername(displayName: string): string {
-  const parts = displayName.trim().toLowerCase().split(/\s+/);
-  return parts.length >= 2 ? `${parts[0]}.${parts[parts.length - 1]}` : parts[0];
-}
-
-/** Fire-and-forget BAM auth — stores session data in sessionStorage on success */
-async function authenticateWithBAM(pmName: string, bmlName?: string): Promise<void> {
+/**
+ * Authenticate with BAM and store the session in sessionStorage.
+ * Called on page load with a generic system identity so a session_id
+ * exists before any PM / filter selection is made.
+ */
+async function authenticateWithBAM(username: string, displayName: string): Promise<void> {
   try {
     const res = await fetch(BAM_AUTH_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        username: toUsername(pmName),
-        display_name: pmName,
+        username,
+        display_name: displayName,
         password: "bam-sso-token",
       }),
     });
@@ -30,9 +28,8 @@ async function authenticateWithBAM(pmName: string, bmlName?: string): Promise<vo
     sessionStorage.setItem("user_email", data.email);
     sessionStorage.setItem("user_department", data.department);
     sessionStorage.setItem("session_expires_at", data.expires_at);
-    if (bmlName) sessionStorage.setItem("bml_name", bmlName);
   } catch {
-    // Auth service unavailable — proceed without session (stub / offline mode)
+    // Auth service unavailable — proceed without session (offline / stub mode)
   }
 }
 
@@ -165,6 +162,12 @@ export default function Dashboard() {
   const [filteredEntities, setFilteredEntities] = useState(ALL_ENTITIES);
   const [listOpen, setListOpen] = useState(false);
 
+  // Authenticate on page load with a system identity so a session_id is
+  // established immediately — PM / filter selections are recorded against it.
+  useEffect(() => {
+    authenticateWithBAM("system.user", "System User");
+  }, []);
+
   const handleApply = () => {
     let result = ALL_ENTITIES;
     if (pm) result = result.filter(e => e.pm === pm);
@@ -197,10 +200,9 @@ export default function Dashboard() {
     setListOpen(false);
   };
 
-  const handleConfirm = async () => {
+  const handleConfirm = () => {
     if (scopeApplied && filteredEntities.length > 0) {
-      // Authenticate in the background using the selected PM (and optional BML)
-      await authenticateWithBAM(pm, bml || undefined);
+      // Session already established on page load — just navigate.
       setLocation("/domain-home");
     }
   };

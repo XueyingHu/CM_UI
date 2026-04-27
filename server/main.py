@@ -20,6 +20,13 @@ active_sessions: dict[str, dict] = {}
 # Stub user registry — replace with BAM LDAP/AD directory lookup in production
 # Username convention: firstname.lastname (derived from display name)
 MOCK_USERS = {
+    # System / page-load session — used before a PM is selected
+    "system.user": {
+        "full_name": "System User",
+        "role": "System",
+        "email": "system@bank.com",
+        "department": "CM AI Platform",
+    },
     # Portfolio Managers
     "sarah.johnson": {
         "full_name": "Sarah Johnson",
