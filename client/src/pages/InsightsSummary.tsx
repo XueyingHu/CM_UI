@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { ChevronRight, ChevronDown, FileSpreadsheet, FileText, Send } from "lucide-react";
+import { ChevronRight, ChevronDown, FileText, Send } from "lucide-react";
 
 const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
@@ -81,7 +81,8 @@ export default function InsightsSummary() {
   const [activeTab, setActiveTab] = useState("events");
   const [registerOpen, setRegisterOpen] = useState(false);
   const [rows, setRows] = useState<RegRow[]>(REGISTER_ROWS);
-  const [publishLoading, setPublishLoading] = useState(false);
+  const [publishLoading,   setPublishLoading]   = useState(false);
+  const [exportPDFLoading, setExportPDFLoading] = useState(false);
 
   const handlePublish = async () => {
     setPublishLoading(true);
@@ -109,6 +110,34 @@ export default function InsightsSummary() {
     } finally {
       setPublishLoading(false);
       setLocation("/domain-home");
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setExportPDFLoading(true);
+    try {
+      const sessionId      = sessionStorage.getItem("session_id") ?? "";
+      const execSummaryRaw = sessionStorage.getItem("exec_summary_module2_result");
+      const execSummary    = execSummaryRaw ? JSON.parse(execSummaryRaw) : {};
+
+      const res = await fetch(`${API_BASE}/api/v1/report/download-cm-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id:     sessionId,
+          exec_summary:   execSummary,
+          fetch_data:     {},
+          step4_analysis: [],
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem("download_report_result", JSON.stringify(data));
+      }
+    } catch (_) {
+      // silently ignore
+    } finally {
+      setExportPDFLoading(false);
     }
   };
 
@@ -161,8 +190,19 @@ export default function InsightsSummary() {
           ))}
         </div>
         <div style={{ display: "flex", gap: 8, paddingBlock: 8 }}>
-          <button style={BtnStyle()}><FileSpreadsheet size={13} /> Export to Excel</button>
-          <button style={BtnStyle()}><FileText size={13} /> Export to PDF</button>
+          <button
+            data-testid="button-export-pdf-header"
+            disabled={exportPDFLoading}
+            onClick={handleExportPDF}
+            style={{ ...BtnStyle(), opacity: exportPDFLoading ? 0.75 : 1, cursor: exportPDFLoading ? "not-allowed" : "pointer", minWidth: 110 }}
+          >
+            {exportPDFLoading ? (
+              <>
+                <span style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid rgba(0,0,0,0.15)", borderTopColor: "#0b2a4a", animation: "spin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
+                Exporting…
+              </>
+            ) : <><FileText size={13} /> Export to PDF</>}
+          </button>
           <button
             data-testid="button-publish-header"
             disabled={publishLoading}
@@ -350,8 +390,19 @@ export default function InsightsSummary() {
             Back
           </button>
           <div style={{ display: "flex", gap: 10 }}>
-            <button style={BtnStyle()}><FileSpreadsheet size={13} /> Export to Excel</button>
-            <button style={BtnStyle()}><FileText size={13} /> Export to PDF</button>
+            <button
+              data-testid="button-export-pdf-footer"
+              disabled={exportPDFLoading}
+              onClick={handleExportPDF}
+              style={{ ...BtnStyle(), opacity: exportPDFLoading ? 0.75 : 1, cursor: exportPDFLoading ? "not-allowed" : "pointer", minWidth: 110 }}
+            >
+              {exportPDFLoading ? (
+                <>
+                  <span style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid rgba(0,0,0,0.15)", borderTopColor: "#0b2a4a", animation: "spin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
+                  Exporting…
+                </>
+              ) : <><FileText size={13} /> Export to PDF</>}
+            </button>
             <button
               data-testid="button-publish-footer"
               disabled={publishLoading}
