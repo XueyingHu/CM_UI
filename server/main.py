@@ -786,6 +786,127 @@ def fetch_executive_summary(req: ExecSummaryRequest):
 
 
 # ---------------------------------------------------------------------------
+# fetch-executive-summary-module2
+# Combines review_validate_accepted + expand_search_accepted (Audit Universe
+# Mapping module) to produce a rich executive-summary payload.
+# ---------------------------------------------------------------------------
+
+class ExecSummaryModule2Request(BaseModel):
+    session_id: str
+    review_validate_accepted: dict = {}   # { events:[], issues:[], changes:[] }
+    expand_search_accepted:   dict = {}   # { events:[], issues:[], changes:[] }
+
+@app.post("/api/v1/database/fetch-executive-summary-module2")
+def fetch_executive_summary_module2(req: ExecSummaryModule2Request):
+    if req.session_id not in active_sessions:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    rv  = req.review_validate_accepted
+    es  = req.expand_search_accepted
+
+    # Flatten all accepted records across both sources
+    all_events  = rv.get("events",  []) + es.get("events",  [])
+    all_issues  = rv.get("issues",  []) + es.get("issues",  [])
+    all_changes = rv.get("changes", []) + es.get("changes", [])
+
+    total        = len(all_events) + len(all_issues) + len(all_changes)
+    critical_cnt = sum(1 for r in all_events  if r.get("rating") == "Critical")
+    critical_cnt += sum(1 for r in all_issues if r.get("rating") == "Critical")
+    overdue_cnt  = sum(1 for r in all_events + all_issues if r.get("status") == "Overdue")
+
+    overall_rating = "Critical" if critical_cnt > 0 else ("Major" if overdue_cnt > 0 else "Limited")
+
+    # Build per-record finding summaries
+    findings = []
+    for r in all_events[:5]:
+        findings.append({
+            "source": "ORAC Risk Event",
+            "id": r.get("id", ""),
+            "title": r.get("title", ""),
+            "rating": r.get("rating", "Medium"),
+            "status": r.get("status", "Open"),
+            "summary": (
+                f"{r.get('title','Event')} was accepted into scope. "
+                f"Root cause: {r.get('rootCause','Refer to source record.')} "
+                f"Impact: {r.get('impact','Under assessment.')} "
+                f"Business unit: {r.get('businessUnit','N/A')}. Region: {r.get('region','N/A')}."
+            ),
+        })
+    for r in all_issues[:4]:
+        findings.append({
+            "source": "ORAC Issue",
+            "id": r.get("id", ""),
+            "title": r.get("title", ""),
+            "rating": r.get("rating", "Medium"),
+            "status": r.get("status", "Open"),
+            "summary": (
+                f"Issue {r.get('id','')} accepted. "
+                f"{r.get('description','Refer to source record.')} "
+                f"Region: {r.get('region','N/A')}. BU: {r.get('businessUnit','N/A')}."
+            ),
+        })
+    for r in all_changes[:4]:
+        findings.append({
+            "source": "Navigator Change",
+            "id": r.get("id", ""),
+            "title": r.get("title", ""),
+            "rating": r.get("rating", "Medium"),
+            "status": r.get("status", "Scheduled"),
+            "summary": (
+                f"Change {r.get('id','')} accepted. "
+                f"{r.get('description','Refer to source record.')} "
+                f"Region: {r.get('region','N/A')}. BU: {r.get('businessUnit','N/A')}."
+            ),
+        })
+
+    # Dummy narrative sections (augmented with live counts where possible)
+    return {
+        "exec_summary_id": str(uuid.uuid4()),
+        "session_id": req.session_id,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "overall_risk_rating": overall_rating,
+        "headline": (
+            f"The audit universe mapping review identified {len(all_events)} risk event(s), "
+            f"{len(all_issues)} open issue(s), and {len(all_changes)} change programme(s) "
+            f"accepted for continuous monitoring scope. "
+            f"{'Critical-rated items require immediate escalation. ' if critical_cnt else ''}"
+            f"Total accepted records: {total}."
+        ),
+        "monitoring_conclusion": (
+            f"Based on the accepted items from both the AI-suggested review and the expanded search, "
+            f"the overall CM assessment for this module is rated <strong>{overall_rating}</strong>. "
+            f"The control environment across the accepted auditable entities warrants "
+            f"{'heightened oversight and prompt remediation of critical findings.' if overall_rating == 'Critical' else 'continued monitoring through the current period.'}"
+        ),
+        "findings": findings,
+        "statistics": {
+            "total_accepted": total,
+            "risk_events_accepted": len(all_events),
+            "issues_accepted": len(all_issues),
+            "changes_accepted": len(all_changes),
+            "critical_items": critical_cnt,
+            "overdue_items": overdue_cnt,
+            "from_review_validate": (
+                len(rv.get("events",[])) + len(rv.get("issues",[])) + len(rv.get("changes",[]))
+            ),
+            "from_expand_search": (
+                len(es.get("events",[])) + len(es.get("issues",[])) + len(es.get("changes",[]))
+            ),
+        },
+        "key_actions": [
+            {"action": "Escalate all Critical-rated accepted events to Risk Committee",
+             "owner": "1st Line Risk", "due": "2026-05-05", "priority": "Critical"},
+            {"action": "Confirm remediation timelines for Overdue items with issue owners",
+             "owner": "Issue Owners", "due": "2026-05-15", "priority": "Major"},
+            {"action": "Review change readiness for all accepted Scheduled changes",
+             "owner": "Change Manager", "due": "2026-06-01", "priority": "Major"},
+            {"action": "Distribute final audit universe mapping report to stakeholders",
+             "owner": "CM Team", "due": "2026-05-20", "priority": "Limited"},
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
 # Report Download — generates the full CM report from step 3 + step 4 data
 # ---------------------------------------------------------------------------
 

@@ -114,10 +114,40 @@ export default function ExpandSearch() {
   const [results,      setResults]      = useState<Record<string, ResultRow[]>>(saved?.results ?? MOCK_RESULTS);
   const [allCollapsed, setAllCollapsed] = useState(false);
 
+  const [nextLoading, setNextLoading] = useState(false);
+
   // Persist to sessionStorage whenever results or search state changes
   useEffect(() => {
     saveState({ results, searched, dateFrom, dateTo, rating, status, region, businessUnit, aiText });
   }, [results, searched, dateFrom, dateTo, rating, status, region, businessUnit, aiText]);
+
+  const handleNext = async () => {
+    setNextLoading(true);
+    try {
+      const sessionId = sessionStorage.getItem("session_id") ?? "";
+      const reviewValidateAccepted = JSON.parse(sessionStorage.getItem("review_validate_accepted") ?? "{}");
+      const expandSearchAccepted   = JSON.parse(sessionStorage.getItem("expand_search_accepted")   ?? "{}");
+
+      const res = await fetch(`${API_BASE}/api/v1/database/fetch-executive-summary-module2`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          review_validate_accepted: reviewValidateAccepted,
+          expand_search_accepted:   expandSearchAccepted,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem("exec_summary_module2_result", JSON.stringify(data));
+      }
+    } catch (_) {
+      // navigate regardless
+    } finally {
+      setNextLoading(false);
+      setLocation("/insights-summary");
+    }
+  };
 
   const currentResults = results[activeTab] || [];
 
@@ -498,8 +528,18 @@ export default function ExpandSearch() {
           <button onClick={() => setLocation("/review-validate")} style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #d6deea", background: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 13, minWidth: 100 }}>
             Back
           </button>
-          <button onClick={() => setLocation("/insights-summary")} style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)", background: NAVY, color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 13, minWidth: 100 }}>
-            Next
+          <button
+            data-testid="button-next-expand"
+            disabled={nextLoading}
+            onClick={handleNext}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)", background: nextLoading ? "#3a5f8a" : NAVY, color: "#fff", fontWeight: 900, cursor: nextLoading ? "not-allowed" : "pointer", fontSize: 13, minWidth: 120, opacity: nextLoading ? 0.85 : 1 }}
+          >
+            {nextLoading ? (
+              <>
+                <span style={{ width: 14, height: 14, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", animation: "spin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
+                Generating…
+              </>
+            ) : "Next"}
           </button>
         </div>
 
