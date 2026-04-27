@@ -426,51 +426,136 @@ class ExtractRequest(BaseModel):
     session_id: str
     documents: list[ExtractDocumentItem]
 
-class ExtractDocumentResult(BaseModel):
-    filename: str
-    status: str
-    confidence: float
-    items_found: int
+# ---------------------------------------------------------------------------
+# Rich per-category mock extraction data
+# ---------------------------------------------------------------------------
 
-class ExtractResponse(BaseModel):
-    job_id: str
-    documents_processed: int
-    total_documents: int
-    overall_confidence: float
-    results: list[ExtractDocumentResult]
-
-# Per-document confidence/items for the three default documents
-_DOC_PROFILES: dict[str, dict] = {
-    "ops risk summary.docx": {"confidence": 0.91, "items_found": 7},
-    "incident report.pdf":   {"confidence": 0.97, "items_found": 4},
-    "ops workflow.vsdx":     {"confidence": 0.88, "items_found": 3},
+_DOC_EXTRACTIONS: dict[str, dict] = {
+    "ops risk summary.docx": {
+        "confidence": 0.91,
+        "progress": 75,
+        "categories": {
+            "risk_events": [
+                {"id": "RE-102345", "title": "System outage impacting payments",
+                 "description": "Critical payment processing failure affecting settlement workflows across retail channels.", "rating": "Critical"},
+                {"id": "RE-104118", "title": "Processing delays due to vendor capacity",
+                 "description": "Third-party vendor unable to meet SLA commitments, causing batch processing backlogs.", "rating": "Major"},
+            ],
+            "orac_issues": [
+                {"id": "ISS-778901", "title": "Access control gaps in core platform",
+                 "description": "Privileged access review identified unreconciled entitlements in the payment gateway admin console.", "rating": "Major"},
+                {"id": "ISS-781220", "title": "Incomplete evidence retention for reconciliations",
+                 "description": "Daily reconciliation logs not archived beyond 30 days, falling short of 90-day policy requirement.", "rating": "Limited"},
+            ],
+            "key_risk_indicators": None,
+            "key_staff_org_change": None,
+            "business_process_change": None,
+            "critical_change_program": [
+                {"id": "CHG-445612", "title": "Payments platform upgrade",
+                 "description": "Major version upgrade to the core payments engine to support ISO 20022 messaging standards.", "phase": "Execution", "go_live": "2026-09-15"},
+                {"id": "CHG-447908", "title": "Risk controls monitoring automation rollout",
+                 "description": "Automated continuous monitoring controls deployed across Tier-1 risk processes.", "phase": "Design", "go_live": "2026-07-30"},
+            ],
+            "macro_external_event": None,
+            "regulatory_exam_inquiry": None,
+            "other_notable_items": None,
+        },
+    },
+    "incident report.pdf": {
+        "confidence": 0.97,
+        "progress": 75,
+        "categories": {
+            "risk_events": [
+                {"id": "RE-109022", "title": "Data integrity failure in reporting pipeline",
+                 "description": "Downstream regulatory reports contained stale data due to an ETL pipeline failure over a 48-hour window.", "rating": "Critical"},
+            ],
+            "orac_issues": [
+                {"id": "ISS-790034", "title": "Manual override procedure not documented",
+                 "description": "Operations team applied an undocumented manual override during the incident; no formal runbook exists.", "rating": "Major"},
+            ],
+            "key_risk_indicators": [
+                {"id": "KRI-3301", "title": "Data pipeline failure rate",
+                 "description": "Percentage of nightly ETL jobs failing to complete within SLA window — breached threshold of 5%.", "threshold": "5%", "current": "18%"},
+            ],
+            "key_staff_org_change": None,
+            "business_process_change": None,
+            "critical_change_program": [
+                {"id": "CHG-451100", "title": "Core banking system refresh",
+                 "description": "Full replacement of the legacy core banking ledger to support real-time settlement and reporting.", "phase": "Planning", "go_live": "2026-12-01"},
+            ],
+            "macro_external_event": None,
+            "regulatory_exam_inquiry": [
+                {"id": "REG-2026-04", "title": "Q1 Regulatory data quality review",
+                 "description": "Regulator requested evidence of data lineage and reconciliation controls following the reporting discrepancy."},
+            ],
+            "other_notable_items": None,
+        },
+    },
+    "ops workflow.vsdx": {
+        "confidence": 0.88,
+        "progress": 75,
+        "categories": {
+            "risk_events": None,
+            "orac_issues": None,
+            "key_risk_indicators": None,
+            "key_staff_org_change": [
+                {"id": "ORG-2026-01", "title": "New Operations Lead appointed",
+                 "description": "Business ownership of the reconciliation workflow transferred to a newly onboarded Ops Lead effective Q1 2026."},
+                {"id": "ORG-2026-02", "title": "Ops team restructure Q1",
+                 "description": "Reconciliation team split into two squads; reporting lines updated in org chart v3.2."},
+            ],
+            "business_process_change": [
+                {"id": "BPC-887", "title": "Workflow automation for ops reconciliation",
+                 "description": "End-to-end reconciliation workflow redesigned to incorporate RPA tooling, reducing manual touch-points by 60%.", "phase": "Discovery", "go_live": "2027-01-15"},
+            ],
+            "critical_change_program": None,
+            "macro_external_event": None,
+            "regulatory_exam_inquiry": None,
+            "other_notable_items": None,
+        },
+    },
 }
 
-@app.post("/api/v1/documents/extract", response_model=ExtractResponse)
+_FALLBACK_EXTRACTION: dict = {
+    "confidence": 0.85,
+    "progress": 75,
+    "categories": {k: None for k in [
+        "risk_events", "orac_issues", "key_risk_indicators",
+        "key_staff_org_change", "business_process_change", "critical_change_program",
+        "macro_external_event", "regulatory_exam_inquiry", "other_notable_items",
+    ]},
+}
+
+@app.post("/api/v1/documents/extract")
 def extract_documents(req: ExtractRequest):
     if req.session_id not in active_sessions:
         raise HTTPException(status_code=401, detail="Invalid or expired session.")
 
-    results: list[ExtractDocumentResult] = []
+    results = []
     for doc in req.documents:
-        profile = _DOC_PROFILES.get(doc.name.lower(), {"confidence": 0.85, "items_found": 2})
-        results.append(ExtractDocumentResult(
-            filename=doc.name,
-            status="success",
-            confidence=profile["confidence"],
-            items_found=profile["items_found"],
-        ))
+        profile = _DOC_EXTRACTIONS.get(doc.name.lower(), _FALLBACK_EXTRACTION)
+        cats = profile["categories"]
+        items_found = sum(1 for v in cats.values() if v is not None)
+        results.append({
+            "filename": doc.name,
+            "status": "success",
+            "confidence": profile["confidence"],
+            "items_found": items_found,
+            "categories": cats,
+        })
 
     total = len(results)
-    overall = round(sum(r.confidence for r in results) / total, 4) if total else 0.0
+    overall = round(sum(r["confidence"] for r in results) / total, 4) if total else 0.0
+    progress = 75  # dummy extraction progress percentage
 
-    return ExtractResponse(
-        job_id=str(uuid.uuid4()),
-        documents_processed=total,
-        total_documents=total,
-        overall_confidence=overall,
-        results=results,
-    )
+    return {
+        "job_id": str(uuid.uuid4()),
+        "documents_processed": total,
+        "total_documents": total,
+        "overall_confidence": overall,
+        "progress": progress,
+        "results": results,
+    }
 
 
 if __name__ == "__main__":
