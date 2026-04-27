@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Sidebar from "@/components/Sidebar";
 import Dashboard from "@/pages/Dashboard";
 import Step1Upload from "@/pages/Step1Upload";
+import Step2Extract from "@/pages/Step2Extract";
 import Step3Validate from "@/pages/Step3Validate";
 import Step4Analyze from "@/pages/Step4Analyze";
 import Step5Finalize from "@/pages/Step5Finalize";
@@ -46,6 +47,7 @@ function Router() {
             <Route path="/" component={Dashboard} />
             <Route path="/domain-home" component={DomainHome} />
             <Route path="/step-1" component={Step1Upload} />
+            <Route path="/step-2" component={Step2Extract} />
             <Route path="/step-3" component={Step3Validate} />
             <Route path="/step-4" component={Step4Analyze} />
             <Route path="/step-5" component={Step5Finalize} />

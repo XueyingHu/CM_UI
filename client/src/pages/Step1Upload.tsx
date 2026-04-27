@@ -61,7 +61,7 @@ export default function Step1Upload() {
       // Navigate regardless — Step3 degrades gracefully with no extract data
     } finally {
       setExtracting(false);
-      setLocation("/step-3");
+      setLocation("/step-2");
     }
   };
 

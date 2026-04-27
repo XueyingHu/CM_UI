@@ -7,7 +7,7 @@ export default function Sidebar() {
 
   const DOC_STEPS = [
     { id: 1, label: "Upload Documents", path: "/step-1" },
-    { id: 2, label: "Extract Key Events", path: "/step-2b" },
+    { id: 2, label: "Extract Key Events", path: "/step-2" },
     { id: 3, label: "Validate with Source Systems", path: "/step-3" },
     { id: 4, label: "Analyze Events and Impact", path: "/step-4" },
     { id: 5, label: "Finalize Outcome", path: "/step-5" },
