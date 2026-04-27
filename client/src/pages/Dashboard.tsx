@@ -1,8 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { Search, ChevronDown, ChevronUp, X, Check, Loader2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 
 const API_BASE = "http://localhost:8000";
 
@@ -168,51 +166,63 @@ export default function Dashboard() {
     authenticateWithBAM("system.user", "System User");
   }, []);
 
-  // Build query URL from applied filters — used directly as queryKey[0]
-  // so the default fetcher picks it up without a custom queryFn.
-  const entityQueryUrl: string | null = applied
-    ? (() => {
-        const params = new URLSearchParams();
-        if (applied.pm) params.set("pm", applied.pm);
-        if (applied.bml) params.set("bml", applied.bml);
-        if (applied.team) params.set("team", applied.team);
-        params.set("page_size", "500");
-        return `${API_BASE}/api/v1/entities?${params.toString()}`;
-      })()
-    : null;
-
-  // Fetch entities server-side whenever filters are applied.
-  // queryKey[0] is the full URL — the default fetcher calls fetch(queryKey[0]).
-  const { data: entityData, isLoading: entitiesLoading } = useQuery<EntitiesResponse>({
-    queryKey: [entityQueryUrl],
-    enabled: !!entityQueryUrl,
-  });
-
-  const entities = entityData?.entities ?? [];
-  const totalEntities = entityData?.total ?? 0;
+  // Entity fetch state
+  const [entities, setEntities] = useState<AERecord[]>([]);
+  const [totalEntities, setTotalEntities] = useState(0);
+  const [entitiesLoading, setEntitiesLoading] = useState(false);
   const scopeApplied = applied !== null;
 
-  // POST scope to backend when user confirms — persists filters against session_id
-  const scopeMutation = useMutation({
-    mutationFn: async (entityCount: number) => {
+  // Fetch entities from the backend whenever applied filters change
+  useEffect(() => {
+    if (!applied) return;
+    const params = new URLSearchParams();
+    if (applied.pm) params.set("pm", applied.pm);
+    if (applied.bml) params.set("bml", applied.bml);
+    if (applied.team) params.set("team", applied.team);
+    params.set("page_size", "500");
+    const url = `${API_BASE}/api/v1/entities?${params.toString()}`;
+
+    setEntitiesLoading(true);
+    fetch(url)
+      .then(r => r.json())
+      .then((data: EntitiesResponse) => {
+        setEntities(data.entities);
+        setTotalEntities(data.total);
+      })
+      .catch(() => {
+        setEntities([]);
+        setTotalEntities(0);
+      })
+      .finally(() => setEntitiesLoading(false));
+  }, [applied]);
+
+  // Confirming — POST scope to backend then navigate
+  const [confirming, setConfirming] = useState(false);
+  const handleConfirmAsync = useCallback(async () => {
+    if (!scopeApplied || totalEntities === 0) return;
+    setConfirming(true);
+    try {
       const sessionId = sessionStorage.getItem("session_id");
-      if (!sessionId || !applied) return;
-      await apiRequest("POST", `${API_BASE}/api/v1/scope`, {
-        session_id: sessionId,
-        pm: applied.pm,
-        bml: applied.bml || null,
-        team: applied.team || null,
-        entity_count: entityCount,
-      });
-    },
-    onSuccess: () => {
+      if (sessionId && applied) {
+        await fetch(`${API_BASE}/api/v1/scope`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: sessionId,
+            pm: applied.pm,
+            bml: applied.bml || null,
+            team: applied.team || null,
+            entity_count: totalEntities,
+          }),
+        });
+      }
+    } catch {
+      // Scope recording failed — navigate anyway
+    } finally {
+      setConfirming(false);
       setLocation("/domain-home");
-    },
-    onError: () => {
-      // Scope recording failed — navigate anyway (non-blocking)
-      setLocation("/domain-home");
-    },
-  });
+    }
+  }, [scopeApplied, totalEntities, applied, setLocation]);
 
   const handleApply = () => {
     if (!pm) return;
@@ -239,11 +249,7 @@ export default function Dashboard() {
     sessionStorage.removeItem("selectedTeam");
   };
 
-  const handleConfirm = () => {
-    if (!scopeApplied || totalEntities === 0) return;
-    // Record scope server-side then navigate
-    scopeMutation.mutate(totalEntities);
-  };
+  const handleConfirm = () => { handleConfirmAsync(); };
 
   const canConfirm = scopeApplied && !entitiesLoading && totalEntities > 0 && pm !== "";
 
@@ -408,16 +414,16 @@ export default function Dashboard() {
         <button
           data-testid="button-confirm"
           onClick={handleConfirm}
-          disabled={!canConfirm || scopeMutation.isPending}
+          disabled={!canConfirm || confirming}
           style={{
-            background: canConfirm && !scopeMutation.isPending ? "#0b2a4a" : "#a0b0c4",
+            background: canConfirm && !confirming ? "#0b2a4a" : "#a0b0c4",
             color: "#fff", fontWeight: 900, fontSize: 13,
             border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10,
-            padding: "11px 28px", cursor: canConfirm && !scopeMutation.isPending ? "pointer" : "not-allowed",
+            padding: "11px 28px", cursor: canConfirm && !confirming ? "pointer" : "not-allowed",
             minWidth: 130, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
         >
-          {scopeMutation.isPending && <Loader2 size={13} className="animate-spin" />}
+          {confirming && <Loader2 size={13} className="animate-spin" />}
           Confirm
         </button>
       </div>
