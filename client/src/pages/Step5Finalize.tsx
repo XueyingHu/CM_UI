@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
 const MUTED = "#5b6b7a";
@@ -63,6 +65,53 @@ const EVENT_REGISTER = [
 export default function Step5Finalize() {
   const [, setLocation] = useLocation();
   const [registerOpen, setRegisterOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const sessionId = sessionStorage.getItem("session_id") || "";
+      const fetchData = (() => {
+        try { return JSON.parse(sessionStorage.getItem("fetch_data_result") || "null"); } catch { return null; }
+      })();
+      const step4Analysis = (() => {
+        try { return JSON.parse(sessionStorage.getItem("step4_analysis") || "null"); } catch { return null; }
+      })();
+      const execSummary = (() => {
+        try { return JSON.parse(sessionStorage.getItem("exec_summary_result") || "null"); } catch { return null; }
+      })();
+
+      const res = await fetch(`${API_BASE}/api/v1/report/download-cm-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          fetch_data: fetchData || {},
+          step4_analysis: step4Analysis || [],
+          exec_summary: execSummary || {},
+        }),
+      });
+
+      if (res.ok) {
+        const report = await res.json();
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        a.href = url;
+        a.download = `cm-report-${today}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      // Silent fail — report download is best-effort
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
@@ -296,15 +345,31 @@ export default function Step5Finalize() {
           <div style={{ display: "flex", gap: 10 }}>
             <button
               data-testid="button-export"
+              onClick={handleExport}
+              disabled={exporting}
               style={{
                 padding: "10px 14px", borderRadius: 10,
-                border: "1px solid #d6deea", background: "#fff",
-                fontWeight: 900, cursor: "pointer", fontSize: 13,
-                minWidth: 100,
+                border: "1px solid #d6deea",
+                background: exporting ? "#f0f4f8" : "#fff",
+                fontWeight: 900,
+                cursor: exporting ? "not-allowed" : "pointer",
+                fontSize: 13, minWidth: 100,
+                display: "inline-flex", alignItems: "center", gap: 7,
+                transition: "background 0.2s",
               }}
             >
-              Export
+              {exporting ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    style={{ animation: "spin 0.9s linear infinite", flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(11,42,74,0.2)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke={NAVY} strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Exporting…
+                </>
+              ) : "Export"}
             </button>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <button
               data-testid="button-publish"
               style={{

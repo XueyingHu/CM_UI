@@ -147,6 +147,8 @@ export default function Step4Analyze() {
         })),
       }));
 
+      sessionStorage.setItem("step4_analysis", JSON.stringify(step4Analysis));
+
       if (sessionId && fetchData) {
         const res = await fetch(`${API_BASE}/api/v1/database/fetch-executive-summary`, {
           method: "POST",
