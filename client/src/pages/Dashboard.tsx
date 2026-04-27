@@ -2,7 +2,10 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Search, ChevronDown, ChevronUp, X, Check, Loader2 } from "lucide-react";
 
-const API_BASE = "http://localhost:8000";
+// In Replit, the FastAPI backend is reachable over HTTPS on port 8000
+// of the same hostname as the frontend. This works both in the Replit
+// preview (https) and locally (http://localhost).
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 /**
  * Authenticate with BAM and store the session in sessionStorage.
