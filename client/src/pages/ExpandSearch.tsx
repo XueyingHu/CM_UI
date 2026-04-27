@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Check, ChevronRight, ChevronDown, Download, X, MoreHorizontal, Plus } from "lucide-react";
 
@@ -62,20 +62,62 @@ const SELECT_STYLE: React.CSSProperties = {
   paddingRight: 28,
 };
 
+// ── sessionStorage helpers ────────────────────────────────────────────────
+const SS_KEY = "expand_search_state";
+
+function loadSavedState() {
+  try {
+    const raw = sessionStorage.getItem(SS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as {
+      results: Record<string, ResultRow[]>;
+      searched: boolean;
+      dateFrom: string; dateTo: string;
+      rating: string; status: string; region: string; businessUnit: string; aiText: string;
+    };
+  } catch { return null; }
+}
+
+function saveState(state: {
+  results: Record<string, ResultRow[]>; searched: boolean;
+  dateFrom: string; dateTo: string;
+  rating: string; status: string; region: string; businessUnit: string; aiText: string;
+}) {
+  try {
+    sessionStorage.setItem(SS_KEY, JSON.stringify(state));
+    // Also save just the accepted rows for downstream steps
+    const accepted = {
+      events:  state.results["events"]?.filter(r => r.action === "accepted") ?? [],
+      issues:  state.results["issues"]?.filter(r => r.action === "accepted") ?? [],
+      changes: state.results["changes"]?.filter(r => r.action === "accepted") ?? [],
+    };
+    sessionStorage.setItem("expand_search_accepted", JSON.stringify(accepted));
+  } catch { /* quota errors ignored */ }
+}
+
+// ── Component ─────────────────────────────────────────────────────────────
 export default function ExpandSearch() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("events");
-  const [dateFrom, setDateFrom] = useState("01/01/2022");
-  const [dateTo, setDateTo] = useState("12/31/2022");
-  const [rating, setRating] = useState("Any");
-  const [status, setStatus] = useState("Any");
-  const [region, setRegion] = useState("Any");
-  const [businessUnit, setBusinessUnit] = useState("Any");
-  const [aiText, setAiText] = useState("");
-  const [searched, setSearched] = useState(false);
-  const [searching, setSearching] = useState(false);
-  const [results, setResults] = useState(MOCK_RESULTS);
+
+  // Restore from sessionStorage on mount
+  const saved = loadSavedState();
+  const [dateFrom,     setDateFrom]     = useState(saved?.dateFrom     ?? "01/01/2022");
+  const [dateTo,       setDateTo]       = useState(saved?.dateTo       ?? "12/31/2022");
+  const [rating,       setRating]       = useState(saved?.rating       ?? "Any");
+  const [status,       setStatus]       = useState(saved?.status       ?? "Any");
+  const [region,       setRegion]       = useState(saved?.region       ?? "Any");
+  const [businessUnit, setBusinessUnit] = useState(saved?.businessUnit ?? "Any");
+  const [aiText,       setAiText]       = useState(saved?.aiText       ?? "");
+  const [searched,     setSearched]     = useState(saved?.searched     ?? false);
+  const [searching,    setSearching]    = useState(false);
+  const [results,      setResults]      = useState<Record<string, ResultRow[]>>(saved?.results ?? MOCK_RESULTS);
   const [allCollapsed, setAllCollapsed] = useState(false);
+
+  // Persist to sessionStorage whenever results or search state changes
+  useEffect(() => {
+    saveState({ results, searched, dateFrom, dateTo, rating, status, region, businessUnit, aiText });
+  }, [results, searched, dateFrom, dateTo, rating, status, region, businessUnit, aiText]);
 
   const currentResults = results[activeTab] || [];
 
@@ -139,6 +181,9 @@ export default function ExpandSearch() {
     setDateFrom(""); setDateTo(""); setRating("Any");
     setStatus("Any"); setRegion("Any"); setBusinessUnit("Any");
     setAiText(""); setSearched(false);
+    setResults(MOCK_RESULTS);
+    sessionStorage.removeItem(SS_KEY);
+    sessionStorage.removeItem("expand_search_accepted");
   };
 
   const setAction = (id: string, action: Action) => {
@@ -180,11 +225,19 @@ export default function ExpandSearch() {
       {/* Tab bar + Export */}
       <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "0 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
         <div style={{ display: "flex" }}>
-          {TABS.map(tab => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ padding: "12px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", border: "none", borderBottom: activeTab === tab.key ? `2px solid ${NAVY}` : "2px solid transparent", background: "transparent", color: activeTab === tab.key ? NAVY : MUTED, transition: "all 120ms" }}>
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map(tab => {
+            const accepted = results[tab.key]?.filter(r => r.action === "accepted").length ?? 0;
+            return (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{ padding: "12px 16px", fontSize: 13, fontWeight: 900, cursor: "pointer", border: "none", borderBottom: activeTab === tab.key ? `2px solid ${NAVY}` : "2px solid transparent", background: "transparent", color: activeTab === tab.key ? NAVY : MUTED, transition: "all 120ms", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                {tab.label}
+                {accepted > 0 && (
+                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 18, height: 18, padding: "0 5px", borderRadius: 9, background: "#166534", color: "#fff", fontSize: 10.5, fontWeight: 900 }}>
+                    {accepted}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
         <button style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 11px", borderRadius: 8, cursor: "pointer", border: `1px solid ${BORDER}`, background: "#fff", color: TEXT, fontSize: 12.5, fontWeight: 900, marginBlock: 8 }}>
           <Download size={13} /> Export
@@ -319,9 +372,32 @@ export default function ExpandSearch() {
               Collapse all
             </button>
           </div>
-          <div style={{ fontSize: 12.5, color: MUTED, marginBottom: 14 }}>
+          <div style={{ fontSize: 12.5, color: MUTED, marginBottom: searched ? 10 : 14 }}>
             Expand an event to review details and enter audit universe mapping before accepting.
           </div>
+
+          {/* Acceptance summary bar */}
+          {searched && (() => {
+            const totalAccepted = TABS.reduce((n, t) => n + (results[t.key]?.filter(r => r.action === "accepted").length ?? 0), 0);
+            const totalRemoved  = TABS.reduce((n, t) => n + (results[t.key]?.filter(r => r.action === "removed").length ?? 0), 0);
+            const totalShown    = TABS.reduce((n, t) => n + (results[t.key]?.length ?? 0), 0);
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, padding: "8px 12px", borderRadius: 8, background: totalAccepted > 0 ? "#f0fdf4" : "#f8fafc", border: `1px solid ${totalAccepted > 0 ? "#bbf7d0" : "#eef2f7"}`, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12.5, fontWeight: 900, color: MUTED }}>Selection across all tabs:</span>
+                <span style={{ padding: "2px 9px", borderRadius: 6, background: "#dcfce7", color: "#166534", fontSize: 12, fontWeight: 900 }}>
+                  {totalAccepted} accepted
+                </span>
+                {totalRemoved > 0 && (
+                  <span style={{ padding: "2px 9px", borderRadius: 6, background: "#fee2e2", color: "#b91c1c", fontSize: 12, fontWeight: 900 }}>
+                    {totalRemoved} removed
+                  </span>
+                )}
+                <span style={{ padding: "2px 9px", borderRadius: 6, background: "#f1f5f9", color: MUTED, fontSize: 12, fontWeight: 700 }}>
+                  {totalShown - totalAccepted - totalRemoved} pending
+                </span>
+              </div>
+            );
+          })()}
 
           {!searched ? (
             <div style={{ padding: "28px 0", textAlign: "center", color: MUTED, fontSize: 13 }}>
