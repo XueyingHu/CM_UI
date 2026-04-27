@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Search, ChevronDown, ChevronUp, X, Check } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Search, ChevronDown, ChevronUp, X, Check, Loader2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
-const BAM_AUTH_URL = "http://localhost:8000/api/v1/auth/login";
+const API_BASE = "http://localhost:8000";
 
 /**
  * Authenticate with BAM and store the session in sessionStorage.
@@ -11,14 +13,10 @@ const BAM_AUTH_URL = "http://localhost:8000/api/v1/auth/login";
  */
 async function authenticateWithBAM(username: string, displayName: string): Promise<void> {
   try {
-    const res = await fetch(BAM_AUTH_URL, {
+    const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username,
-        display_name: displayName,
-        password: "bam-sso-token",
-      }),
+      body: JSON.stringify({ username, display_name: displayName, password: "bam-sso-token" }),
     });
     if (!res.ok) return;
     const data = await res.json();
@@ -36,27 +34,6 @@ async function authenticateWithBAM(username: string, displayName: string): Promi
 const PORTFOLIO_MANAGERS = ["Sarah Johnson", "David Lee", "Maria Garcia", "James Okafor", "Linda Park"];
 const BML_OPTIONS = ["John Smith", "Emily Chen", "Robert Taylor", "Priya Nair", "Carlos Mendez"];
 const TEAM_OPTIONS = ["Markets & Technology", "Retail Banking", "Global Risk", "Corporate Audit", "Compliance & Legal", "Operations"];
-
-const ALL_ENTITIES = [
-  { id: "AE12345", name: "Trading Systems", pm: "Sarah Johnson", bml: "John Smith", team: "Markets & Technology" },
-  { id: "AE23456", name: "Ops Risk Controls", pm: "Sarah Johnson", bml: "John Smith", team: "Operations" },
-  { id: "AE34567", name: "Market Data Services", pm: "Sarah Johnson", bml: "Robert Taylor", team: "Markets & Technology" },
-  { id: "AE45678", name: "Tech Infrastructure", pm: "Sarah Johnson", bml: "Emily Chen", team: "Markets & Technology" },
-  { id: "AE55001", name: "Consumer Lending", pm: "David Lee", bml: "Emily Chen", team: "Retail Banking" },
-  { id: "AE55002", name: "Deposit Operations", pm: "David Lee", bml: "Emily Chen", team: "Retail Banking" },
-  { id: "AE55003", name: "Branch Compliance", pm: "David Lee", bml: "Priya Nair", team: "Compliance & Legal" },
-  { id: "AE66001", name: "Credit Derivatives", pm: "Maria Garcia", bml: "Robert Taylor", team: "Global Risk" },
-  { id: "AE66002", name: "Counterparty Risk", pm: "Maria Garcia", bml: "Robert Taylor", team: "Global Risk" },
-  { id: "AE66003", name: "Credit Portfolio Mgmt", pm: "Maria Garcia", bml: "Carlos Mendez", team: "Corporate Audit" },
-  { id: "AE77001", name: "Fixed Income Trading", pm: "James Okafor", bml: "Carlos Mendez", team: "Markets & Technology" },
-  { id: "AE77002", name: "Equity Research", pm: "James Okafor", bml: "Priya Nair", team: "Global Risk" },
-  { id: "AE77003", name: "Structured Products", pm: "James Okafor", bml: "Robert Taylor", team: "Global Risk" },
-  { id: "AE88001", name: "Wealth Management", pm: "Linda Park", bml: "Priya Nair", team: "Retail Banking" },
-  { id: "AE88002", name: "Private Banking", pm: "Linda Park", bml: "Emily Chen", team: "Retail Banking" },
-  { id: "AE88003", name: "Asset Management", pm: "Linda Park", bml: "Carlos Mendez", team: "Corporate Audit" },
-  { id: "AE88004", name: "Trust Services", pm: "Linda Park", bml: "John Smith", team: "Compliance & Legal" },
-  { id: "AE88005", name: "Insurance Products", pm: "Linda Park", bml: "Priya Nair", team: "Operations" },
-];
 
 interface SearchDropdownProps {
   placeholder: string;
@@ -152,62 +129,122 @@ function SearchDropdown({ placeholder, options, value, onChange, required, label
   );
 }
 
+interface AppliedFilters {
+  pm: string;
+  bml: string;
+  team: string;
+}
+
+interface AERecord {
+  ae_id: string;
+  ae_name: string;
+  pm: string;
+  bml: string;
+  team: string;
+}
+
+interface EntitiesResponse {
+  total: number;
+  page: number;
+  page_size: number;
+  pages: number;
+  entities: AERecord[];
+}
+
 export default function Dashboard() {
   const [, setLocation] = useLocation();
 
+  // Dropdown selections (not yet applied)
   const [pm, setPm] = useState("");
   const [bml, setBml] = useState("");
   const [team, setTeam] = useState("");
-  const [scopeApplied, setScopeApplied] = useState(false);
-  const [filteredEntities, setFilteredEntities] = useState(ALL_ENTITIES);
+
+  // Committed filters — drives the API query
+  const [applied, setApplied] = useState<AppliedFilters | null>(null);
   const [listOpen, setListOpen] = useState(false);
 
-  // Authenticate on page load with a system identity so a session_id is
-  // established immediately — PM / filter selections are recorded against it.
+  // Authenticate on page load — session_id established before any selection
   useEffect(() => {
     authenticateWithBAM("system.user", "System User");
   }, []);
 
+  // Build query URL from applied filters
+  const entityQueryUrl = applied
+    ? (() => {
+        const params = new URLSearchParams();
+        if (applied.pm) params.set("pm", applied.pm);
+        if (applied.bml) params.set("bml", applied.bml);
+        if (applied.team) params.set("team", applied.team);
+        params.set("page_size", "500"); // fetch up to 500 for display; paginate as needed
+        return `${API_BASE}/api/v1/entities?${params.toString()}`;
+      })()
+    : null;
+
+  // Fetch entities server-side whenever filters are applied
+  const { data: entityData, isLoading: entitiesLoading } = useQuery<EntitiesResponse>({
+    queryKey: ["entities", applied],
+    queryFn: () => fetch(entityQueryUrl!).then(r => r.json()),
+    enabled: !!entityQueryUrl,
+  });
+
+  const entities = entityData?.entities ?? [];
+  const totalEntities = entityData?.total ?? 0;
+  const scopeApplied = applied !== null;
+
+  // POST scope to backend when user confirms — persists filters against session_id
+  const scopeMutation = useMutation({
+    mutationFn: async (entityCount: number) => {
+      const sessionId = sessionStorage.getItem("session_id");
+      if (!sessionId || !applied) return;
+      await apiRequest("POST", `${API_BASE}/api/v1/scope`, {
+        session_id: sessionId,
+        pm: applied.pm,
+        bml: applied.bml || null,
+        team: applied.team || null,
+        entity_count: entityCount,
+      });
+    },
+    onSuccess: () => {
+      setLocation("/domain-home");
+    },
+    onError: () => {
+      // Scope recording failed — navigate anyway (non-blocking)
+      setLocation("/domain-home");
+    },
+  });
+
   const handleApply = () => {
-    let result = ALL_ENTITIES;
-    if (pm) result = result.filter(e => e.pm === pm);
-    if (bml) result = result.filter(e => e.bml === bml);
-    if (team) result = result.filter(e => e.team === team);
-    setFilteredEntities(result);
-    setScopeApplied(true);
+    if (!pm) return;
+    const filters: AppliedFilters = { pm, bml, team };
+    setApplied(filters);
     setListOpen(false);
 
-    if (pm) {
-      sessionStorage.setItem("selectedDomain", pm);
-      sessionStorage.setItem("selectedDomainId", pm.toLowerCase().replace(/\s+/g, "-"));
-    }
-    if (bml) {
-      sessionStorage.setItem("selectedBml", bml);
-    } else {
-      sessionStorage.removeItem("selectedBml");
-    }
-    if (team) {
-      sessionStorage.setItem("selectedTeam", team);
-    } else {
-      sessionStorage.removeItem("selectedTeam");
-    }
+    // Persist selections locally too (for pages that read sessionStorage)
+    sessionStorage.setItem("selectedDomain", pm);
+    sessionStorage.setItem("selectedDomainId", pm.toLowerCase().replace(/\s+/g, "-"));
+    if (bml) sessionStorage.setItem("selectedBml", bml);
+    else sessionStorage.removeItem("selectedBml");
+    if (team) sessionStorage.setItem("selectedTeam", team);
+    else sessionStorage.removeItem("selectedTeam");
   };
 
   const handleReset = () => {
     setPm(""); setBml(""); setTeam("");
-    setFilteredEntities(ALL_ENTITIES);
-    setScopeApplied(false);
+    setApplied(null);
     setListOpen(false);
+    sessionStorage.removeItem("selectedDomain");
+    sessionStorage.removeItem("selectedDomainId");
+    sessionStorage.removeItem("selectedBml");
+    sessionStorage.removeItem("selectedTeam");
   };
 
   const handleConfirm = () => {
-    if (scopeApplied && filteredEntities.length > 0) {
-      // Session already established on page load — just navigate.
-      setLocation("/domain-home");
-    }
+    if (!scopeApplied || totalEntities === 0) return;
+    // Record scope server-side then navigate
+    scopeMutation.mutate(totalEntities);
   };
 
-  const canConfirm = scopeApplied && filteredEntities.length > 0 && pm !== "";
+  const canConfirm = scopeApplied && !entitiesLoading && totalEntities > 0 && pm !== "";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", minHeight: "100%", padding: "40px 24px 48px", background: "#f6f8fb" }}>
@@ -222,25 +259,21 @@ export default function Dashboard() {
           You define the scope once.
         </p>
         <p style={{ fontSize: 13, color: "#4a5d70", margin: 0, fontStyle: "italic", fontWeight: 600, lineHeight: 1.6 }}>
-          You define the scope once. All modules use the same auditable entities.
+          All modules use the same auditable entities.
         </p>
       </div>
 
       {/* Define Monitoring Scope card */}
       <div style={{ width: "100%", maxWidth: 720, marginBottom: 18 }}>
         <div style={{ borderRadius: 10, border: "1px solid #ccd5df", overflow: "hidden", background: "#fff", boxShadow: "0 4px 14px rgba(16,24,40,0.07)" }}>
-          {/* Card header */}
           <div style={{ background: "#0b2a4a", padding: "12px 20px" }}>
             <span style={{ color: "#fff", fontWeight: 900, fontSize: 14, letterSpacing: 0.3 }}>Define Monitoring Scope</span>
           </div>
-
-          {/* Card body */}
           <div style={{ padding: "18px 20px 16px" }}>
             <p style={{ fontSize: 13, color: "#4a5d70", fontWeight: 600, margin: "0 0 14px" }}>
               Start by selecting a Portfolio Manager.
             </p>
 
-            {/* Portfolio Manager */}
             <div style={{ marginBottom: 16 }}>
               <SearchDropdown
                 label="Portfolio Manager"
@@ -252,7 +285,6 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* Optional filters */}
             <div style={{ fontSize: 13, fontWeight: 900, color: "#1a2e44", marginBottom: 10 }}>Optional Filters:</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 18 }}>
               <SearchDropdown
@@ -269,7 +301,6 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* Footer buttons */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <button
                 data-testid="button-reset-filters"
@@ -301,31 +332,32 @@ export default function Dashboard() {
       {/* Monitoring Scope Applied card */}
       <div style={{ width: "100%", maxWidth: 720, marginBottom: 20 }}>
         <div style={{ borderRadius: 10, border: "1px solid #ccd5df", overflow: "visible", background: "#fff", boxShadow: "0 4px 14px rgba(16,24,40,0.07)" }}>
-          {/* Card header */}
           <div style={{ background: "#0b2a4a", padding: "12px 20px", borderRadius: "10px 10px 0 0" }}>
             <span style={{ color: "#fff", fontWeight: 900, fontSize: 14, letterSpacing: 0.3 }}>Monitoring Scope Applied</span>
           </div>
 
-          {/* Card body */}
           <div style={{ padding: "16px 20px 0" }}>
-            {/* Summary row */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, paddingBottom: listOpen && scopeApplied ? 12 : 16, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 14, fontWeight: 900, color: "#0b2a4a" }}>
+              <span style={{ fontSize: 14, fontWeight: 900, color: "#0b2a4a", display: "flex", alignItems: "center", gap: 8 }}>
                 Total Auditable Entities:{" "}
-                <span style={{ color: scopeApplied ? "#1f5ea8" : "#9aa5b4" }}>
-                  {scopeApplied ? filteredEntities.length : "—"}
-                </span>
+                {entitiesLoading ? (
+                  <Loader2 size={14} className="animate-spin" style={{ color: "#1f5ea8" }} />
+                ) : (
+                  <span style={{ color: scopeApplied ? "#1f5ea8" : "#9aa5b4" }}>
+                    {scopeApplied ? totalEntities : "—"}
+                  </span>
+                )}
               </span>
               <button
                 data-testid="button-view-full-list"
-                onClick={() => scopeApplied && setListOpen(v => !v)}
-                disabled={!scopeApplied}
+                onClick={() => scopeApplied && !entitiesLoading && setListOpen(v => !v)}
+                disabled={!scopeApplied || entitiesLoading}
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   fontSize: 13, fontWeight: 900,
-                  color: scopeApplied ? "#1f5ea8" : "#9aa5b4",
+                  color: scopeApplied && !entitiesLoading ? "#1f5ea8" : "#9aa5b4",
                   background: "none", border: "none",
-                  cursor: scopeApplied ? "pointer" : "not-allowed", padding: "4px 0",
+                  cursor: scopeApplied && !entitiesLoading ? "pointer" : "not-allowed", padding: "4px 0",
                 }}
               >
                 View full list
@@ -333,33 +365,33 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Inline full-width entity list */}
             {listOpen && scopeApplied && (
               <div style={{ borderTop: "1px solid #eef2f7", marginLeft: -20, marginRight: -20 }}>
                 <div style={{
-                  display: "grid", gridTemplateColumns: "90px 1fr auto",
+                  display: "grid", gridTemplateColumns: "100px 1fr auto",
                   alignItems: "center", padding: "8px 20px",
                   gap: 12, background: "#f7f9fd",
                   borderBottom: "1px solid #eef2f7",
                 }}>
                   <span style={{ fontSize: 11.5, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.3, textTransform: "uppercase" }}>AE ID</span>
                   <span style={{ fontSize: 11.5, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.3, textTransform: "uppercase" }}>AE Title</span>
-                  <span style={{ fontSize: 11.5, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.3, textTransform: "uppercase", whiteSpace: "nowrap" }}>Responsible Vertical</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 900, color: "#5b6b7a", letterSpacing: 0.3, textTransform: "uppercase", whiteSpace: "nowrap" }}>Responsible Team</span>
                 </div>
                 <div style={{ maxHeight: 260, overflowY: "auto" }}>
-                  {filteredEntities.map((e, i) => (
+                  {entities.map((e, i) => (
                     <div
-                      key={e.id}
+                      key={e.ae_id}
+                      data-testid={`row-entity-${e.ae_id}`}
                       style={{
-                        display: "grid", gridTemplateColumns: "90px 1fr auto",
+                        display: "grid", gridTemplateColumns: "100px 1fr auto",
                         alignItems: "center", padding: "9px 20px", gap: 12,
-                        borderBottom: i < filteredEntities.length - 1 ? "1px solid #f3f6fb" : "none",
+                        borderBottom: i < entities.length - 1 ? "1px solid #f3f6fb" : "none",
                         fontSize: 12.5,
                         background: i % 2 === 0 ? "#fff" : "#fafbfd",
                       }}
                     >
-                      <span style={{ color: "#5b6b7a", fontWeight: 700 }}>{e.id}</span>
-                      <span style={{ color: "#1a2e44", fontWeight: 800 }}>{e.name}</span>
+                      <span style={{ color: "#5b6b7a", fontWeight: 700 }}>{e.ae_id}</span>
+                      <span style={{ color: "#1a2e44", fontWeight: 800 }}>{e.ae_name}</span>
                       <span style={{ color: "#7a8fa3", fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap" }}>{e.team}</span>
                     </div>
                   ))}
@@ -375,15 +407,16 @@ export default function Dashboard() {
         <button
           data-testid="button-confirm"
           onClick={handleConfirm}
-          disabled={!canConfirm}
+          disabled={!canConfirm || scopeMutation.isPending}
           style={{
-            background: canConfirm ? "#0b2a4a" : "#a0b0c4",
+            background: canConfirm && !scopeMutation.isPending ? "#0b2a4a" : "#a0b0c4",
             color: "#fff", fontWeight: 900, fontSize: 13,
             border: "1px solid rgba(0,0,0,0.1)", borderRadius: 10,
-            padding: "11px 28px", cursor: canConfirm ? "pointer" : "not-allowed",
-            minWidth: 130,
+            padding: "11px 28px", cursor: canConfirm && !scopeMutation.isPending ? "pointer" : "not-allowed",
+            minWidth: 130, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
           }}
         >
+          {scopeMutation.isPending && <Loader2 size={13} className="animate-spin" />}
           Confirm
         </button>
       </div>
