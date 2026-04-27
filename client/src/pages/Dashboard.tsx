@@ -168,22 +168,23 @@ export default function Dashboard() {
     authenticateWithBAM("system.user", "System User");
   }, []);
 
-  // Build query URL from applied filters
-  const entityQueryUrl = applied
+  // Build query URL from applied filters — used directly as queryKey[0]
+  // so the default fetcher picks it up without a custom queryFn.
+  const entityQueryUrl: string | null = applied
     ? (() => {
         const params = new URLSearchParams();
         if (applied.pm) params.set("pm", applied.pm);
         if (applied.bml) params.set("bml", applied.bml);
         if (applied.team) params.set("team", applied.team);
-        params.set("page_size", "500"); // fetch up to 500 for display; paginate as needed
+        params.set("page_size", "500");
         return `${API_BASE}/api/v1/entities?${params.toString()}`;
       })()
     : null;
 
-  // Fetch entities server-side whenever filters are applied
+  // Fetch entities server-side whenever filters are applied.
+  // queryKey[0] is the full URL — the default fetcher calls fetch(queryKey[0]).
   const { data: entityData, isLoading: entitiesLoading } = useQuery<EntitiesResponse>({
-    queryKey: ["entities", applied],
-    queryFn: () => fetch(entityQueryUrl!).then(r => r.json()),
+    queryKey: [entityQueryUrl],
     enabled: !!entityQueryUrl,
   });
 
