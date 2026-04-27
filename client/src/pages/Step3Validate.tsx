@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 const NAVY = "#0b2a4a";
 const SUCCESS = "#1f7a3f";
 const WARNING = "#b54708";
@@ -201,8 +203,36 @@ function ExtractionProgressBar({ extract }: { extract: ExtractResult | null }) {
 export default function Step3Validate() {
   const [, setLocation] = useLocation();
   const [page, setPage] = useState(1);
+  const [synthesizing, setSynthesizing] = useState(false);
   const totalPages = PAGES.length;
   const data = PAGES[page - 1];
+
+  const handleNext = async () => {
+    if (synthesizing) return;
+    setSynthesizing(true);
+    try {
+      const sessionId = sessionStorage.getItem("session_id") || "";
+      const fetchData = (() => {
+        try { return JSON.parse(sessionStorage.getItem("fetch_data_result") || "null"); } catch { return null; }
+      })();
+      if (sessionId && fetchData) {
+        const res = await fetch(`${API_BASE}/api/v1/synthesize/process`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, fetch_data: fetchData }),
+        });
+        if (res.ok) {
+          const result = await res.json();
+          sessionStorage.setItem("synthesis_result", JSON.stringify(result));
+        }
+      }
+    } catch {
+      // Navigate regardless — Step 4 has its own fallback data
+    } finally {
+      setSynthesizing(false);
+      setLocation("/step-4");
+    }
+  };
 
   const extractResult: ExtractResult | null = (() => {
     try { return JSON.parse(sessionStorage.getItem("extract_result") || "null"); } catch { return null; }
@@ -521,14 +551,30 @@ export default function Step3Validate() {
             </button>
             <button
               data-testid="button-next"
-              onClick={() => setLocation("/step-4")}
+              onClick={handleNext}
+              disabled={synthesizing}
               style={{
                 padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
-                background: NAVY, color: "#fff", fontWeight: 900, cursor: "pointer", minWidth: 120, fontSize: 13,
+                background: synthesizing ? "#3a5a78" : NAVY,
+                color: "#fff", fontWeight: 900,
+                cursor: synthesizing ? "not-allowed" : "pointer",
+                minWidth: 120, fontSize: 13,
+                display: "inline-flex", alignItems: "center", gap: 7,
+                transition: "background 0.2s",
               }}
             >
-              Next
+              {synthesizing ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    style={{ animation: "spin 0.9s linear infinite", flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Processing…
+                </>
+              ) : "Next"}
             </button>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
 
         </div>

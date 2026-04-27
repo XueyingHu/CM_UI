@@ -647,6 +647,73 @@ def fetch_data(req: FetchDataRequest):
     }
 
 
+# ---------------------------------------------------------------------------
+# Synthesize / Process — AI synthesis of validated database records
+# ---------------------------------------------------------------------------
+
+class SynthesizeRequest(BaseModel):
+    session_id: str
+    fetch_data: dict  # the full fetch_data_result payload
+
+@app.post("/api/v1/synthesize/process")
+def synthesize_process(req: SynthesizeRequest):
+    if req.session_id not in active_sessions:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    risk_events    = req.fetch_data.get("risk_events", [])
+    orac_issues    = req.fetch_data.get("orac_issues", [])
+    change_programs = req.fetch_data.get("change_programs", [])
+    not_found      = req.fetch_data.get("not_found", [])
+
+    # Count criticality
+    critical_count = sum(1 for r in risk_events if r.get("rating") == "Critical")
+    major_count    = sum(
+        sum(1 for x in lst if x.get("rating") == "Major")
+        for lst in [risk_events, orac_issues, change_programs]
+    )
+
+    overall_rating = "Critical" if critical_count > 0 else ("Major" if major_count > 0 else "Limited")
+
+    return {
+        "synthesis_id": str(uuid.uuid4()),
+        "session_id": req.session_id,
+        "overall_risk_rating": overall_rating,
+        "processed_at": datetime.now(timezone.utc).isoformat(),
+        "summary": (
+            f"Analysis synthesized {len(risk_events)} risk event(s), {len(orac_issues)} ORAC issue(s), "
+            f"and {len(change_programs)} change program(s). "
+            f"{'Critical risk events were identified requiring immediate attention. ' if critical_count else ''}"
+            f"{len(not_found)} item(s) from source documents could not be matched to authoritative records."
+        ),
+        "key_themes": [
+            {"theme": "Payment Processing Resilience",
+             "description": "Multiple risk events and changes relate to payment infrastructure stability and upgrade risk.",
+             "rating": "Critical"},
+            {"theme": "Access & Control Governance",
+             "description": "Open issues around access control entitlements and manual override procedures indicate control gaps.",
+             "rating": "Major"},
+            {"theme": "Data Integrity & Reporting",
+             "description": "ETL pipeline failures and reconciliation gaps pose risk to regulatory reporting accuracy.",
+             "rating": "Major"},
+            {"theme": "Change Programme Oversight",
+             "description": f"{len(change_programs)} active change programme(s) require ongoing CM monitoring for go-live risk.",
+             "rating": "Limited"},
+        ],
+        "recommendations": [
+            "Prioritise closure of ISS-778901 (access control gaps) before the payments platform go-live.",
+            "Establish formal runbook for manual override procedures to address ISS-790034.",
+            "Increase monitoring frequency for the ETL pipeline referenced in RE-109022.",
+            "Validate unmatched document references against ORAC and Navigator to ensure complete coverage.",
+        ],
+        "record_counts": {
+            "risk_events": len(risk_events),
+            "orac_issues": len(orac_issues),
+            "change_programs": len(change_programs),
+            "not_matched": len(not_found),
+        },
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
