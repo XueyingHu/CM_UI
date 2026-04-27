@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { ChevronRight, ChevronDown, FileSpreadsheet, FileText, Send } from "lucide-react";
 
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
 const MUTED = "#5b6b7a";
@@ -79,6 +81,36 @@ export default function InsightsSummary() {
   const [activeTab, setActiveTab] = useState("events");
   const [registerOpen, setRegisterOpen] = useState(false);
   const [rows, setRows] = useState<RegRow[]>(REGISTER_ROWS);
+  const [publishLoading, setPublishLoading] = useState(false);
+
+  const handlePublish = async () => {
+    setPublishLoading(true);
+    try {
+      const sessionId      = sessionStorage.getItem("session_id") ?? "";
+      const execSummaryRaw = sessionStorage.getItem("exec_summary_module2_result");
+      const execSummary    = execSummaryRaw ? JSON.parse(execSummaryRaw) : {};
+
+      const res = await fetch(`${API_BASE}/api/v1/report/publish-cm-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id:     sessionId,
+          exec_summary:   execSummary,
+          fetch_data:     {},
+          step4_analysis: [],
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem("publish_result", JSON.stringify(data));
+      }
+    } catch (_) {
+      // navigate regardless
+    } finally {
+      setPublishLoading(false);
+      setLocation("/domain-home");
+    }
+  };
 
   const toggleRow = (id: string) => setRows(prev => prev.map(r => r.id === id ? { ...r, expanded: !r.expanded } : r));
   const expandAll = () => setRows(prev => prev.map(r => ({ ...r, expanded: true })));
@@ -108,6 +140,7 @@ export default function InsightsSummary() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* Breadcrumb */}
       <div style={{ background: "#fff", borderBottom: `1px solid ${BORDER}`, padding: "10px 18px", fontSize: 12.5, color: MUTED, fontWeight: 600 }}>
@@ -130,7 +163,19 @@ export default function InsightsSummary() {
         <div style={{ display: "flex", gap: 8, paddingBlock: 8 }}>
           <button style={BtnStyle()}><FileSpreadsheet size={13} /> Export to Excel</button>
           <button style={BtnStyle()}><FileText size={13} /> Export to PDF</button>
-          <button style={BtnStyle(true)}><Send size={13} /> Publish</button>
+          <button
+            data-testid="button-publish-header"
+            disabled={publishLoading}
+            onClick={handlePublish}
+            style={{ ...BtnStyle(true), opacity: publishLoading ? 0.8 : 1, cursor: publishLoading ? "not-allowed" : "pointer", minWidth: 100 }}
+          >
+            {publishLoading ? (
+              <>
+                <span style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", animation: "spin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
+                Publishing…
+              </>
+            ) : <><Send size={13} /> Publish</>}
+          </button>
         </div>
       </div>
 
@@ -307,7 +352,19 @@ export default function InsightsSummary() {
           <div style={{ display: "flex", gap: 10 }}>
             <button style={BtnStyle()}><FileSpreadsheet size={13} /> Export to Excel</button>
             <button style={BtnStyle()}><FileText size={13} /> Export to PDF</button>
-            <button style={BtnStyle(true)}><Send size={13} /> Publish</button>
+            <button
+              data-testid="button-publish-footer"
+              disabled={publishLoading}
+              onClick={handlePublish}
+              style={{ ...BtnStyle(true), opacity: publishLoading ? 0.8 : 1, cursor: publishLoading ? "not-allowed" : "pointer", minWidth: 100 }}
+            >
+              {publishLoading ? (
+                <>
+                  <span style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.35)", borderTopColor: "#fff", animation: "spin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
+                  Publishing…
+                </>
+              ) : <><Send size={13} /> Publish</>}
+            </button>
           </div>
         </div>
 
