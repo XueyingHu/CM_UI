@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Pencil, Check } from "lucide-react";
 
+const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
+
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
 const MUTED = "#5b6b7a";
@@ -105,6 +107,64 @@ const TD: React.CSSProperties = {
 export default function Step4Analyze() {
   const [, setLocation] = useLocation();
   const [editMode, setEditMode] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Track editable block content in state so edits are captured on Next
+  const [blocksData, setBlocksData] = useState<EventBlock[]>(
+    BLOCKS.map(b => ({ ...b, rows: b.rows.map(r => ({ ...r })) }))
+  );
+
+  const updateBlockSummary = (blockIdx: number, text: string) =>
+    setBlocksData(prev => prev.map((b, i) => i === blockIdx ? { ...b, summary: text } : b));
+
+  const updateRowField = (blockIdx: number, rowIdx: number, field: keyof EventRow, text: string) =>
+    setBlocksData(prev => prev.map((b, i) => i === blockIdx
+      ? { ...b, rows: b.rows.map((r, j) => j === rowIdx ? { ...r, [field]: text } : r) }
+      : b
+    ));
+
+  const handleNext = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      const sessionId = sessionStorage.getItem("session_id") || "";
+      const fetchData = (() => {
+        try { return JSON.parse(sessionStorage.getItem("fetch_data_result") || "null"); } catch { return null; }
+      })();
+
+      // Serialize current (possibly edited) blocks into plain objects
+      const step4Analysis = blocksData.map(b => ({
+        title: b.title,
+        summary: b.summary,
+        variant: b.variant,
+        rows: b.rows.map(r => ({
+          reference: r.reference,
+          rating: r.rating,
+          source: r.source,
+          taggedAE: typeof r.taggedAE === "string" ? r.taggedAE : r.taggedAE.join(", "),
+          additionalAE: typeof r.additionalAE === "string" ? r.additionalAE : r.additionalAE.join(", "),
+          rationale: r.rationale,
+        })),
+      }));
+
+      if (sessionId && fetchData) {
+        const res = await fetch(`${API_BASE}/api/v1/database/fetch-executive-summary`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ session_id: sessionId, fetch_data: fetchData, step4_analysis: step4Analysis }),
+        });
+        if (res.ok) {
+          const result = await res.json();
+          sessionStorage.setItem("exec_summary_result", JSON.stringify(result));
+        }
+      }
+    } catch {
+      // Navigate regardless — Step 5 has its own fallback
+    } finally {
+      setSubmitting(false);
+      setLocation("/step-5");
+    }
+  };
 
   const selectedPm = sessionStorage.getItem("selectedDomain") || "";
   const selectedBml = sessionStorage.getItem("selectedBml") || "";
@@ -200,7 +260,7 @@ export default function Step4Analyze() {
             }
           </p>
 
-          {BLOCKS.map((block) => (
+          {blocksData.map((block, blockIdx) => (
             <div key={block.title} style={{
               background: BG[block.variant],
               borderRadius: 12, padding: 14, marginBottom: 26,
@@ -220,7 +280,11 @@ export default function Step4Analyze() {
                   background: editMode ? "rgba(255,255,255,0.6)" : "transparent",
                 }}
                 onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
-                onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = editMode ? "rgba(255,255,255,0.6)" : "transparent"; }}
+                onBlur={e => {
+                  (e.currentTarget as HTMLElement).style.outline = "none";
+                  (e.currentTarget as HTMLElement).style.background = editMode ? "rgba(255,255,255,0.6)" : "transparent";
+                  updateBlockSummary(blockIdx, e.currentTarget.innerText);
+                }}
               >
                 {block.summary}
               </div>
@@ -235,8 +299,8 @@ export default function Step4Analyze() {
                     </tr>
                   </thead>
                   <tbody>
-                    {block.rows.map((row, i) => (
-                      <tr key={i}>
+                    {block.rows.map((row, rowIdx) => (
+                      <tr key={rowIdx}>
                         <td style={TD}>{row.reference}</td>
                         <td style={TD}>
                           <span style={{ fontWeight: 900, color: RATING_COLOR[row.rating] }}>{row.rating}</span>
@@ -251,29 +315,47 @@ export default function Step4Analyze() {
                           suppressContentEditableWarning
                           style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
                           onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
-                          onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                          onBlur={e => {
+                            (e.currentTarget as HTMLElement).style.outline = "none";
+                            (e.currentTarget as HTMLElement).style.background = "transparent";
+                            updateRowField(blockIdx, rowIdx, "taggedAE", e.currentTarget.innerText);
+                          }}
                         >
-                          {row.taggedAE.map((ae, j) => (
-                            <div key={j} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{ae}</div>
-                          ))}
+                          {Array.isArray(row.taggedAE)
+                            ? row.taggedAE.map((ae, j) => (
+                                <div key={j} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{ae}</div>
+                              ))
+                            : <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{row.taggedAE}</div>
+                          }
                         </td>
                         <td
                           contentEditable={editMode}
                           suppressContentEditableWarning
                           style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
                           onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
-                          onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                          onBlur={e => {
+                            (e.currentTarget as HTMLElement).style.outline = "none";
+                            (e.currentTarget as HTMLElement).style.background = "transparent";
+                            updateRowField(blockIdx, rowIdx, "additionalAE", e.currentTarget.innerText);
+                          }}
                         >
-                          {row.additionalAE.map((ae, j) => (
-                            <div key={j} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{ae}</div>
-                          ))}
+                          {Array.isArray(row.additionalAE)
+                            ? row.additionalAE.map((ae, j) => (
+                                <div key={j} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{ae}</div>
+                              ))
+                            : <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{row.additionalAE}</div>
+                          }
                         </td>
                         <td
                           contentEditable={editMode}
                           suppressContentEditableWarning
                           style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 200, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
                           onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
-                          onBlur={e => { (e.currentTarget as HTMLElement).style.outline = "none"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+                          onBlur={e => {
+                            (e.currentTarget as HTMLElement).style.outline = "none";
+                            (e.currentTarget as HTMLElement).style.background = "transparent";
+                            updateRowField(blockIdx, rowIdx, "rationale", e.currentTarget.innerText);
+                          }}
                         >
                           {row.rationale}
                         </td>
@@ -299,14 +381,30 @@ export default function Step4Analyze() {
             </button>
             <button
               data-testid="button-next"
-              onClick={() => setLocation("/step-5")}
+              onClick={handleNext}
+              disabled={submitting}
               style={{
                 padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)",
-                background: NAVY, color: "#fff", fontWeight: 900, cursor: "pointer", minWidth: 120, fontSize: 13,
+                background: submitting ? "#3a5a78" : NAVY,
+                color: "#fff", fontWeight: 900,
+                cursor: submitting ? "not-allowed" : "pointer",
+                minWidth: 120, fontSize: 13,
+                display: "inline-flex", alignItems: "center", gap: 7,
+                transition: "background 0.2s",
               }}
             >
-              Next
+              {submitting ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    style={{ animation: "spin 0.9s linear infinite", flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Generating…
+                </>
+              ) : "Next"}
             </button>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         </div>
       </div>

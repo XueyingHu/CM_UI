@@ -714,6 +714,76 @@ def synthesize_process(req: SynthesizeRequest):
     }
 
 
+# ---------------------------------------------------------------------------
+# Executive Summary — final narrative built from fetch data + step 4 analysis
+# ---------------------------------------------------------------------------
+
+class ExecSummaryRequest(BaseModel):
+    session_id: str
+    fetch_data: dict           # fetch_data_result from sessionStorage
+    step4_analysis: list[dict] # current (possibly edited) block data from Step 4
+
+@app.post("/api/v1/database/fetch-executive-summary")
+def fetch_executive_summary(req: ExecSummaryRequest):
+    if req.session_id not in active_sessions:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    risk_events     = req.fetch_data.get("risk_events", [])
+    orac_issues     = req.fetch_data.get("orac_issues", [])
+    change_programs = req.fetch_data.get("change_programs", [])
+    not_found       = req.fetch_data.get("not_found", [])
+    blocks          = req.step4_analysis
+
+    critical_events  = [r for r in risk_events if r.get("rating") == "Critical"]
+    major_issues     = [i for i in orac_issues  if i.get("rating") == "Major"]
+    overall_rating   = "Critical" if critical_events else ("Major" if major_issues else "Limited")
+
+    # Build per-block summaries from edited content
+    block_summaries = [
+        {"event_type": b.get("title", ""), "summary": b.get("summary", ""),
+         "rating": b.get("rows", [{}])[0].get("rating", "Limited") if b.get("rows") else "Limited"}
+        for b in blocks
+    ]
+
+    return {
+        "exec_summary_id": str(uuid.uuid4()),
+        "session_id": req.session_id,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "overall_risk_rating": overall_rating,
+        "headline": (
+            f"The monitoring period identified {len(risk_events)} risk event(s) and "
+            f"{len(orac_issues)} open ORAC issue(s) across the monitored domain. "
+            f"{'Critical-rated events require immediate escalation. ' if critical_events else ''}"
+            f"{len(change_programs)} active change programme(s) represent additional execution risk."
+        ),
+        "monitoring_conclusion": (
+            "Based on the evidence reviewed, the overall CM assessment is rated "
+            f"<strong>{overall_rating}</strong>. "
+            "The combination of open risk events and unresolved ORAC issues indicates that the control environment "
+            "requires enhanced oversight during the current period."
+        ),
+        "event_summaries": block_summaries,
+        "key_actions": [
+            {"action": "Escalate critical risk events to Risk Committee within 5 business days",
+             "owner": "1st Line Risk", "due": "2026-05-05", "priority": "Critical"},
+            {"action": "Confirm remediation plans and owners for all Major-rated ORAC issues",
+             "owner": "Issue Owners", "due": "2026-05-15", "priority": "Major"},
+            {"action": "Review change programme go-live readiness for CHG-445612",
+             "owner": "Change Manager", "due": "2026-06-01", "priority": "Major"},
+            {"action": "Follow up on unmatched document references with ORAC/Navigator teams",
+             "owner": "CM Team", "due": "2026-05-10", "priority": "Limited"},
+        ],
+        "statistics": {
+            "risk_events": len(risk_events),
+            "critical_events": len(critical_events),
+            "orac_issues": len(orac_issues),
+            "major_issues": len(major_issues),
+            "change_programs": len(change_programs),
+            "not_matched": len(not_found),
+        },
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
