@@ -67,6 +67,56 @@ export default function Step5Finalize() {
   const [registerOpen, setRegisterOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
 
+  const [publishing, setPublishing] = useState(false);
+
+  const handlePublish = async () => {
+    if (publishing) return;
+    setPublishing(true);
+    try {
+      const sessionId = sessionStorage.getItem("session_id") || "";
+      const fetchData = (() => {
+        try { return JSON.parse(sessionStorage.getItem("fetch_data_result") || "null"); } catch { return null; }
+      })();
+      const step4Analysis = (() => {
+        try { return JSON.parse(sessionStorage.getItem("step4_analysis") || "null"); } catch { return null; }
+      })();
+      const execSummary = (() => {
+        try { return JSON.parse(sessionStorage.getItem("exec_summary_result") || "null"); } catch { return null; }
+      })();
+
+      const res = await fetch(`${API_BASE}/api/v1/report/publish-cm-report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: sessionId,
+          fetch_data: fetchData || {},
+          step4_analysis: step4Analysis || [],
+          exec_summary: execSummary || {},
+        }),
+      });
+
+      if (res.ok) {
+        const report = await res.json();
+        // Download the published report as a JSON file
+        const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        a.href = url;
+        a.download = `cm-report-${today}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    } catch {
+      // Navigate regardless
+    } finally {
+      setPublishing(false);
+      setLocation("/domain-home");
+    }
+  };
+
   const handleExport = async () => {
     if (exporting) return;
     setExporting(true);
@@ -372,14 +422,29 @@ export default function Step5Finalize() {
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <button
               data-testid="button-publish"
+              onClick={handlePublish}
+              disabled={publishing}
               style={{
                 padding: "10px 14px", borderRadius: 10,
-                border: "1px solid rgba(0,0,0,0.1)", background: NAVY,
-                color: "#fff", fontWeight: 900, cursor: "pointer", fontSize: 13,
-                minWidth: 100,
+                border: "1px solid rgba(0,0,0,0.1)",
+                background: publishing ? "#3a5a78" : NAVY,
+                color: "#fff", fontWeight: 900,
+                cursor: publishing ? "not-allowed" : "pointer",
+                fontSize: 13, minWidth: 100,
+                display: "inline-flex", alignItems: "center", gap: 7,
+                transition: "background 0.2s",
               }}
             >
-              Publish
+              {publishing ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                    style={{ animation: "spin 0.9s linear infinite", flexShrink: 0 }}>
+                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#fff" strokeWidth="3" strokeLinecap="round"/>
+                  </svg>
+                  Publishing…
+                </>
+              ) : "Publish"}
             </button>
           </div>
         </div>

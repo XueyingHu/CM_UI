@@ -885,6 +885,102 @@ def download_cm_report(req: DownloadReportRequest):
     })
 
 
+# ---------------------------------------------------------------------------
+# Publish CM Report — finalises and "publishes" the CM report
+# ---------------------------------------------------------------------------
+
+class PublishReportRequest(BaseModel):
+    session_id: str
+    fetch_data: dict = {}
+    step4_analysis: list[dict] = []
+    exec_summary: dict = {}
+
+@app.post("/api/v1/report/publish-cm-report")
+def publish_cm_report(req: PublishReportRequest):
+    if req.session_id not in active_sessions:
+        raise HTTPException(status_code=401, detail="Invalid or expired session.")
+
+    risk_events     = req.fetch_data.get("risk_events", [])
+    orac_issues     = req.fetch_data.get("orac_issues", [])
+    change_programs = req.fetch_data.get("change_programs", [])
+    not_found       = req.fetch_data.get("not_found", [])
+
+    critical_events = [r for r in risk_events if r.get("rating") == "Critical"]
+    major_issues    = [i for i in orac_issues  if i.get("rating") == "Major"]
+    overall_rating  = req.exec_summary.get("overall_risk_rating") or (
+        "Critical" if critical_events else ("Major" if major_issues else "Limited")
+    )
+
+    now = datetime.now(timezone.utc)
+    report_ref = f"CM-{now.strftime('%Y%m%d')}-{str(uuid.uuid4())[:6].upper()}"
+
+    report = {
+        "report_id": str(uuid.uuid4()),
+        "report_ref": report_ref,
+        "report_title": "Continuous Monitoring Report",
+        "monitoring_period": "Q1 2026",
+        "status": "Published",
+        "published_at": now.isoformat(),
+        "generated_by": active_sessions.get(req.session_id, {}).get("full_name", "system.user"),
+        "overall_risk_rating": overall_rating,
+        "executive_summary": {
+            "headline": req.exec_summary.get("headline") or (
+                f"The monitoring period identified {len(risk_events)} risk event(s) and "
+                f"{len(orac_issues)} open ORAC issue(s) across the monitored domain."
+            ),
+            "conclusion": req.exec_summary.get("monitoring_conclusion") or (
+                f"Overall CM assessment is rated {overall_rating}. "
+                "Control environment requires enhanced oversight during the current period."
+            ),
+            "statistics": {
+                "risk_events_total": len(risk_events),
+                "critical_risk_events": len(critical_events),
+                "orac_issues_total": len(orac_issues),
+                "major_issues": len(major_issues),
+                "change_programs": len(change_programs),
+                "unmatched_references": len(not_found),
+            },
+        },
+        "validated_records": {
+            "risk_events": risk_events,
+            "orac_issues": orac_issues,
+            "change_programs": change_programs,
+            "not_found": not_found,
+        },
+        "event_analysis": [
+            {"event_type": b.get("title", ""), "summary": b.get("summary", ""), "rows": b.get("rows", [])}
+            for b in req.step4_analysis
+        ],
+        "key_actions": req.exec_summary.get("key_actions") or [
+            {"action": "Escalate critical risk events to Risk Committee within 5 business days",
+             "owner": "1st Line Risk", "due": "2026-05-05", "priority": "Critical"},
+            {"action": "Confirm remediation plans for all Major-rated ORAC issues",
+             "owner": "Issue Owners", "due": "2026-05-15", "priority": "Major"},
+            {"action": "Review change programme go-live readiness",
+             "owner": "Change Manager", "due": "2026-06-01", "priority": "Major"},
+        ],
+        "source_documents": [
+            "Risk Management Forum, Q1 — Quarterly Notes.docx",
+            "Operations Risk Committee Meeting Pack.pdf",
+            "Ops Risk Committee Minutes.docx",
+            "Technology Governance Deck.pptx",
+        ],
+        "metadata": {
+            "workflow": "Documents to Insights",
+            "steps_completed": ["Upload", "Extract", "Validate", "Analyze", "Finalize"],
+            "report_version": "1.0",
+            "report_ref": report_ref,
+        },
+    }
+
+    filename = f"cm-report-{now.strftime('%Y%m%d')}.json"
+    return JSONResponse(content=report, headers={
+        "Content-Disposition": f'attachment; filename="{filename}"',
+        "Content-Type": "application/json",
+        "X-Report-Ref": report_ref,
+    })
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
