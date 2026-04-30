@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Pencil, Check } from "lucide-react";
+import { Pencil, Check, ChevronRight, ChevronDown } from "lucide-react";
 
 const API_BASE = `${window.location.protocol}//${window.location.hostname}:8000`;
 
 const NAVY = "#0b2a4a";
 const BORDER = "#e6e9ef";
+const DIVIDER = "#eef2f7";
 const MUTED = "#5b6b7a";
 const TEXT = "#122033";
 
@@ -19,6 +20,7 @@ interface EventRow {
   taggedAE: string[];
   additionalAE: string[];
   rationale: string;
+  expanded?: boolean;
 }
 
 interface EventBlock {
@@ -43,6 +45,7 @@ const BLOCKS: EventBlock[] = [
         additionalAE: ["AE‑3301 Financial Controls Oversight"],
         rationale:
           "Weaknesses in access provisioning may impact downstream financial controls and oversight processes beyond the primary application.",
+        expanded: false,
       },
     ],
   },
@@ -60,6 +63,7 @@ const BLOCKS: EventBlock[] = [
         additionalAE: ["AE‑3301 Financial Controls Oversight"],
         rationale:
           "Delayed remediation increases the likelihood of control failures and audit findings across dependent processes.",
+        expanded: false,
       },
     ],
   },
@@ -77,6 +81,7 @@ const BLOCKS: EventBlock[] = [
         additionalAE: ["AE‑5099 Records Management"],
         rationale:
           "Evidence retention controls are shared across multiple compliance and reporting processes.",
+        expanded: false,
       },
     ],
   },
@@ -94,15 +99,6 @@ const RATING_COLOR: Record<Rating, string> = {
   Limited: "#1f5ea8",
 };
 
-const TH: React.CSSProperties = {
-  padding: "10px", background: "#f7f9fd",
-  fontWeight: 900, fontSize: 12.5, color: "#334155",
-  textAlign: "left", borderBottom: "1px solid #eef2f7",
-};
-const TD: React.CSSProperties = {
-  padding: 10, fontSize: 12.5, borderTop: "1px solid #eef2f7",
-  verticalAlign: "top", color: TEXT,
-};
 
 export default function Step4Analyze() {
   const [, setLocation] = useLocation();
@@ -120,6 +116,12 @@ export default function Step4Analyze() {
   const updateRowField = (blockIdx: number, rowIdx: number, field: keyof EventRow, text: string) =>
     setBlocksData(prev => prev.map((b, i) => i === blockIdx
       ? { ...b, rows: b.rows.map((r, j) => j === rowIdx ? { ...r, [field]: text } : r) }
+      : b
+    ));
+
+  const toggleExpand = (blockIdx: number, rowIdx: number) =>
+    setBlocksData(prev => prev.map((b, i) => i === blockIdx
+      ? { ...b, rows: b.rows.map((r, j) => j === rowIdx ? { ...r, expanded: !r.expanded } : r) }
       : b
     ));
 
@@ -267,15 +269,17 @@ export default function Step4Analyze() {
               background: BG[block.variant],
               borderRadius: 12, padding: 14, marginBottom: 26,
             }}>
+              {/* Block header */}
               <div style={{ fontSize: 14, fontWeight: 900, marginBottom: 6, color: TEXT }}>
                 {block.title}
               </div>
 
+              {/* Editable summary */}
               <div
                 contentEditable={editMode}
                 suppressContentEditableWarning
                 style={{
-                  fontSize: 13, lineHeight: 1.5, marginBottom: 10,
+                  fontSize: 13, lineHeight: 1.5, marginBottom: 12,
                   color: TEXT, outline: "none", borderRadius: 6, padding: "2px 4px",
                   cursor: editMode ? "text" : "default",
                   border: editMode ? "1px dashed #bfdbfe" : "1px dashed transparent",
@@ -291,80 +295,173 @@ export default function Step4Analyze() {
                 {block.summary}
               </div>
 
-              <div style={{ background: "#fff", borderRadius: 10, border: `1px solid ${BORDER}`, overflow: "hidden" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
-                  <thead>
-                    <tr>
-                      {["Reference", "Rating", "Source (Meeting / Document)", "Auditable Entities Tagged in Assure", "Additional Impacted Auditable Entities", "Impact Rationale"].map(h => (
-                        <th key={h} style={TH}>{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {block.rows.map((row, rowIdx) => (
-                      <tr key={rowIdx}>
-                        <td style={TD}>{row.reference}</td>
-                        <td style={TD}>
-                          <span style={{ fontWeight: 900, color: RATING_COLOR[row.rating] }}>{row.rating}</span>
-                        </td>
-                        <td style={TD}>
-                          {row.source.split("\n").map((line, j) => (
-                            <div key={j}>{line}</div>
+              {/* Cards */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {block.rows.map((row, rowIdx) => (
+                  <div
+                    key={rowIdx}
+                    data-testid={`card-event-${block.variant}-${rowIdx}`}
+                    style={{
+                      background: "#fff",
+                      border: `1px solid ${BORDER}`,
+                      borderRadius: 10,
+                      overflow: "hidden",
+                      transition: "all 140ms",
+                    }}
+                  >
+                    {/* Card header row */}
+                    <div style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 900, color: TEXT, marginBottom: 6 }}>
+                          {row.reference}
+                        </div>
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          <span style={{
+                            padding: "2px 8px", borderRadius: 6,
+                            background: "#f1f5f9", border: "1px solid #e2e8f0",
+                            fontSize: 12, fontWeight: 700, color: RATING_COLOR[row.rating],
+                          }}>
+                            Rating: {row.rating}
+                          </span>
+                          <span style={{
+                            padding: "2px 8px", borderRadius: 6,
+                            background: "#f1f5f9", border: "1px solid #e2e8f0",
+                            fontSize: 12, fontWeight: 700, color: MUTED,
+                          }}>
+                            Source: {row.source.split("\n")[0]}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        data-testid={`button-expand-${block.variant}-${rowIdx}`}
+                        onClick={() => toggleExpand(blockIdx, rowIdx)}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: 4,
+                          padding: "6px 10px", borderRadius: 7, cursor: "pointer",
+                          border: "1px solid #e2e8f0", background: "#f8fafc",
+                          color: MUTED, fontSize: 12.5, fontWeight: 700, flexShrink: 0,
+                        }}
+                      >
+                        {row.expanded
+                          ? <><ChevronDown size={14} /><span>Collapse</span></>
+                          : <><ChevronRight size={14} /><span>Expand</span></>
+                        }
+                      </button>
+                    </div>
+
+                    {/* Expanded detail panel */}
+                    {row.expanded && (
+                      <div style={{ borderTop: `1px solid ${DIVIDER}`, background: "#fafbfd" }}>
+                        {/* Detail grid */}
+                        <div style={{ padding: "14px 18px 0" }}>
+                          {[
+                            {
+                              label: "Source (Meeting / Document)",
+                              value: row.source.split("\n").map((l, j) => <div key={j}>{l}</div>),
+                            },
+                            {
+                              label: "Auditable Entities Tagged in Assure",
+                              value: (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                                  {(Array.isArray(row.taggedAE) ? row.taggedAE : [row.taggedAE]).map((ae, j) => (
+                                    <span key={j} style={{
+                                      padding: "2px 8px", borderRadius: 6,
+                                      background: "#eff6ff", border: "1px solid #bfdbfe",
+                                      fontSize: 12, fontWeight: 700, color: "#1d4ed8",
+                                      display: "inline-block", width: "fit-content",
+                                    }}>{ae}</span>
+                                  ))}
+                                </div>
+                              ),
+                            },
+                          ].map((field, fi) => (
+                            <div key={fi} style={{
+                              display: "grid", gridTemplateColumns: "210px 1fr",
+                              gap: 10, marginBottom: 12, alignItems: "start",
+                            }}>
+                              <span style={{ fontSize: 12.5, fontWeight: 900, color: MUTED, paddingTop: 2 }}>
+                                {field.label}
+                              </span>
+                              <span style={{ fontSize: 12.5, color: TEXT, lineHeight: 1.6 }}>
+                                {field.value}
+                              </span>
+                            </div>
                           ))}
-                        </td>
-                        <td
-                          contentEditable={editMode}
-                          suppressContentEditableWarning
-                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
-                          onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
-                          onBlur={e => {
-                            (e.currentTarget as HTMLElement).style.outline = "none";
-                            (e.currentTarget as HTMLElement).style.background = "transparent";
-                            updateRowField(blockIdx, rowIdx, "taggedAE", e.currentTarget.innerText);
-                          }}
-                        >
-                          {Array.isArray(row.taggedAE)
-                            ? row.taggedAE.map((ae, j) => (
-                                <div key={j} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{ae}</div>
-                              ))
-                            : <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{row.taggedAE}</div>
-                          }
-                        </td>
-                        <td
-                          contentEditable={editMode}
-                          suppressContentEditableWarning
-                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 180, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
-                          onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
-                          onBlur={e => {
-                            (e.currentTarget as HTMLElement).style.outline = "none";
-                            (e.currentTarget as HTMLElement).style.background = "transparent";
-                            updateRowField(blockIdx, rowIdx, "additionalAE", e.currentTarget.innerText);
-                          }}
-                        >
-                          {Array.isArray(row.additionalAE)
-                            ? row.additionalAE.map((ae, j) => (
-                                <div key={j} style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{ae}</div>
-                              ))
-                            : <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 260 }}>{row.additionalAE}</div>
-                          }
-                        </td>
-                        <td
-                          contentEditable={editMode}
-                          suppressContentEditableWarning
-                          style={{ ...TD, outline: "none", borderRadius: 6, minWidth: 200, cursor: editMode ? "text" : "default", border: editMode ? "1px dashed #bfdbfe" : undefined }}
-                          onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
-                          onBlur={e => {
-                            (e.currentTarget as HTMLElement).style.outline = "none";
-                            (e.currentTarget as HTMLElement).style.background = "transparent";
-                            updateRowField(blockIdx, rowIdx, "rationale", e.currentTarget.innerText);
-                          }}
-                        >
-                          {row.rationale}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+
+                        {/* Audit Universe Mapping */}
+                        <div style={{
+                          margin: "4px 18px 14px",
+                          paddingTop: 14,
+                          borderTop: `1px solid ${DIVIDER}`,
+                        }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: TEXT, marginBottom: 10 }}>
+                            Audit Universe Mapping
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                            {/* Left — Additional Impacted AEs */}
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 900, color: MUTED, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                Additional Impacted Auditable Entities
+                              </div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                {(Array.isArray(row.additionalAE) ? row.additionalAE : [row.additionalAE]).map((ae, j) => (
+                                  <div key={j} style={{
+                                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                                    padding: "8px 10px", borderRadius: 8,
+                                    border: `1px solid ${BORDER}`, background: "#fff", gap: 8,
+                                  }}>
+                                    <span style={{ fontSize: 12.5, color: TEXT, fontWeight: 700, flex: 1 }}>{ae}</span>
+                                    <span style={{
+                                      padding: "2px 8px", borderRadius: 6,
+                                      background: "#166534", color: "#fff",
+                                      fontSize: 11, fontWeight: 900, whiteSpace: "nowrap",
+                                    }}>
+                                      High Relevancy
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Right — Impact Rationale (editable in edit mode) */}
+                            <div>
+                              <div style={{ fontSize: 12, fontWeight: 900, color: MUTED, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                Impact Rationale
+                              </div>
+                              <div
+                                contentEditable={editMode}
+                                suppressContentEditableWarning
+                                style={{
+                                  fontSize: 12.5, color: TEXT, lineHeight: 1.6,
+                                  padding: "10px 12px", borderRadius: 8,
+                                  border: editMode ? "1px dashed #bfdbfe" : `1px solid ${BORDER}`,
+                                  background: editMode ? "rgba(239,246,255,0.7)" : "#fff",
+                                  outline: "none",
+                                  cursor: editMode ? "text" : "default",
+                                  minHeight: 60,
+                                }}
+                                onFocus={e => { if (editMode) { (e.currentTarget as HTMLElement).style.outline = "2px solid #bfdbfe"; (e.currentTarget as HTMLElement).style.background = "#eff6ff"; } }}
+                                onBlur={e => {
+                                  (e.currentTarget as HTMLElement).style.outline = "none";
+                                  (e.currentTarget as HTMLElement).style.background = editMode ? "rgba(239,246,255,0.7)" : "#fff";
+                                  updateRowField(blockIdx, rowIdx, "rationale", e.currentTarget.innerText);
+                                }}
+                              >
+                                {row.rationale}
+                              </div>
+                              {editMode && (
+                                <div style={{ fontSize: 11, color: "#1d4ed8", marginTop: 4, fontWeight: 700 }}>
+                                  Click to edit rationale
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           ))}
